@@ -1,0 +1,15 @@
+project new ../implement/{prj_name}.ise
+
+xfile add "{synthesis_result_top}"
+xfile add "{ucf}"
+
+project set family "{family}"
+project set device "{device}"
+project set package "{package}"
+project set speed "-5"
+project set top_level_module_type  "EDIF"
+project set generated_simulation_language "Other Mixed"
+project set "Preferred Language" Verilog
+project set "FPGA Start-Up Clock" "JTAG Clock"
+process run "Generate Programming File"
+project close

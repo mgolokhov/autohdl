@@ -1,0 +1,36 @@
+INFO:Predefined generation done
+WARNING:Undefined instance "DCM" in file: {local_cwd}/prj4test/ctrl_v2_shagovik/src/ctrl_v2_kiortest.v
+DsnName: ctrl_v2_shagovik
+dirMain:
+	{local_cwd}/prj4test/ctrl_v2_shagovik/TestBench
+fileMain:
+	{local_cwd}/prj4test/ctrl_v2_shagovik/script/kungfu.pyc
+	{local_cwd}/prj4test/ctrl_v2_shagovik/script/kungfu.py
+	{local_cwd}/prj4test/ctrl_v2_shagovik/src/ctrl_v2_kiortest.v
+	{local_cwd}/prj4test/ctrl_v2_shagovik/resource/implement_default
+	{local_cwd}/prj4test/ctrl_v2_shagovik/test_results
+	{local_cwd}/prj4test/ctrl_v2_shagovik/resource/synthesis_default
+	{local_cwd}/prj4test/ctrl_v2_shagovik/hdlLogger.log
+	{local_cwd}/prj4test/ctrl_v2_shagovik/resource/build.xml
+fileDep:
+	{local_cwd}/prj4test/cores/cmi_send_packet/src/cmi_send_packet.v
+	{local_cwd}/prj4test/cores/InverseParkTransform/src/InverseParkTransform.v
+	{local_cwd}/prj4test/cores/rs232_rx/src/rs232_rx.v
+	{local_cwd}/prj4test/cores/cmi_recv_packet/src/cmi_recv_packet.v
+	{local_cwd}/prj4test/cores/adc_spi_conv_v2/src/adc_spi_conv_v2.v
+	{local_cwd}/prj4test/cores/current_bias_init_core/src/current_bias_init_core.v
+	{local_cwd}/prj4test/cores/dfoc_pwm_core_2ph/src/dfoc_pwm_core_2ph.v
+	{local_cwd}/prj4test/cores/cmi_single_timeslot_generator/src/cmi_single_timeslot_generator.v
+	{local_cwd}/prj4test/cores/rs232_tx/src/rs232_tx.v
+	{local_cwd}/prj4test/cores/cordic_core_v2/src/cordic_core_v2.v
+	{local_cwd}/prj4test/cores/gray2bin/src/gray2bin.v
+	{local_cwd}/prj4test/cores/crc_6/src/crc_6.v
+	{local_cwd}/prj4test/cores/pwm_core_hl/src/pwm_core_hl.v
+	{local_cwd}/prj4test/cores/ssi/src/ssi.v
+	{local_cwd}/prj4test/cores/spi_master/src/spi_master.v
+	{local_cwd}/prj4test/cores/mult19/src/mult19.v
+	{local_cwd}/prj4test/cores/cmi_single_packet_manager/src/cmi_single_packet_manager.v
+	{local_cwd}/prj4test/cores/PI_Regulator/src/PI_Regulator.v
+	{local_cwd}/prj4test/cores/ParkTransform/src/ParkTransform.v
+pathRoot:
+	{local_cwd}/prj4test/ctrl_v2_shagovik
