@@ -42,7 +42,7 @@ def getContentImpl():
   if os.path.exists(pathImplementTcl):
     f = open(pathImplementTcl, 'r')
   else:
-    log.info('Getting default implementation script')
+    log.info('Getting parameters from default implementation script')
     f = open(pathCur + '/../resource/implement_default', 'r')
   content = f.read()
   f.close()
@@ -56,7 +56,7 @@ def getContentSyn():
   if os.path.exists(pathImplementTcl):
     f = open(pathImplementTcl, 'r')
   else:
-    log.info('Getting default synthesis script')
+    log.info('Getting parameters from default synthesis script')
     f = open(pathCur+'/../resource/synthesis_default', 'r')
   scriptContent = f.read()
   f.close()
@@ -72,8 +72,6 @@ def getParam(iParam, iScriptContent):
   '''
   log.debug('def getParam=> iParam='+iParam+' iScriptContent=\n'+iScriptContent)
   param = __addSpaces(iParam)
-  print 'GetParam: ', param
-  print 'Content: ', iScriptContent
   match = re.search(param+'(.+)', iScriptContent)
   res = match.group(), match.group(1)
   return res
@@ -117,6 +115,7 @@ def mergeSrc(iSrcFileSys, iSrcScript):
 def refreshSrcInContent(iContent, iSrc):
   log.debug('def refreshSrcInContent=> iContent=\n'+iContent+' iSrc='+str(iSrc))
   contentImplNewList = iContent.split('\n')
+  lastIndex = 0
   for line in contentImplNewList:
     if line.find('xfile') == -1:
       continue
@@ -124,6 +123,9 @@ def refreshSrcInContent(iContent, iSrc):
       if i[0].find(line.strip()) != -1:
         lastIndex = contentImplNewList.index(line)
         contentImplNewList[contentImplNewList.index(line)] = i[0]
+  
+  if not lastIndex:
+    lastIndex = 0
   
   for i in iSrc:
     if i[1] == 'new':
@@ -197,9 +199,9 @@ def getSrcFromFileSys():
   scriptContentSyn = getContentSyn()
   topModule = getParam('set_option -top_module', scriptContentSyn)
   topRes = [topModule[1].strip('"')+'\.edf', topModule[1].strip('"')+'\.ucf']
-  cfg = ['src.*?\.edf', 'src.*?\.ndf'] + topRes
-  print cfg
+  cfg = ['src.*?\.edf', 'src.*?\.ndf', 'src.*?\.ngc'] + topRes
   src = dsn.getFileMain(iOnly = cfg)
+  src = [(os.path.abspath(i)).replace('\\', '/') for i in src]
   log.debug('def getSrcFromFileSys=> src='+str(src))
   return src
 
@@ -226,8 +228,6 @@ def genScript(iTopModule = ''):
   scriptContentSyn = getContentSyn()
   scriptContentImpl = getContentImpl()
   
-  print 'Got content: ', scriptContentImpl
-  
   global gSynToImpl
   scriptContentImplNew = refreshParams(scriptContentSyn,
                                       scriptContentImpl,
@@ -240,12 +240,15 @@ def genScript(iTopModule = ''):
 
 def run(iTopModule = ''):  
   log.debug('def run=> iTopModule='+iTopModule)  
-  if os.path.exists('../implement'):
-    shutil.rmtree('../implement')
+  try:
+    if os.path.exists('../implement'):
+      shutil.rmtree('../implement')
+  except OSError:
+    log.warning('Can\'t delete folder ../implement')
   
   genScript(iTopModule = iTopModule)
   
   ise_batch = toolchain.getPath('ise_batch')
   subprocess.call([ise_batch, os.getcwd() + '/implement.tcl'])
-  
-  print 'IMPL DONE'
+
+  log.info('Implementation done')

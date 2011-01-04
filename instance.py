@@ -26,6 +26,10 @@ def removeComments(ioString):
   return ioString
   
 
+def removeFunc(content):
+  return re.sub(r'function.*endfunction', '', content, flags=re.M|re.S)
+
+
 def parseFiles(iFiles):
   log.debug('def parseFiles<= iFiles='+str(iFiles))
   parsed = {}
@@ -34,6 +38,7 @@ def parseFiles(iFiles):
     content = f.read()
     f.close()
     pureContent = removeComments(content)
+    pureContent = removeFunc(pureContent)
     try:
       parsedNew = getInstances(pureContent)
     except InstanceException:
@@ -99,6 +104,9 @@ def undefFirstCall(iFiles):
 
 
 def getUndef(iFiles, iParsed = {}, iUndefInstances = set()):
+  """
+  iFiles as a list even there is one file;
+  """
   log.debug('def getUndef<= iFiles='+str(iFiles)+' iParsed='+str(iParsed)+' iUndefInstances='+str(iUndefInstances))
   parsedNew, undefNew = undefFirstCall(iFiles)
 
@@ -116,4 +124,7 @@ def getUndef(iFiles, iParsed = {}, iUndefInstances = set()):
       log.warning('Undefined instance "' + instance[1] + '" in file: ' + instance[0])
   log.debug('def getUndef=> parsed='+str(iParsed)+' undefFinally='+str(undefFinally))    
   return iParsed, undefFinally
+
+
+
 

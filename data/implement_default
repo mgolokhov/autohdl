@@ -1,7 +1,4 @@
-project new ../implement/{prj_name}.ise
-
-xfile add "{synthesis_result_top}"
-xfile add "{ucf}"
+project new ../implement/prj.ise
 
 project set family "{family}"
 project set device "{device}"

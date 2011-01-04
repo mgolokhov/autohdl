@@ -139,8 +139,9 @@ def preparation(iPathCur):
   log.debug('def preparation=> iPathCur='+iPathCur)
   synthesisDir = '%s/%s' % (iPathCur, '../synthesis')
   
-  if not os.path.exists(synthesisDir):
-    os.makedirs(synthesisDir)
+  if os.path.exists(synthesisDir):
+    shutil.rmtree(synthesisDir)
+  os.makedirs(synthesisDir)
     
   shutil.copyfile(iPathCur     + '/synthesis.prj',
                   synthesisDir + '/synthesis.prj')

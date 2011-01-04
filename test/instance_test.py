@@ -189,13 +189,13 @@ module ctrl_v2_kiortest
     f = open(pathF2, 'w')
     f.write(t)
     f.close()
-    expected = {'add1': ['G:/repo/git/autohdl/test/f1',
+    expected = {'add1': ['G:/repo/github/autohdl/test/f1',
                         'inst1', 'inst2', 'inst4', 'inst5', 'inst3', 'inst4', 'inst6'],
-                'add2': ['G:/repo/git/autohdl/test/f1',
+                'add2': ['G:/repo/github/autohdl/test/f1',
                          'inst1', 'inst2', 'inst4', 'inst5', 'inst3', 'inst4', 'inst6'],
-                'add1': ['G:/repo/git/autohdl/test/f2',
+                'add1': ['G:/repo/github/autohdl/test/f2',
                         'inst1', 'inst2', 'inst4', 'inst5', 'inst3', 'inst4', 'inst6'],
-                'add2': ['G:/repo/git/autohdl/test/f2',
+                'add2': ['G:/repo/github/autohdl/test/f2',
                          'inst1', 'inst2', 'inst4', 'inst5', 'inst3', 'inst4', 'inst6']}
     self.assertDictEqual(expected, parseFiles([pathF1, pathF2]))
     os.remove(pathF1)
@@ -233,11 +233,11 @@ module ctrl_v2_kiortest
     f.write(t2)
     f.close()
     
-    expectedParsed = {'inst1': ['G:/repo/git/autohdl/test/f4'],
-                      'add1': ['G:/repo/git/autohdl/test/f3', 'inst1'],
-                      'add2': ['G:/repo/git/autohdl/test/f3', 'inst2']
+    expectedParsed = {'inst1': ['G:/repo/github/autohdl/test/f4'],
+                      'add1': ['G:/repo/github/autohdl/test/f3', 'inst1'],
+                      'add2': ['G:/repo/github/autohdl/test/f3', 'inst2']
                       }
-    expectedUndef = set([('G:/repo/git/autohdl/test/f3', 'inst2')])
+    expectedUndef = set([('G:/repo/github/autohdl/test/f3', 'inst2')])
     parsed, undef = undefFirstCall([pathF3, pathF4])
     self.assertDictEqual(expectedParsed, parsed)
     self.assertSetEqual(expectedUndef, undef)
@@ -295,10 +295,10 @@ module ctrl_v2_kiortest
     parsed, undef = getUndef(iFiles = [pathF7],
                              iParsed = parsed,
                              iUndefInstances = undef)
-    expectedParsed = {'add1': ['G:/repo/git/autohdl/test/f5', 'inst1'],
-                      'add2': ['G:/repo/git/autohdl/test/f5', 'inst2'],
-                      'inst1': ['G:/repo/git/autohdl/test/f6'],
-                      'inst2': ['G:/repo/git/autohdl/test/f7', 'inst3', 'inst4', 'inst3']}
+    expectedParsed = {'add1': ['G:/repo/github/autohdl/test/f5', 'inst1'],
+                      'add2': ['G:/repo/github/autohdl/test/f5', 'inst2'],
+                      'inst1': ['G:/repo/github/autohdl/test/f6'],
+                      'inst2': ['G:/repo/github/autohdl/test/f7', 'inst3', 'inst4', 'inst3']}
     self.maxDiff = None
     self.assertDictEqual(expectedParsed, parsed)
     expectedUndef = set([(pathF7, 'inst3'), (pathF7, 'inst4')])
@@ -309,7 +309,7 @@ module ctrl_v2_kiortest
     
 if __name__ == '__main__':
   unittest.main()
-#  tests = ['test_removeComments'
+#  tests = ['test_getInstances'
 #           ]
 #
 #  suite = unittest.TestSuite(map(Test, tests))
