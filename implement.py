@@ -195,12 +195,14 @@ def getSrcFromFileSys():
   Returns edf, ndf, ucf files by filter
   '''
   log.debug('def getSrcFromFileSys<=')
-  dsn = structure.Design('..')
+#  dsn = structure.Design('..')
   scriptContentSyn = getContentSyn()
   topModule = getParam('set_option -top_module', scriptContentSyn)
   topRes = [topModule[1].strip('"')+'\.edf', topModule[1].strip('"')+'\.ucf']
   cfg = ['src.*?\.edf', 'src.*?\.ndf', 'src.*?\.ngc'] + topRes
-  src = dsn.getFileMain(iOnly = cfg)
+#  src = dsn.getFileMain(iOnly = cfg)
+  src = structure.search(iPath = '..', iOnly = cfg)
+  print '\n'.join(src)
   src = [(os.path.abspath(i)).replace('\\', '/') for i in src]
   log.debug('def getSrcFromFileSys=> src='+str(src))
   return src

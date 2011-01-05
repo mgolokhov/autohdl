@@ -25,9 +25,9 @@ def checkStartPoint(iDirName):
   return path
 
 
-
+# BUGAGA: genAndInit just temp stub
 class Design(object):
-  def __init__(self, iName = '', iPath = '', iIgnore = [], iOnly = []):
+  def __init__(self, iName = '', iPath = '', iIgnore = [], iOnly = [], genAndInit = True):
     if iPath:
       path = iPath
     else:
@@ -46,8 +46,9 @@ class Design(object):
     self._dirsMain   = []
     self._filesDep   = []
     
-    self.genPredef()
-    self.initAll(iIgnore = iIgnore, iOnly = iOnly)
+    if genAndInit:
+      self.genPredef()
+      self.initAll(iIgnore = iIgnore, iOnly = iOnly)
 
 
   @property
@@ -269,3 +270,22 @@ def filter(iFiles, iIgnore = [], iOnly = []):
         break
   log.debug('filter return='+str(files))
   return files
+
+
+def search(iPath = '.', iIgnore = [], iOnly = []):
+  '''
+    Search files by pattern.
+    Input: path (by default current directory), ignore and only patterns (should be lists)
+    Returns list of files.
+  '''
+  resFiles = []
+  for root, dirs, files in os.walk(iPath):
+#    r = root.replace('\\', '/')
+    for f in files:
+      fullPath = '%s/%s' % (root, f)
+      fullPath = (os.path.abspath(fullPath)).replace('\\', '/')
+      if filter(iFiles = [fullPath], iOnly = iOnly, iIgnore = iIgnore): 
+        resFiles.append(fullPath)
+  return resFiles
+
+  

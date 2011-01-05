@@ -340,15 +340,33 @@ pathRoot: {0}/dsn4test3'''.format(os.getcwd().replace('\\','/'))
     self.assertSetEqual(expected, dsn.getDeps())
     os.chdir('..')
     shutil.rmtree('myWsp')
+    
+    
+    
+  def test_search(self):
+    res = s.search(iOnly = ['.v'], iIgnore = ['prj4test'])
+    print '\n'.join(res)
 
+def runTests():
+  tests = [
+#           'test_init1',
+#           'test_init2',
+#           'test_init3',
+#           'test_init4',
+           'test_search'
+          ]
+
+  suite = unittest.TestSuite(map(Tests, tests))
+  unittest.TextTestRunner(verbosity=3).run(suite)  
 
 if __name__ == '__main__':
 #  unittest.main()
-  suite = unittest.TestSuite()
-  suite.addTest(Tests('test_init1'))
-  suite.addTest(Tests('test_init2'))
-  suite.addTest(Tests('test_init3'))
-  suite.addTest(Tests('test_init4'))
-  unittest.TextTestRunner().run(suite)
+#  suite = unittest.TestSuite()
+#  suite.addTest(Tests('test_init1'))
+#  suite.addTest(Tests('test_init2'))
+#  suite.addTest(Tests('test_init3'))
+#  suite.addTest(Tests('test_init4'))
+#  unittest.TextTestRunner().run(suite)
+  runTests()
 
   
