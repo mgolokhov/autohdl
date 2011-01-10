@@ -62,10 +62,10 @@ class Design(object):
   def __str__(self):
     return \
     'DsnName: '       + self.name +\
+    '\npathRoot:\n\t' + self._pathRoot +\
     '\ndirMain:\n\t'  + '\n\t'.join(set(self._dirsMain)) +\
     '\nfileMain:\n\t' + '\n\t'.join(set(self._filesMain)) +\
-    '\nfileDep:\n\t'  + '\n\t'.join(set(self._filesDep)) +\
-    '\npathRoot:\n\t' + self._pathRoot
+    '\nfileDep:\n\t'  + '\n\t'.join(set(self._filesDep))
     
   def initAll(self, iOnly = [], iIgnore = []):
     self.initMain(iOnly = iOnly, iIgnore = iIgnore)
@@ -280,7 +280,6 @@ def search(iPath = '.', iIgnore = [], iOnly = []):
   '''
   resFiles = []
   for root, dirs, files in os.walk(iPath):
-#    r = root.replace('\\', '/')
     for f in files:
       fullPath = '%s/%s' % (root, f)
       fullPath = (os.path.abspath(fullPath)).replace('\\', '/')
@@ -288,4 +287,71 @@ def search(iPath = '.', iIgnore = [], iOnly = []):
         resFiles.append(fullPath)
   return resFiles
 
-  
+
+def getMainSrc(iPath, iIgnore = [], iOnly = []):
+  '''
+    iPath should be <dsn_name>/src/
+    tuple (files, undefined instances)?
+  '''
+  return search(iPath, iIgnore = [], iOnly = [])
+
+
+def getLocToBuildXml(iPathSrcFile):
+  '''
+    Input:  path to file in some dsn;
+    Output: tuple (path to build.xml, dsn_name);
+  '''
+  log.debug('def getLocToBuildXml<= iPathSrcFile='+ iPathSrcFile)
+  if not os.path.exists(iPathSrcFile):
+    log.warning('Can\'t find file: ' + iPathSrcFile)
+    return
+  pathAsList = iPathSrcFile.replace('\\', '/').split('/')
+  if pathAsList.count('src'):
+    index = pathAsList.index('src')
+  else:
+    log.warning('Wrong location for source file: ' + iPathSrcFile)
+    log.warning('Expecting in /src directory')
+    return
+  dsnName = pathAsList[(index-1)] # <dsnName>/src/
+  rootPath = '/'.join(pathAsList[:index])
+  pathBuildXml = '%s/%s' % (rootPath, 'resource')
+  pathFull = pathBuildXml+'/build.xml'
+  if not os.path.exists(pathFull):
+    log.warning('Can\'t find ' + pathFull)
+  return pathBuildXml, dsnName
+
+
+def getDepSrc(iSrc, iIgnore = [], iOnly = []):
+  files = set(iSrc)
+  parsed = {}
+  undef = set()
+  dirBuildXmlPrev = ''
+  dsnNamePrev = ''
+  while(True):
+    parsed, undef = instance.getUndef(files, parsed, undef)
+    files = set()
+    if not undef:
+      break
+    for i in undef: #set of tuples (pathFile, instance)
+      afile = i[0]
+      dirBuildXml, dsnName = getLocToBuildXml(afile)
+      if dirBuildXmlPrev == dirBuildXml and dsnNamePrev == dsnName:
+        continue
+      else:
+        dirBuildXmlPrev, dsnNamePrev = dirBuildXml, dsnName
+      depsDic = build.getDeps(iDsnName = dsnName,
+                              iBuildFile = dirBuildXml+'/build.xml')
+      if not depsDic:
+        log.info('Build.xml read but no dependences for design: '+dsnName)
+        continue
+      deps = depsDic.get(dsnName)
+      if not deps: 
+        log.info('Build.xml read but no dependences for design: '+dsnName)
+        continue
+      # BUGAGA: deps should be a list
+      aset = set(self.getTree(deps, iOnly = ['\.v', '\.vhdl', '\.vm', '\.hdl']))
+      files.update(aset)
+  allSrcFiles = set([parsed[i][0] for i in parsed])     
+  depSrcFiles = allSrcFiles - set(filesMain)
+  log.debug('def getDeps=> depSrcFiles='+str(depSrcFiles))
+  return depSrcFiles 
