@@ -29,6 +29,7 @@ class Test(unittest.TestCase):
 #    print expected
     self.maxDiff = None
     self.assertMultiLineEqual(expected, actual)
+    print 'pyk'
 
 def runTest():
   tests = ['test_main'
@@ -37,5 +38,5 @@ def runTest():
   suite = unittest.TestSuite(map(Test, tests))
   unittest.TextTestRunner(verbosity=2).run(suite)
   
-if __name__ == 'main':
+if __name__ == '__main__':
   unittest.main()

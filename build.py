@@ -7,7 +7,7 @@ def genPredef(iPath, iDsnName):
   '''
   Generates predefined build.xml
   '''
-  log.debug('def genPredef<= iPath='+iPath+' iDsnName='+iDsnName)
+  log.debug('def genPredef IN iPath='+iPath+' iDsnName='+iDsnName)
   buildContent = '''\
   <!--default build-->
   <wsp>
@@ -21,7 +21,7 @@ def genPredef(iPath, iDsnName):
     f = open(pathBuild, 'w')
     f.write(buildContent)
     f.close()
-  log.debug('def genParedef=>')
+  log.debug('def genParedef OUT')
 
 def getDeps(iDsnName = '', iBuildFile = 'build.xml'):
   '''

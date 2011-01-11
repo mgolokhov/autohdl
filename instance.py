@@ -14,7 +14,7 @@ class InstanceException(Exception):
 
 
 def removeComments(ioString):
-  log.debug('def removeComments<= ioString=\n'+ioString)
+  log.debug('def removeComments IN ioString=\n'+ioString)
   withoutQuotedStr = ioString
   for tokens in QuotedString(quoteChar='"').searchString(withoutQuotedStr):
     log.debug('quoted string= ' + tokens[0])
@@ -22,19 +22,19 @@ def removeComments(ioString):
   for tokens in cppStyleComment.searchString(withoutQuotedStr):
     log.debug('comment= ' + tokens[0])
     ioString = ioString.replace(tokens[0], '', 1)
-  log.debug('def removeComments<= ioString=\n'+ioString)
+  log.debug('def removeComment OUT ioString=\n'+ioString)
   return ioString
   
 
 def removeFunc(content):
-  return re.sub(r'function.*endfunction', '', content, flags=re.M|re.S)
+  return re.sub(r'\sfunction\s.*?\sendfunction\s', '', content, flags=re.M|re.S)
 
 
 def readContent(iPathFile):
-    f = open(iPathFile, 'r')
-    content = f.read()
-    f.close() 
-    return content 
+  f = open(iPathFile, 'r')
+  content = f.read()
+  f.close() 
+  return content 
   
   
 def parseFile(iPathFile):
@@ -50,7 +50,7 @@ def parseFile(iPathFile):
     parsed = getInstances(content)
   except InstanceException:
     log.warning("Can't find module body in " + oneFile)
-    continue
+    #continue
   for i in parsed:
      parsed[i].insert(0, iPathFile)
   log.debug('def parseFile OUT parsed='+str(parsed))
@@ -65,7 +65,10 @@ def parseFiles(iPathFiles):
   log.debug('def parseFiles IN iPathFiles='+str(iPathFiles))
   parsed = {}
   for oneFile in iPathFiles:
-    parsedNew = parseFile(oneFile)
+    try:
+      parsedNew = parseFile(oneFile)
+    except IOError:
+      log.warning("Can't open file: "+oneFile)
     parsed.update(parsedNew)
   log.debug('def parseFiles OUT parsed='+str(parsed))
   return parsed
@@ -83,23 +86,6 @@ def formRegexp():
         Optional(params.setResultsName('params')) +\
         ports.setResultsName('ports') + Literal(';')
   return regexp
-
-
-def formInstDic(iTokens, ioInstances):
-  '''
-    Refreshes a dictionary of ioInsrances {key = module name, value = list of instances};
-    Input: tokens after parsing;
-    Inout: ioInstances;
-  '''
-  moduleInst = iTokens.get('moduleInst')
-  if moduleInst == 'module':
-    moduleName = iTokens.get('instName') 
-    ioInstances[moduleName] = []
-  else:  
-    try:
-      ioInstances[moduleName].append(moduleInst)
-    except NameError:
-      InstanceException('Can\'t find module body')
 
 
 def getInstances(iString):
@@ -122,30 +108,21 @@ def getInstances(iString):
         tokens.get('instName'),
         tokens.get('ports')))
     
-    formInstDic(iTokens = tokens, ioInstances = instances)
-
+    moduleInst = tokens.get('moduleInst')
+    if moduleInst == 'module':
+      moduleName = tokens.get('instName') 
+      instances[moduleName] = []
+    else:  
+      try:
+        if moduleInst not in instances[moduleName]:
+          instances[moduleName].append(moduleInst)
+      except NameError:
+        InstanceException('Can\'t find module body')
+      
   log.debug('def getInstances OUT instances='+str(instances))
   return instances
 
     
-def undefFirstCall(iFiles):
-  '''
-  Input: list of full paths;
-  Output: (parsed, undefInstances);
-    parsed - dictionary key=module name, value=[path, instance1, instance2....];
-    undefInstances - set of tuples (path, undefined instance);
-  '''
-  log.debug('def undefFirstCall IN iFiles='+str(iFiles))
-  parsed = parseFiles(iFiles)
-  undefInstances = set()
-  for module in parsed:
-    # exclude path to file
-    for instance in parsed[module][1:]:
-      if not parsed.get(instance):
-        undefInstances.add((parsed[module][0], instance))
-  return parsed, undefInstances
-
-
 def getUndefInst(iParsed):
   '''
     Input: dictionary {key = module name, value = [path to file, instance1, instance2,...]};
@@ -160,31 +137,66 @@ def getUndefInst(iParsed):
   return undefInstances
 
 
-def analyze(iPathFiles, iParsed = {}, iUndefInstances = {}):
-  parsed = parseFiles(iPathFiles)
-  parsed.update(iParsed)
-  undef = getUndefInst(parsed)
+def instTreeDep(iTop, iSrc):
+  '''
+    Input: iTop - parsed top module 
+      a dictionary {key=module name, value=[path, instance1, instance2....]};
+    Output: list of parsed modules
+      [iTop_parsed, inst1_parsed, inst2_parsed,...];
+  '''
+  dep = [iTop]
+  undef = {}
+  for module in dep: # iterate over list of dictionaries
+    moduleParsedVal = module.values()[0]
+    for instance in moduleParsedVal[1:]: # over list of instances
+      try:
+        dep.append({instance:iSrc[instance]})
+      except KeyError:
+        undef[instance] = moduleParsedVal[0] # key=instance, val=path to parsed file
+  log.debug('def instTreeDep OUT dep: '+str(dep)+' undef: '+str(undef))
+  return dep, undef
 
-def getUndef(iFiles, iParsed = {}, iUndefInstances = set()):
-  """
-  iFiles as a list even there is one file;
-  """
-  log.debug('def getUndef IN iFiles='+str(iFiles)+' iParsed='+str(iParsed)+' iUndefInstances='+str(iUndefInstances))
-  parsedNew, undefNew = undefFirstCall(iFiles)
 
-  undefFinally = set()
-  for instance in undefNew:
-    #if parsed - reduce undef set, else just leave
-    if not iParsed.get(instance[1]):
-      undefFinally.add(instance)
+def analyze(iPathFiles, ioParsed = {}, iUndefInst = {}):
+  '''
+    Input: 
+      iPathFiles - list of paths;
+      iUndefInst - dictionary 
+        {key = instance name, value = path to file};
+    Inout: 
+      ioParsed - dictionary 
+        {key = module name, value = [path to file, instance1, instance2,...]};
+    Output:
+      undefInst - dictionary
+        {key = instance name, value = path to file};
+  '''
+  log.debug('def analyze IN iPathFiles='+str(iPathFiles)+' ioParsed'+str(ioParsed)+' iUndefInst'+str(iUndefInst))
+  parsed = parseFiles(iPathFiles=iPathFiles)
+  undefInst = {}
+  # first call
+  if not iUndefInst:
+    undefInst = getUndefInst(parsed)
+    ioParsed.update(parsed)
+    log.debug('def analyze OUT undefInst='+str(undefInst))
+    return undefInst
   
-  iParsed.update(parsedNew)
+  # next calls
+  for undef in iUndefInst:
+    try:
+      top = {undef: parsed[undef]}
+      parsedAll = {}
+      parsedAll.update(parsed)
+      parsedAll.update(ioParsed)
+      dep, undefNew = instTreeDep(top, parsedAll)
+      for d in dep: # update only with necessary instances
+        ioParsed.update(d)  
+      undefInst.update(undefNew)
+    except KeyError:
+      undefInst[undef] = iUndefInst[undef]
+  log.debug('def analyze OUT undefInst='+str(undefInst))
+  return undefInst
+    
 
-  for instance in iUndefInstances: #tuple (pathFile, instanceName)
-    #instance should be parsed
-    if not iParsed.get(instance[1]):
-      log.warning('Undefined instance "' + instance[1] + '" in file: ' + instance[0])
-  log.debug('def getUndef OUT parsed='+str(iParsed)+' undefFinally='+str(undefFinally))    
-  return iParsed, undefFinally
+
 
 

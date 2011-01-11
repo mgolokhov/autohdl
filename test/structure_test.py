@@ -5,7 +5,8 @@ import unittest
 
 
 sys.path.insert(0, '..')
-import structure as s
+#import structure as s
+from structure import *
 from hdlLogger import *
 #consoleHandler.setLevel(logging.DEBUG)
 
@@ -15,55 +16,38 @@ class Tests(unittest.TestCase):
   pathCur = os.getcwd()
   
   def setUp(self):
-#    self.dsn = Design(iDsnName = 'dsn')
-    pass
+    if not os.path.exists('tmp_test_dir'):
+      os.mkdir('tmp_test_dir')
 
   def tearDown(self):
-#    log.setLevel(logging.INFO)
-    if os.path.exists('dsn'): shutil.rmtree('dsn')
-    os.chdir(Tests.pathCur)
-    if sys.path[0] == '../..':
-      sys.path.pop(0)
-      reload(s)
+    if os.path.exists('tmp_test_dir'):
+       shutil.rmtree('tmp_test_dir')
+
     
-  def test_init1(self):
-    if not os.path.exists('dsn4test1'): os.mkdir('dsn4test1')
-    os.chdir('dsn4test1')
-    sys.path.insert(0, '../..')
-    reload(s)
-    dsn = s.Design()
-    expected = '''\
-name: dsn4test1
-dirMain: {0}/src
-\t{0}/TestBench
-fileMain: {0}/resource/implement_default
-\t{0}/resource/synthesis_default
-\t{0}/script/kungfu.py
-fileDep: 
-pathRoot: {0}'''.format(os.getcwd().replace('\\', '/'))
-    self.assertMultiLineEqual(expected, str(dsn))
-    os.chdir('..')
-    if os.path.exists('dsn4test1'): shutil.rmtree('dsn4test1')
+  def test_genDsn(self):
+    dsn = Design(iPath = './tmp_test_dir', iName = 'mega_dsn')
+    path = os.getcwd().replace('\\', '/')
+    self.assertEqual('mega_dsn', dsn.name)
+    self.assertEqual(path+'/tmp_test_dir/mega_dsn', dsn.pathRoot)
+    expectedStructure = set([dsn.pathRoot+'/resource/implement_default',
+                             dsn.pathRoot+'/resource/synthesis_default',
+                             dsn.pathRoot+'/resource/build.xml',
+                             dsn.pathRoot+'/script/kungfu.py'])
+    actualStructure = (set(search(iPath = dsn.pathRoot)))
+    self.assertSetEqual(expectedStructure, actualStructure)
+    
   
-  def test_init2(self):  
-    dsn = s.Design('dsn4test2')
-    expected = '''\
-name: dsn4test2
-dirMain: {0}/src
-\t{0}/TestBench
-fileMain: {0}/resource/implement_default
-\t{0}/resource/synthesis_default
-\t{0}/script/kungfu.py
-fileDep: 
-pathRoot: {0}'''.format(os.getcwd().replace('\\', '/')+'/dsn4test2')
-    self.assertMultiLineEqual(expected, str(dsn))
-    if os.path.exists('dsn4test2'): shutil.rmtree('dsn4test2')
+  def test_genDsn2(self):
+    '''
+    '''
+    pass
+  
+  
+  def test_initDsn(self):
+    dsn1 = Design(iPath = './tmp_test_dir', iName = 'dsn1', iInit = False)
+    dsn2 = Design(iPath = './tmp_test_dir', iName = 'dsn2', iInit = False)
     
-  def test_init3(self):
-    s.Design('dsn4test3')
-    s.Design('dsn4test4')
-    
-    f = open('dsn4test3/src/f1.v', 'w')
+    f = open(dsn1.pathRoot+'/src/f1.v', 'w')
     t = '''
     module f1(input a, output b);
     f2 name1(a, b);
@@ -73,87 +57,31 @@ pathRoot: {0}'''.format(os.getcwd().replace('\\', '/')+'/dsn4test2')
     f.write(t)
     f.close()
     
-    f = open('dsn4test3/resource/build.xml', 'w')
+    f = open(dsn1.pathRoot+'/resource/build.xml', 'w')
     t = '''
     <wsp>
-    <dsn id="dsn4test3">
-    <dep>dsn4test4</dep>
+    <dsn id="dsn1">
+    <dep>dsn2</dep>
     </dsn>
     </wsp>
     '''
     f.write(t)
     f.close()
     
-    f = open('dsn4test4/src/f2.v', 'w')
+    f = open(dsn2.pathRoot+'/src/f2.v', 'w')
     t = '''
     module f2(input a, output b);
     f4 name1(a, b);
     endmodule
     '''
     f.write(t)
-    f.close()    
+    f.close()
     
-    dsn = s.Design('dsn4test3')
+    dsn1.init()
+    print dsn1    
     
-    expected = '''\
-name: dsn4test3
-dirMain: {0}/dsn4test3/TestBench
-fileMain: {0}/dsn4test3/resource/build.xml
-\t{0}/dsn4test3/resource/implement_default
-\t{0}/dsn4test3/resource/synthesis_default
-\t{0}/dsn4test3/script/kungfu.py
-\t{0}/dsn4test3/src/f1.v
-fileDep: {0}/dsn4test4/src/f2.v
-pathRoot: {0}/dsn4test3'''.format(os.getcwd().replace('\\','/'))
-    self.assertMultiLineEqual(expected, str(dsn))
-    if os.path.exists('dsn4test3'): shutil.rmtree('dsn4test3')
-    if os.path.exists('dsn4test4'): shutil.rmtree('dsn4test4')
+
   
-  def test_init4(self):
-    s.Design('dsn4test3')
-    s.Design('dsn4test4')
-    
-    f = open('dsn4test3/src/f1.v', 'w')
-    t = '''
-    module f1(input a, output b);
-    f2 name1(a, b);
-    f3 name2(a, b);
-    endmodule
-    '''
-    f.write(t)
-    f.close()
-    
-    f = open('dsn4test3/resource/build.xml', 'w')
-    t = '''
-    <wsp>
-    <dsn id="dsn4test3">
-    <dep>dsn4test4</dep>
-    </dsn>
-    </wsp>
-    '''
-    f.write(t)
-    f.close()
-    
-    f = open('dsn4test4/src/f2.v', 'w')
-    t = '''
-    module f2(input a, output b);
-    f4 name1(a, b);
-    endmodule
-    '''
-    f.write(t)
-    f.close()    
-    
-    dsn = s.Design('dsn4test3', iOnly = ['src'])
-    
-    expected = '''\
-name: dsn4test3
-dirMain: 
-fileMain: {0}/dsn4test3/src/f1.v
-fileDep: {0}/dsn4test4/src/f2.v
-pathRoot: {0}/dsn4test3'''.format(os.getcwd().replace('\\','/'))
-    self.assertMultiLineEqual(expected, str(dsn))
-    if os.path.exists('dsn4test3'): shutil.rmtree('dsn4test3')
-    if os.path.exists('dsn4test4'): shutil.rmtree('dsn4test4')
     
     
   def test_filter(self):
@@ -187,16 +115,7 @@ pathRoot: {0}/dsn4test3'''.format(os.getcwd().replace('\\','/'))
     self.assertItemsEqual(self.dsn.filter(iFiles = t, iOnly = ['dir',], iIgnore = ['f2']),
                           expected)
     
-  def genTree(self, iTreeStruct):
-    for i in iTreeStruct:
-      head, tail = os.path.split(i)
-      
-      if not os.path.exists(os.getcwd() + head):
-        os.makedirs(os.getcwd() + head)
-        
-      if tail:
-        open(os.getcwd()+i, 'w').close()
-    
+  
   def test_initMain(self):
 #    log.setLevel(logging.DEBUG)
     prjStruct = ['/project/dsn1/f1.v',
@@ -280,26 +199,6 @@ pathRoot: {0}/dsn4test3'''.format(os.getcwd().replace('\\','/'))
     shutil.rmtree('resource')
     shutil.rmtree('src')
     
-  def test_getTree(self):
-    tree = ['/project/dsn1/f1.v',
-            '/project/dsn1/f2.v',
-            '/project/dsn2/f1.v',
-            '/project/dsn2/f2.v',
-            '/project/dsn2/f2.fake',
-            '/project/dsn3/',
-            '/project/dsn4/f666',
-            ]
-    self.genTree(tree)
-    pathDeps = [os.getcwd()+'/project']
-    expected = ['G:/repo/git/autohdl/test/project/dsn1/f1.v',
-                'G:/repo/git/autohdl/test/project/dsn1/f2.v',
-                'G:/repo/git/autohdl/test/project/dsn2/f1.v',
-                'G:/repo/git/autohdl/test/project/dsn2/f2.v']
-    self.assertEqual(expected,
-                     self.dsn.getTree(pathDeps,
-                                      iIgnore = ['dsn4'],
-                                      iOnly = ['\.v', '\.vhdl', '\.vm', '\.hdl']))
-    shutil.rmtree('project')
     
   def test_getDeps(self):
     os.mkdir('myWsp')
@@ -353,7 +252,8 @@ def runTests():
 #           'test_init2',
 #           'test_init3',
 #           'test_init4',
-           'test_search'
+           #'test_genDsn',
+           'test_initDsn'
           ]
 
   suite = unittest.TestSuite(map(Tests, tests))
@@ -369,4 +269,9 @@ if __name__ == '__main__':
 #  unittest.TextTestRunner().run(suite)
   runTests()
 
+  
+  
+  
+  
+  
   
