@@ -38,9 +38,10 @@ class Tests(unittest.TestCase):
     
   
   def test_genDsn2(self):
-    '''
-    '''
-    pass
+    dsn = Design(iPath = '..', iInit = False, iGen = False)
+    self.assertEqual('autohdl', dsn.name)
+    expectedPath = (os.path.abspath(os.getcwd()+'/..')).replace('\\', '/')
+    self.assertEqual(expectedPath, dsn.pathRoot)
   
   
   def test_initDsn(self):
@@ -78,7 +79,7 @@ class Tests(unittest.TestCase):
     f.close()
     
     dsn1.init()
-    print dsn1    
+#    print dsn1    
     
 
   
@@ -87,32 +88,32 @@ class Tests(unittest.TestCase):
   def test_filter(self):
     t = ['']
     expected = ['']
-    self.assertItemsEqual(self.dsn.filter(t), expected)
+    self.assertItemsEqual(filter(t), expected)
 
     t = ['just_one_file']
     expected = ['just_one_file']
-    self.assertItemsEqual(self.dsn.filter(t), expected)
+    self.assertItemsEqual(filter(t), expected)
     
     t = ['f1', 'f2', 'f3']
     expected = ['f1', 'f2', 'f3']
-    self.assertItemsEqual(self.dsn.filter(t), expected)
+    self.assertItemsEqual(filter(t), expected)
    
     t = ['f1', 'f2', 'f3']
     expected = ['f1', 'f3']
-    self.assertItemsEqual(self.dsn.filter(iFiles = t, iIgnore = ['f2']), expected)
+    self.assertItemsEqual(filter(iFiles = t, iIgnore = ['f2']), expected)
     
     t = ['f1', 'f2', 'f3']
     expected = ['f2', 'f3']
-    self.assertItemsEqual(self.dsn.filter(iFiles = t, iOnly = ['f2', 'f3']), expected)
+    self.assertItemsEqual(filter(iFiles = t, iOnly = ['f2', 'f3']), expected)
 
     t = ['f1', 'f2', 'f3']
     expected = ['f3']
-    self.assertItemsEqual(self.dsn.filter(iFiles = t, iOnly = ['f2', 'f3'], iIgnore = ['f2']),
+    self.assertItemsEqual(filter(iFiles = t, iOnly = ['f2', 'f3'], iIgnore = ['f2']),
                           expected)
 
     t = ['dir1/f1', 'dir2/f2', 'dir3/f3', 'd4/f4']
     expected = ['dir1/f1', 'dir3/f3']
-    self.assertItemsEqual(self.dsn.filter(iFiles = t, iOnly = ['dir',], iIgnore = ['f2']),
+    self.assertItemsEqual(filter(iFiles = t, iOnly = ['dir',], iIgnore = ['f2']),
                           expected)
     
   
@@ -130,7 +131,7 @@ class Tests(unittest.TestCase):
     self.genTree(prjStruct)
     os.chdir('project/dsn1')
     dsn = Design()
-    fileMain, dirMain = self.dsn.initMain()
+    fileMain, dirMain = self.initMain()
     actual = fileMain + fileMain
     self.assertItemsEqual(expected, actual)
     shutil.rmtree('./project')
@@ -191,7 +192,7 @@ class Tests(unittest.TestCase):
     f.close()
     f = open('resource/build.xml', 'w')
     f.close()
-    path, dsnName = self.dsn.getLocToBuildXml(os.getcwd()+'/src/f1')
+    path, dsnName = self.getLocToBuildXml(os.getcwd()+'/src/f1')
     expectedPath = 'G:/repo/git/autohdl/test/resource'
     expectedDsnName = 'test'
     self.assertEqual(expectedPath, path)
@@ -248,12 +249,11 @@ class Tests(unittest.TestCase):
 
 def runTests():
   tests = [
-#           'test_init1',
-#           'test_init2',
-#           'test_init3',
-#           'test_init4',
-           #'test_genDsn',
-           'test_initDsn'
+
+           'test_genDsn',
+           'test_genDsn2',
+           'test_initDsn',
+           'test_filter'
           ]
 
   suite = unittest.TestSuite(map(Tests, tests))
@@ -261,12 +261,6 @@ def runTests():
 
 if __name__ == '__main__':
 #  unittest.main()
-#  suite = unittest.TestSuite()
-#  suite.addTest(Tests('test_init1'))
-#  suite.addTest(Tests('test_init2'))
-#  suite.addTest(Tests('test_init3'))
-#  suite.addTest(Tests('test_init4'))
-#  unittest.TextTestRunner().run(suite)
   runTests()
 
   

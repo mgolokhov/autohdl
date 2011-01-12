@@ -63,22 +63,23 @@ def merge(ioSrcFresh, ioScriptContent, iTopModule):
 
 
 def getSrcFromFileSys(iDsn):
-  log.debug('def getSrcFromFileSys=> iDsn=\n'+str(iDsn))
-  fileMain = iDsn.getFileMain(iOnly = ['src'])
-  fileDep = iDsn.getDeps()
-  log.debug('deps:='+str(fileDep))
-  return (fileMain + list(fileDep))  
+  log.debug('def getSrcFromFileSys IN iDsn=\n'+str(iDsn))
+  filesMain = structure.search(iPath = iDsn.pathRoot, iOnly = ['/src/'])
+  filesDep = structure.getDepSrc(iSrc = filesMain)
+  files = filesMain + list(filesDep)
+  log.debug('getSrcFromFileSys OUT files'+str(files))
+  return files  
 
   
 def genScript(iTopModule = ''):
-  log.debug('def genScript=> iTopModule='+iTopModule)
+  log.debug('def genScript IN iTopModule='+iTopModule)
   pathCur = os.getcwd()
   if os.path.split(pathCur)[1] != 'script':
     msg = 'Expected current directory: script; Got: ' + pathCur
     log.error(msg)
     raise SynthesisException(msg)
   # get src files, regenerate structure
-  dsn = structure.Design('..')
+  dsn = structure.Design(iPath = '..', iGen = True, iInit = False)
   
   pathSynthesisPrj = '%s/%s' % (pathCur,'synthesis.prj')
   if os.path.exists(pathSynthesisPrj):
@@ -100,8 +101,8 @@ def genScript(iTopModule = ''):
   f.close
 
 
-def parseLog(path_this_script):
-  log.debug('def parseLog=> path_this_script='+path_this_script)
+def parseLog(path_this_script, iSilent = False):
+  log.debug('def parseLog IN path_this_script='+path_this_script)
   f = open(path_this_script + '/synthesis.prj', 'r')
   scriptContent = f.read()
   match = re.search(r'-top_module\W+(\w+)', scriptContent)
@@ -113,19 +114,19 @@ def parseLog(path_this_script):
     f = open(logFile, 'r')
     res = f.read()
     errors = res.count('@E:')
-    warnings = res.count('@W:')
+    warningsAll = res.count('@W:')
     ignoreWarnings = res.count('Initial value is not supported on state machine state')
-    if errors or (warnings - ignoreWarnings):
-      print >> sys.stderr , 'Errors: ', errors
-      print >> sys.stderr, 'Warnings: ', warnings
-      subprocess.Popen(['notepad', logFile])
-    else:
-      print 'Errors: ', errors
-      print 'Warnings: ', warnings
-    print 'see log in ' + logFile
-  
+    warnings = warningsAll - ignoreWarnings
     if errors:
-      sys.exit()
+      log.error('Synthesis ended with errors! Num: '+str(errors))
+    elif warnings:
+      log.warning('Synthesis ended with warnings! Num: '+str(warnings))
+    else:
+      log.info('Errors: '+str(errors)+'; Warnings: '+ str(warnings))
+      
+    if not iSilent and (errors or warnings):
+      subprocess.Popen(['notepad', logFile])
+    log.info('See logfile: '+logFile)
     
   return logFile 
 
@@ -169,18 +170,19 @@ def runTool(iMode, iPathCur):
     subprocess.call([synplify, synthesisScript])
     return #doesn't need to parse log
   else:
-    print >> sys.stderr, 'no such tool for synthesis'
+    log.error('No such tool for synthesis: ' + iMode)
         
-  print 'SYNTHESIS DONE'  
   return parseLog(iPathCur)
   
 
 
 def run(iMode = 'synplify_batch', iTopModule = ''):
-  log.debug('def run=> iMode='+iMode+' iTopModule='+iTopModule)
+  log.debug('def run IN iMode='+iMode+' iTopModule='+iTopModule)
   pathCur = os.getcwd()
   genScript(iTopModule)
+  # changing current location to synthesis directory
   preparation(pathCur)
   logFile = runTool(iMode = iMode, iPathCur = pathCur)
   os.chdir(pathCur)
+  log.info('Synthesis done!')  
   return logFile
