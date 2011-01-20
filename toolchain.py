@@ -1,12 +1,12 @@
 from xml.dom import minidom
+import xml
 import os
 import sys
 import string
 from hdlLogger import *
-
   
 
-tools = {'avhdl'    : {'gui'   : 'avhdl.exe',
+gTools = {'avhdl'    : {'gui'   : 'avhdl.exe',
                        'batch' : None,
                        'path'  : ['Program Files/Aldec/', 'Aldec/']},
          'ise'      : {'gui'   : 'ise.exe',
@@ -17,153 +17,178 @@ tools = {'avhdl'    : {'gui'   : 'avhdl.exe',
                        'path'  : ['Program Files/Synplicity/', 'Synplicity/']}
          }
   
+
+class ToolchainException(Exception):
+  def __init__(self, iString):
+    self.string = iString
+  def __str__(self):
+    return self.string
     
-    
-def appendTool(tag):
-  log.debug('def appendTool<= tag='+tag)
-  # search on hdd
-  if not trySearch(tag):
-    return # unsuccessful
-  #if xml exists append
-  #  else create new
-  if os.path.exists(path_toolchain_xml):
-    dom = minidom.parse(path_toolchain_xml)
-  else:
+
+def refreshXml(iTag, path, iDirToolchainXml):
+  log.debug('def refreshXml IN iTag='+iTag+'; path='+path)
+  fileToolchainXml = iDirToolchainXml + 'toolchain.xml'
+  
+  if not os.path.exists(iDirToolchainXml):
+    os.mkdir(iDirToolchainXml)      
+  
+  try:
+    if os.path.exists(fileToolchainXml):
+      dom = minidom.parse(fileToolchainXml)
+    else:
+      log.info('Generating new file: ' + fileToolchainXml)
+      dom = minidom.parseString('<toolchain></toolchain>')      
+  except xml.parsers.expat.ExpatError as e:
+    log.error('Wrong xml format! file='+fileToolchainXml+'; details='+str(e))
+    log.info('Generating new file: ' + fileToolchainXml)
     dom = minidom.parseString('<toolchain></toolchain>')
     
   # BUGAGA: append to head of nodes
-  x = dom.createElement(tag)
+  x = dom.createElement(iTag)
   txt = dom.createTextNode(path) 
   x.appendChild(txt) 
   dom.firstChild.appendChild(x)
-  
-  f = open(path_toolchain_xml, 'w')
-  f.write(dom.toxml())
-  f.close() 
+
+  try:
+    f = open(fileToolchainXml, 'w')
+    f.write(dom.toxml())
+  except IOError as e:  
+    log.warning(e)
+  finally:
+    f.close() 
   
 
-def appendToolToXml(tag, path):
-  pathPredef = os.getcwd() + '/../resource'
-  if not os.path.exists(pathPredef):
-    log.warning('Can\'t find: ' + pathPredef + '; as the result no toolchain.xml generation...')
-    return  
-  
-  pathToolchainXml = os.getcwd() + '/../resource/toolchain.xml'
-  if not os.path.exists(pathToolchainXml):
-    log.info('Generating new file: ' + pathToolchainXml)
-    dom = minidom.parseString('<toolchain></toolchain>')
-  else:
-    dom = minidom.parse(pathToolchainXml)
-  
-  # BUGAGA: append to head of nodes
-  x = dom.createElement(tag)
-  txt = dom.createTextNode(path) 
-  x.appendChild(txt) 
-  dom.firstChild.appendChild(x)
-  
-  f = open(pathToolchainXml, 'w')
-  f.write(dom.toxml())
-  f.close() 
-  
-
-def parseXml(tag, pathToolchainXml):
-  log.debug('def getPathFromXml<= tag'+str(tag)+' pathToolchainXml='+pathToolchainXml)
-  dom = minidom.parse(pathToolchainXml)
-  path = dom.getElementsByTagName(tag)
-  for i in path:
-    if os.path.exists(i.childNodes[0].toxml().strip()):
-      return i.childNodes[0].toxml().strip()
+def search(exe_name, path):
+  log.debug('def search IN exe_name='+exe_name+' path='+path)
+  for root, dirs, files in os.walk(path): #@UnusedVariable
+    for i in files:
+      log.info('Searching: '+root+'/'+i)
+      if i == exe_name:
+        path = '/'.join([root.replace('\\','/'), i])
+        log.debug('def search OUT path='+path)
+        return path
 
 
-def getPathFromXml(tag):
+def getDrivesList():
+  log.debug('def getDrivesList IN')
+  drives_list = []
+  for i in string.ascii_uppercase:
+    if os.path.exists(i+':/'):
+      drives_list.append(i+':/')
+  log.debug('def getDrivesList OUT drives_list='+str(drives_list))
+  return drives_list
+
+
+def searchTool(iTag):
   '''
-  Precondition: predefined design structure, current directory - /script;
   '''
-  log.debug('def getPathFromXml<= tag='+tag)
-  pathToolchainXml = os.getcwd() + '/../resource/toolchain.xml'
-  if not os.path.exists(pathToolchainXml):
-    log.info('No file: ' + pathToolchainXml)  
-    return
-  path = parseXml(tag, pathToolchainXml)
-  return path
-
-
-def searchTool(tag):
-  global tools
-  tool, mode = tag.split('_')
-  toolExe = tools[tool][mode]
-  if not toolExe:
-    return None
-    
-  toolPaths = tools[tool]['path']
-  drives = getDrivesList() # BUGAGA: win specific
+  log.debug('def searchTool IN iTag='+iTag)
+  global gTools
+  tool, mode = iTag.split('_')
+  toolExe = gTools[tool][mode]
+  toolPaths = gTools[tool]['path']
+  drives = getDrivesList() # BUGAGA: win specific, cd-drive
+  log.info('Searching tool: '+toolExe)
   #first shoot
   for drive in drives:
     for toolPath in toolPaths:
       path = search(toolExe, drive+'/'+toolPath)
       if path:
-        appendToolToXml(tag, path)
         return path
   #heavy artillery    
   for drive in drives:
     path = search(toolExe, drive)
     if path:
-      appendToolToXml(tag, path)
       return path
-  
+  log.error("Can't find tool in system! executable="+toolExe+'; tag='+iTag)
+#
+# Trying to get info from configure file
+#
+def parseXml(iTag, iPathToolchainXml):
+  log.debug('def parseXml IN iTag'+str(iTag)+' iPathToolchainXml='+iPathToolchainXml)
+  try:
+    dom = minidom.parse(iPathToolchainXml)
+  except xml.parsers.expat.ExpatError as e:
+    log.error('Wrong xml format! file='+iPathToolchainXml+'; details='+str(e))
+    return
+  path = dom.getElementsByTagName(iTag)
+  for i in path:
+    # BUGAGA: first valid occurrence, should be checking latest version
+    validPath = i.childNodes[0].toxml().strip()
+    if os.path.exists(validPath):
+      log.info('Got path from xml='+iPathToolchainXml+'; tag='+iTag)
+      log.debug('def parseXml OUT validPath='+validPath)
+      return validPath
 
-def getPath(tag):
+
+def getPathFromXml(iTag, iDirToolchainXml):
   '''
-  Input: tag - toolName_mode, (e.g. ise_gui, ise_batch);
-  Output: path to that tool; 
+  Input: iTag - Tool Name mode, (e.g. ise_gui, ise_batch);
+  Precondition: 
+    predefined design structure;
+    current directory - <design_name>/script;
   '''
-  log.debug('def getPath<= tag='+str(tag))
-  
-  path = getPathFromXml(tag)
-  
-  if not path:
-    path = searchTool(tag) 
-  
+  log.debug('def getPathFromXml IN iTag='+iTag)
+  pathGlobalXml = iDirToolchainXml + 'toolchain.xml'
+  if not os.path.exists(pathGlobalXml):
+    log.info("Can't find configure file: " + pathGlobalXml)  
+    return
+  path = parseXml(iTag, pathGlobalXml)
+  log.debug('def getPathFromXml OUT path='+str(path))
   return path
 
 
+def validateTag(iTag):
+  '''
+  Checks tag is registered.
+  Invalid tag - throws exceptions.
+  '''
+  path = os.getcwd()
+  global gTools
+  res = iTag.split('_')
+  if len(res) != 2:
+    raise ToolchainException('Invalid tag: '+iTag)
+  tool, mode = res
+  toolExe = None
+  try:
+    toolExe = gTools[tool][mode]
+  except KeyError, e:
+    # get exception value from tuple (exc_type, exc_value, exc_traceback)
+    raise ToolchainException("Can't find key in database: "+str(sys.exc_info()[1])+' tag: '+iTag)
+  if not toolExe:
+    raise ToolchainException("No such tool in database; given tag: "+iTag)
 
 
-
-def search(exe_name, path):
-  log.debug('def search<= exe_name='+exe_name+' path='+path)
-  for root, dirs, files in os.walk(path): #@UnusedVariable
-    for i in files:
-#      print root+'/'+i
-      if i == exe_name:
-        return '/'.join([root.replace('\\','/'), i])
-
-
-def getDrivesList():
-  log.debug('def getDrivesList<=')
-  drives_list = []
-  for i in string.ascii_uppercase:
-    if os.path.exists(i+':/'):
-      drives_list.append(i+':/')
-  log.debug('def getDrivesList=> drives_list='+str(drives_list))
-  return drives_list
-
-
+  
+def getPath(iTag):
+  '''
+  Input:  iTag - Tool Name mode, (e.g. ise_gui, ise_batch);
+  Output: path to that tool; 
+  Throws exception if there is no path associated with a tool;
+  '''
+  log.debug('def getPath IN iTag='+str(iTag))
+  path = None
+  dirToolchainXml = sys.prefix + '/Lib/site-packages/autohdl_cfg/'
+  try:
+    validateTag(iTag)
+    path = getPathFromXml(iTag = iTag, iDirToolchainXml = dirToolchainXml)
+    if not path:
+      path = os.path.abspath(searchTool(iTag)).replace('\\','/')
+      if not path:
+  #      log.error("Can't find tool in system. tag: "+iTag)
+        raise ToolchainException("Can't find tool in system. tag: "+iTag)
+      refreshXml(iTag = iTag, path = path, iDirToolchainXml = dirToolchainXml)
+  except ToolchainException as e:
+    log.error(e)
+    raise e
+  log.debug('def getPath OUT path='+str(path)) 
+  return path
 
 if __name__ == '__main__':
-  
-
-  avhdl_batch    = getPath('avhdl_batch')
-  avhdl_gui      = getPath('avhdl_gui')
-  synplify_gui   = getPath('synplify_gui')
-  synplify_batch = getPath('synplify_batch')
-  ise_gui        = getPath('ise_gui')
-  ise_batch      = getPath('ise_batch')
-  print 'avhdl_batch ', avhdl_batch
-  print 'avhdl_gui ', avhdl_gui
-  print 'synplify_gui ', synplify_gui
-  print 'synplify_batch ', synplify_batch
-  print 'ise_gui ', ise_gui
-  print 'ise_batch ', ise_batch
-  
+  getPath('avhdl_gui')
+#  getPath('avhdl_batch')
+  getPath('synplify_batch')
+  getPath('synplify_gui')
+  getPath('ise_gui')
+  getPath('ise_batch')
 

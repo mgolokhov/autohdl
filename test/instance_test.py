@@ -1,10 +1,12 @@
-import sys, os, shutil
+import sys
+import os
+import shutil
 import unittest
-sys.path.append('..')
-from instance import *
 
+sys.path.insert(0, '..')
+from instance import *
 from hdlLogger import *
-#log.setLevel(logging.DEBUG)
+logging.disable(logging.ERROR)
 
 
 class Test(unittest.TestCase):

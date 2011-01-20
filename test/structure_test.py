@@ -5,16 +5,12 @@ import unittest
 
 
 sys.path.insert(0, '..')
-#import structure as s
 from structure import *
 from hdlLogger import *
-#consoleHandler.setLevel(logging.DEBUG)
-
-
+logging.disable(logging.ERROR)
 
 class Tests(unittest.TestCase):
-  pathCur = os.getcwd()
-  
+ 
   def setUp(self):
     if not os.path.exists('tmp_test_dir'):
       os.mkdir('tmp_test_dir')

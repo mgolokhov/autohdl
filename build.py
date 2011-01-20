@@ -12,10 +12,16 @@ def genPredef(iPath, iDsnName):
   <!--default build-->
   <wsp>
     <dsn id="{DESIGN_NAME}">
-      <dep>{DEPENDENCES}</dep> 
+      <dep>{DEP}</dep>
+      <synthesis_ext>{SYN_EXT}</synthesis_ext>
+      <implement_ext>{IMPL_EXT}</implement_ext>
     </dsn>
   </wsp>
-  '''.format(DESIGN_NAME=iDsnName, DEPENDENCES='')
+  '''.format(DESIGN_NAME=iDsnName,
+             DEP='',
+             SYN_EXT = 'v; vm; vhd; vhdl',
+             IMPL_EXT = 'ucf; edf; ndf; ngc'
+             )
   pathBuild = iPath+'/build.xml'
   if not os.path.exists(pathBuild):
     f = open(pathBuild, 'w')
@@ -27,14 +33,14 @@ def getDeps(iDsnName = '', iBuildFile = 'build.xml'):
   '''
   Returns: dictionary key=dsnName, value=list of dependences as full path;
   '''
-  log.debug('def getDeps<= iDsnName='+iDsnName+' iBuildFile='+iBuildFile)
+  log.debug('def getDeps IN iDsnName='+iDsnName+' iBuildFile='+iBuildFile)
   if not os.path.exists(iBuildFile):
-    log.warning('Can\'t find file: ' + iBuildFile)
+    log.warning("Can't find file: " + iBuildFile)
     return
   
   pathBuildFile = os.path.abspath(iBuildFile).replace('\\','/')
   pathDsn = '/'.join(pathBuildFile.split('/')[:-3])
-  
+
   dom = minidom.parse(pathBuildFile)
   dsnNodes = dom.firstChild.childNodes
   dependences = {}
@@ -54,9 +60,27 @@ def getDeps(iDsnName = '', iBuildFile = 'build.xml'):
       dependences[dsnName] = dsnDep
       if iDsnName == dsnName:
         break
-  log.debug('def getDeps=> dependences='+str(dependences))
+  log.debug('def getDeps OUT dependences='+str(dependences))
   return dependences
 
 
-
-
+def getSrcExtensions(iTag, iBuildFile='../resource/build.xml'):
+  '''
+  Input: tag (e.g. synthesis_ext, implement_ext), path to buildXml;
+  Output: list of extensions (e.g. [.v, .vhdl, .vm])
+  Tag example: <synthesis_ext>v;vhdl;vm</synthesis_ext>
+  '''
+  log.debug('def getSrc IN iTag='+iTag+'; iBuildFile='+iBuildFile)
+  iBuildFile = os.path.abspath(iBuildFile)
+  if not os.path.exists(iBuildFile):
+    log.warning("Can't find file: "+iBuildFile)
+    return  
+  dom = minidom.parse(iBuildFile)
+  extensions = dom.getElementsByTagName(iTag)
+  if not extensions:
+    log.warning("Can't find tag="+iTag+'; in file='+iBuildFile)
+    return
+  extensions = extensions[0].childNodes[0].toxml().strip().strip(';')
+  extensions = [i.strip() for i in extensions.split(';')]
+  return extensions
+  

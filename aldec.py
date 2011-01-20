@@ -247,7 +247,7 @@ def tb(iTopModule, iClean = False):
   '''
   Runs TestBench design.
   '''
-  log.debug('def tb: iTopModule<='+iTopModule+' iClean='+str(iClean))
+  log.debug('def tb: iTopModule IN'+iTopModule+' iClean='+str(iClean))
   dsn = structure.Design(iPath = '..')
   log.debug('dsn=\n'+str(dsn))
   path = getPathTmp(dsn)
@@ -259,6 +259,6 @@ def tb(iTopModule, iClean = False):
     
   avhdl_gui = toolchain.getPath('avhdl_gui')
   subprocess.Popen([avhdl_gui, getPathTmp(dsn) +'/'+ iTopModule +'.tcl'])
-  log.debug('def tb=>')
+  log.debug('def tb OUT')
   
   

@@ -6,6 +6,7 @@ import subprocess
 
 import structure
 import toolchain
+import build
 
 from hdlLogger import *
 
@@ -39,8 +40,9 @@ def synchTopModule(ioScriptContent, iTopModule, iNum, iLine):
 def synchResultFile(ioScriptContent, iTopModule, iNum, iLine):
   match = re.search(r'project\s+?-result_file\s+"(.*?)"', iLine)
   if match:
-    resultFile = '%s/%s/%s%s' % (os.getcwd(), '../synthesis', iTopModule, '.edf')
-    resultFile = os.path.abspath(resultFile).replace('\\','/')
+#    resultFile = '%s/%s/%s%s' % (os.getcwd(), '../synthesis', iTopModule, '.edf')
+#    resultFile = os.path.abspath(resultFile).replace('\\','/')
+    resultFile = '../synthesis/'+iTopModule+'.edf'
     ioScriptContent[iNum] = 'project -result_file "{0}"'.format(resultFile)
     return True
   
@@ -64,7 +66,14 @@ def merge(ioSrcFresh, ioScriptContent, iTopModule):
 
 def getSrcFromFileSys(iDsn):
   log.debug('def getSrcFromFileSys IN iDsn=\n'+str(iDsn))
-  filesMain = structure.search(iPath = iDsn.pathRoot, iOnly = ['/src/'])
+  SYN_EXT = ['v', 'vm', 'vhd', 'vhdl']
+  ext = []
+  ext = build.getSrcExtensions(iTag = 'synthesis_ext')
+  if not ext:
+    log.warning("Can't get extensions from build.xml. Using default="+str(SYN_EXT))
+    ext = SYN_EXT
+  only = ['/src/.*?.'+i+'$' for i in ext]
+  filesMain = structure.search(iPath = iDsn.pathRoot, iOnly = only)
   filesDep = structure.getDepSrc(iSrc = filesMain)
   files = filesMain + list(filesDep)
   log.debug('getSrcFromFileSys OUT files'+str(files))
@@ -83,10 +92,10 @@ def genScript(iTopModule = ''):
   
   pathSynthesisPrj = '%s/%s' % (pathCur,'synthesis.prj')
   if os.path.exists(pathSynthesisPrj):
-    log.info('Refreshing existing script')
+    log.info('Refreshing existing synthesis script')
     f = open(pathSynthesisPrj, 'r')
   else:  
-    log.info('Generating default script')
+    log.info('Generating from default synthesis script')
     f = open(pathCur+'/../resource/synthesis_default', 'r')
   scriptContent = f.read()
   f.close()

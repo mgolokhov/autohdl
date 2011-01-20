@@ -8,6 +8,7 @@ import filecmp
 import toolchain
 import synthesis
 import structure
+import build
 from hdlLogger import *
 
 
@@ -132,7 +133,12 @@ def refreshSrcInContent(iContent, iSrc):
       contentImplNewList.insert(lastIndex+1, i[0])
       
   contentImplNew = '\n'.join(contentImplNewList)    
-  return contentImplNew    
+  return contentImplNew  
+
+
+def removeComments(iScriptContentSyn):
+  return re.sub('#.*', '', iScriptContentSyn)
+  
 
 def refreshParams(iScriptContentSyn, iScriptContentImpl, iDictionary):
   '''
@@ -140,6 +146,7 @@ def refreshParams(iScriptContentSyn, iScriptContentImpl, iDictionary):
   '''
   log.debug('def refreshParams=> iScriptContentSyn=\n'+iScriptContentSyn+'iScriptContentImpl=\n'+iScriptContentImpl+'iDictionary='+str(iDictionary))
   scriptContentImplNew = iScriptContentImpl
+  iScriptContentSyn = removeComments(iScriptContentSyn)
   for key in iDictionary:
     paramNew = getParam(key, iScriptContentSyn)
     paramOld = getParam(iDictionary[key], iScriptContentImpl)
@@ -194,17 +201,22 @@ def getSrcFromFileSys():
   '''
   Returns edf, ndf, ucf files by filter
   '''
-  log.debug('def getSrcFromFileSys<=')
-#  dsn = structure.Design('..')
+  log.debug('def getSrcFromFileSys IN')
   scriptContentSyn = getContentSyn()
   topModule = getParam('set_option -top_module', scriptContentSyn)
-  topRes = [topModule[1].strip('"')+'\.edf', topModule[1].strip('"')+'\.ucf']
-  cfg = ['src.*?\.edf', 'src.*?\.ndf', 'src.*?\.ngc'] + topRes
-#  src = dsn.getFileMain(iOnly = cfg)
-  src = structure.search(iPath = '..', iOnly = cfg)
-  print '\n'.join(src)
+  topModuleName = topModule[1].strip('"')
+  topRes = [topModuleName+'\.edf', topModuleName+'\.ucf']
+  IMPL_EXT = ['ucf', 'edf', 'ndf', 'ngc']
+  ext = []
+  ext = build.getSrcExtensions(iTag='implement_ext')
+  if not ext:
+    log.warning("Can't get extensions from build.xml. Using default="+str(IMPL_EXT))
+    ext = IMPL_EXT
+  ext = ['/src/.*?'+i+'$' for i in ext]
+  only = ext + topRes
+  src = structure.search(iPath = '..', iOnly = only)
   src = [(os.path.abspath(i)).replace('\\', '/') for i in src]
-  log.debug('def getSrcFromFileSys=> src='+str(src))
+  log.debug('def getSrcFromFileSys OUT src='+str(src))
   return src
 
 

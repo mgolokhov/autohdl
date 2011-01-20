@@ -16,6 +16,7 @@
   
   #map options
   set_option -top_module "{top_module}"
+  set_option -include_path "."
   set_option -disable_io_insertion false
   set_option -frequency auto
   set_option -pipe 1
