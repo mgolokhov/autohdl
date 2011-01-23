@@ -38,7 +38,7 @@ if os.name == 'nt':
   if os.path.exists(path): shutil.rmtree(path)
 
 setup(name='autohdl',
-      version='2.1',
+      version='2.3',
       description='Automatization Utilities',
       author='Max Golohov',
       author_email='hex_wer@mail.ru',

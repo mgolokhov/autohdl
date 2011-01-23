@@ -66,13 +66,11 @@ def merge(ioSrcFresh, ioScriptContent, iTopModule):
 
 def getSrcFromFileSys(iDsn):
   log.debug('def getSrcFromFileSys IN iDsn=\n'+str(iDsn))
-  SYN_EXT = ['v', 'vm', 'vhd', 'vhdl']
-  ext = []
   ext = build.getSrcExtensions(iTag = 'synthesis_ext')
-  if not ext:
-    log.warning("Can't get extensions from build.xml. Using default="+str(SYN_EXT))
-    ext = SYN_EXT
-  only = ['/src/.*?.'+i+'$' for i in ext]
+  if ext:
+    only = ['/src/.*?.'+i+'$' for i in ext]
+  else:
+    only = [] # all files
   filesMain = structure.search(iPath = iDsn.pathRoot, iOnly = only)
   filesDep = structure.getDepSrc(iSrc = filesMain)
   files = filesMain + list(filesDep)

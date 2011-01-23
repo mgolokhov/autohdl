@@ -205,20 +205,16 @@ def getSrcFromFileSys():
   scriptContentSyn = getContentSyn()
   topModule = getParam('set_option -top_module', scriptContentSyn)
   topModuleName = topModule[1].strip('"')
+  # edf in synthesis folder
   topRes = [topModuleName+'\.edf', topModuleName+'\.ucf']
-  IMPL_EXT = ['ucf', 'edf', 'ndf', 'ngc']
-  ext = []
   ext = build.getSrcExtensions(iTag='implement_ext')
-  if not ext:
-    log.warning("Can't get extensions from build.xml. Using default="+str(IMPL_EXT))
-    ext = IMPL_EXT
-  ext = ['/src/.*?'+i+'$' for i in ext]
+  if ext:
+    ext = ['/src/.*?'+i+'$' for i in ext]
   only = ext + topRes
   src = structure.search(iPath = '..', iOnly = only)
   src = [(os.path.abspath(i)).replace('\\', '/') for i in src]
   log.debug('def getSrcFromFileSys OUT src='+str(src))
   return src
-
 
 
 def getSrcFromScript(iScriptContent):

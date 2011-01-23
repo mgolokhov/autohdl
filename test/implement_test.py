@@ -4,6 +4,7 @@ sys.path.append('..')
 from implement import *
 
 class Tests(unittest.TestCase):
+  @unittest.skip("BUGAGA: unfinished")
   def test_mergeSrc(self):
     srcFileSys = ['fileSame1',
                   'fileSame2',
@@ -41,6 +42,7 @@ class Tests(unittest.TestCase):
     actual = mergeSrc(srcFileSys, srcScript) 
     self.assertItemsEqual(expected, actual)
     
+  @unittest.skip("BUGAGA: unfinished")
   def test_getPureFile(self):
     t = r'xfile add "asss_/asd/dasds\dasds/sads343"   # wassup'
     expected = 'asss_/asd/dasds\dasds/sads343'
@@ -61,7 +63,8 @@ class Tests(unittest.TestCase):
     expected = 'G:/hdl/cheapCtrl/script/../synthesis/top.edf'
     actual = getPureFile(t)
     self.assertEqual(actual, expected)
-    
+  
+  @unittest.skip("BUGAGA: unfinished")  
   def test_refreshParams(self):
     impl = '''
     project new ../implement/{prj_name}.ise
@@ -103,7 +106,9 @@ class Tests(unittest.TestCase):
     
 
 def runTests():
-  tests = ['test_getPureFile',
+  tests = [
+           'test_refreshParams',
+           'test_getPureFile',
            'test_mergeSrc'
           ]
 

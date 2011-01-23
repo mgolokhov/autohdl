@@ -9,6 +9,7 @@ from structure import *
 from hdlLogger import *
 logging.disable(logging.ERROR)
 
+
 class Tests(unittest.TestCase):
  
   def setUp(self):
@@ -75,11 +76,17 @@ class Tests(unittest.TestCase):
     f.close()
     
     dsn1.init()
-#    print dsn1    
-    
+    actual = str(dsn1) 
+    expected = '''\
+DsnName: dsn1
+pathRoot:
+\t{0}/tmp_test_dir/dsn1
+fileMain:
+\t{0}/tmp_test_dir/dsn1/src/f1.v
+fileDep:
+\t{0}/tmp_test_dir/dsn2/src/f2.v'''.format(os.getcwd().replace('\\','/'))
+    self.assertMultiLineEqual(expected, actual)
 
-  
-    
     
   def test_filter(self):
     t = ['']
@@ -112,97 +119,23 @@ class Tests(unittest.TestCase):
     self.assertItemsEqual(filter(iFiles = t, iOnly = ['dir',], iIgnore = ['f2']),
                           expected)
     
-  
-  def test_initMain(self):
-#    log.setLevel(logging.DEBUG)
-    prjStruct = ['/project/dsn1/f1.v',
-                 '/project/dsn1/f2.v',
-                 '/project/dsn2/f1.v',
-                 '/project/dsn2/f2.v',
-                 '/project/dsn3/'
-                ]
-    expected = ['./project/dsn1/f1.v',
-                './project/dsn1/f2.v'
-                ]
-    self.genTree(prjStruct)
-    os.chdir('project/dsn1')
-    dsn = Design()
-    fileMain, dirMain = self.initMain()
-    actual = fileMain + fileMain
-    self.assertItemsEqual(expected, actual)
-    shutil.rmtree('./project')
-    #
-    #
-    #
-    expected = ['./project/dsn1/f1.v',
-                './project/dsn1/f2.v',
-                './project/dsn2/f1.v',
-                './project/dsn2/f2.v', 
-                './project/dsn3']
-    self.genTree(prjStruct)
-    dsn = Design(iDsnName = 'dsn', iPathRoot = './project')
-    dsn.initMain()
-    actual = dsn.getFileMain() + dsn.getDirMain()
-    self.assertItemsEqual(expected, actual)
-    shutil.rmtree('./project')
-    #
-    #
-    #
-    expected = ['./project/dsn2/f1.v',
-                './project/dsn2/f2.v',
-                './project/dsn3'
-                ]
-    self.genTree(prjStruct)
-    dsn = Design(iDsnName = 'dsn', iPathRoot = './project')
-    dsn.initMain(iIgnore = ['dsn1'])
-    actual = dsn.getFileMain() + dsn.getDirMain()
-    self.assertItemsEqual(expected, actual)
-    shutil.rmtree('./project')
-    #
-    #
-    #
-    prjStruct = ['/project/dsn1/',
-                 '/project/dsn2/',
-                 '/project/dsn3/',
-                 '/project/ignore/'
-                ]
-    expected = ['./project/dsn1',
-                './project/dsn3'
-                ]
-    self.genTree(prjStruct)
-    dsn = Design(iDsnName = 'dsn', iPathRoot = './project')
-    dsn.initMain(iOnly = ['dsn'], iIgnore = ['dsn2'])
-    actual = dsn.getFileMain() + dsn.getDirMain()
-    self.assertItemsEqual(expected, actual)
-    shutil.rmtree('./project')
-    
     
   def test_getLocToBuildXml(self):
-#    pathSrcFile = 'fake'
-#    dsn.getLocToBuildXml(pathSrcFile)
-#    pathSrcFile = os.path.abspath( __file__ )
-#    dsn.getLocToBuildXml(pathSrcFile)
-    if not os.path.exists('src'): os.mkdir('src')
-    if not os.path.exists('resource'): os.mkdir('resource')
-    f = open('src/f1', 'w')
-    f.close()
-    f = open('resource/build.xml', 'w')
-    f.close()
-    path, dsnName = self.getLocToBuildXml(os.getcwd()+'/src/f1')
-    expectedPath = 'G:/repo/git/autohdl/test/resource'
-    expectedDsnName = 'test'
+    self.assertEqual(None, getLocToBuildXml('asd'))
+    if not os.path.exists('tmp_test_dir/src'): os.makedirs('tmp_test_dir/src')
+    if not os.path.exists('tmp_test_dir/resource'): os.makedirs('tmp_test_dir/resource')
+    open('tmp_test_dir/src/f1', 'w').close()
+    open('tmp_test_dir/resource/build.xml', 'w').close()
+    path, dsnName = getLocToBuildXml(os.getcwd()+'/tmp_test_dir/src/f1')
+    expectedPath = os.getcwd().replace('\\','/')+'/tmp_test_dir/resource/build.xml'
+    expectedDsnName = 'tmp_test_dir'
     self.assertEqual(expectedPath, path)
     self.assertEqual(expectedDsnName, dsnName)
-    shutil.rmtree('resource')
-    shutil.rmtree('src')
     
     
-  def test_getDeps(self):
-    os.mkdir('myWsp')
-    os.chdir('myWsp')
-    dsn = Design(iDsnName = 'myDsn1')
-    Design(iDsnName = 'myDsn2')
-    f = open('myWsp/myDsn1/src/f1.v', 'w')
+  def test_getDepSrc(self):
+    dsn1 = Design(iName = 'tmp_test_dir/dsn1', iInit = False)
+    f = open('tmp_test_dir/dsn1/src/f1.v', 'w')
     t = '''
     module f1(input a, output b);
     f2 name1(a, b);
@@ -212,44 +145,58 @@ class Tests(unittest.TestCase):
     f.write(t)
     f.close()
     
-    f = open('myWsp/myDsn1/resource/build.xml', 'w')
+    f = open('tmp_test_dir/dsn1/resource/build.xml', 'w')
     t = '''
     <wsp>
-    <dsn id="myDsn1">
-    <dep>myDsn2</dep>
+    <dsn id="dsn1">
+    <dep>dsn2</dep>
     </dsn>
     </wsp>
     '''
     f.write(t)
     f.close()
     
-    f = open('myWsp/myDsn2/src/f2.v', 'w')
+    dsn2 = Design(iName = 'tmp_test_dir/dsn2', iInit = False)
+    f = open('tmp_test_dir/dsn2/src/f2.v', 'w')
     t = '''
     module f2(input a, output b);
     f4 name1(a, b);
+    f1 name2(a,b);
     endmodule
     '''
     f.write(t)
     f.close()
     
-    expected = set(['G:/repo/git/autohdl/test/myWsp/myDsn2/src/f2.v'])
-    self.assertSetEqual(expected, dsn.getDeps())
-    os.chdir('..')
-    shutil.rmtree('myWsp')
+    f = open('tmp_test_dir/dsn2/resource/build.xml', 'w')
+    t = '''
+    <wsp>
+    <dsn id="dsn2">
+    <dep>dsn1</dep>
+    </dsn>
+    </wsp>
+    '''
+    f.write(t)
+    f.close()
+
+    src = [os.getcwd().replace('\\','/')+'/tmp_test_dir/dsn1/src/f1.v']
+    expected = set([os.getcwd().replace('\\','/')+'/tmp_test_dir/dsn2/src/f2.v'])
+    self.assertSetEqual(expected, getDepSrc(iSrc = src))
+
     
-    
-    
+  @unittest.skip("BUGAGA: unfinished")  
   def test_search(self):
-    res = s.search(iOnly = ['.v'], iIgnore = ['prj4test'])
+    res = search(iOnly = ['.v'], iIgnore = ['prj4test'])
     print '\n'.join(res)
 
 def runTests():
   tests = [
-
+           'test_getDepSrc',
+           'test_getLocToBuildXml',
            'test_genDsn',
            'test_genDsn2',
            'test_initDsn',
-           'test_filter'
+           'test_filter',
+           'test_search'
           ]
 
   suite = unittest.TestSuite(map(Tests, tests))

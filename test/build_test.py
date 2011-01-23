@@ -112,7 +112,7 @@ class Tests(unittest.TestCase):
     f = open('tmp_test_dir/build.xml', 'w')
     f.write(t)
     f.close()
-    expected = None
+    expected = [i.strip() for i in gSYN_EXT.split(';')]
     actual = getSrcExtensions(iTag='synthesis_ext', iBuildFile='tmp_test_dir/build.xml')
     self.assertEqual(expected, actual)
     
@@ -132,7 +132,12 @@ class Tests(unittest.TestCase):
     actual = getSrcExtensions(iTag='implement_ext', iBuildFile='tmp_test_dir/build.xml')
     self.assertEqual(expected, actual)
      
+  def test_getSrcExtensions5(self):
+    expected = ''
+    actual = getSrcExtensions(iTag='fake_ext', iBuildFile='tmp_test_dir/build.xml')
+    self.assertEqual(expected, actual)
     
+        
 def runTests():
   tests = [
            'test_genPredef',
@@ -140,7 +145,8 @@ def runTests():
            'test_getSrcExtensions',
            'test_getSrcExtensions2',
            'test_getSrcExtensions3',
-           'test_getSrcExtensions4'
+           'test_getSrcExtensions4',
+           'test_getSrcExtensions5'
           ]
 
   suite = unittest.TestSuite(map(Tests, tests))

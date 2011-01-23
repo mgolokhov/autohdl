@@ -67,10 +67,26 @@ class Design(object):
     self.initFilesDep()
 
   def initFilesMain(self):
-    self._filesMain = search(iPath = self.pathRoot, iOnly = ['\.v']) # BUGAGA: only verilog files
+    SYN_EXT = ['v', 'vm', 'vhd', 'vhdl']
+    ext = []
+    ext = build.getSrcExtensions(iTag = 'synthesis_ext',
+                                 iBuildFile = self.pathRoot+'/resource/build.xml')
+    if not ext:
+      log.warning("Can't get extensions from build.xml. Using default="+str(SYN_EXT))
+      ext = SYN_EXT
+    only = ['/src/.*?.'+i+'$' for i in ext]
+    self._filesMain = search(iPath = self.pathRoot, iOnly = only) 
   
   def initFilesDep(self):
-    self._filesDep = getDepSrc(iSrc = self.filesMain, iOnly = ['\.v'])
+    SYN_EXT = ['v', 'vm', 'vhd', 'vhdl']
+    ext = []
+    ext = build.getSrcExtensions(iTag = 'synthesis_ext',
+                                 iBuildFile = self.pathRoot+'/resource/build.xml')
+    if not ext:
+      log.warning("Can't get extensions from build.xml. Using default="+str(SYN_EXT))
+      ext = SYN_EXT
+    only = [i+'$' for i in ext]
+    self._filesDep = getDepSrc(iSrc = self.filesMain, iOnly = only)
   
   def __str__(self):
     return \
@@ -203,7 +219,10 @@ def getFilesFromXml(iUndefInst, iIgnore = [], iOnly = []):
   log.debug('def getFilesFromXml IN iUndefInst='+str(iUndefInst)+' iIgnore='+str(iIgnore)+' iOnly='+str(iOnly))
   possibleFiles = set()
   for afile in set(iUndefInst.values()):
-    dirBuildXml, dsnName = getLocToBuildXml(afile)
+    res = getLocToBuildXml(afile)
+    if not res:
+      return
+    dirBuildXml, dsnName = res 
     depsDic = build.getDeps(iDsnName = dsnName,
                             iBuildFile = dirBuildXml)
     if not depsDic or not depsDic.get(dsnName):
@@ -213,10 +232,13 @@ def getFilesFromXml(iUndefInst, iIgnore = [], iOnly = []):
       possibleFiles.update(search(iPath = path, iIgnore = iIgnore, iOnly = iOnly))
   log.debug('def getFilesFromXml OUT possibleFiles='+str(possibleFiles))
   return list(possibleFiles)
-    
+
       
 def getDepSrc(iSrc, iIgnore = [], iOnly = []):
   log.debug('def getDepSrc IN iSrc='+str(iSrc)+' iIgnore='+str(iIgnore)+' iOnly='+str(iOnly))
+  only = []
+  if not iIgnore and not iOnly:
+    only = build.getSrcExtensions(iTag = 'synthesis_ext')
   files = set(iSrc)
   parsed = {}
   undef = {}
@@ -224,13 +246,12 @@ def getDepSrc(iSrc, iIgnore = [], iOnly = []):
     undefNew = instance.analyze(iPathFiles = files,
                                 ioParsed = parsed,
                                 iUndefInst = undef)
-    
     if not (undefNew.viewkeys() ^ undef.viewkeys()): 
       for inst in undefNew:
         log.warning('Undefined instance: '+inst+'; in file: '+undefNew[inst])
       break
     if undefNew:
-      files = getFilesFromXml(iUndefInst = undefNew, iIgnore = iIgnore, iOnly = iOnly)
+      files = getFilesFromXml(iUndefInst = undefNew, iIgnore = iIgnore, iOnly = only)
     else:
       break
     undef = undefNew

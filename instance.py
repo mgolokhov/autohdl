@@ -67,9 +67,9 @@ def parseFiles(iPathFiles):
   for oneFile in iPathFiles:
     try:
       parsedNew = parseFile(oneFile)
+      parsed.update(parsedNew)
     except IOError:
       log.warning("Can't open file: "+oneFile)
-    parsed.update(parsedNew)
   log.debug('def parseFiles OUT parsed='+str(parsed))
   return parsed
 
@@ -144,15 +144,19 @@ def instTreeDep(iTop, iSrc):
     Output: list of parsed modules
       [iTop_parsed, inst1_parsed, inst2_parsed,...];
   '''
+  log.debug('instTreeDep IN iTop='+str(iTop)+'; iSrc='+str(iSrc))
   dep = [iTop]
   undef = {}
-  for module in dep: # iterate over list of dictionaries
+  for module in dep: # iterate over a list of dictionaries
     moduleParsedVal = module.values()[0]
-    for instance in moduleParsedVal[1:]: # over list of instances
+    for instance in moduleParsedVal[1:]: # over a list of instances
       try:
         dep.append({instance:iSrc[instance]})
       except KeyError:
         undef[instance] = moduleParsedVal[0] # key=instance, val=path to parsed file
+    if len(dep) > len(iSrc):
+      log.warning('Cyclic dependencies!')
+      break
   log.debug('def instTreeDep OUT dep: '+str(dep)+' undef: '+str(undef))
   return dep, undef
 
@@ -175,6 +179,7 @@ def analyze(iPathFiles, ioParsed = {}, iUndefInst = {}):
   undefInst = {}
   # first call
   if not iUndefInst:
+    log.debug('first call')
     undefInst = getUndefInst(parsed)
     ioParsed.update(parsed)
     log.debug('def analyze OUT undefInst='+str(undefInst))
@@ -182,6 +187,7 @@ def analyze(iPathFiles, ioParsed = {}, iUndefInst = {}):
   
   # next calls
   for undef in iUndefInst:
+    log.debug('next calls')
     try:
       top = {undef: parsed[undef]}
       parsedAll = {}

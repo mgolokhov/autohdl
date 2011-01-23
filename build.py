@@ -3,10 +3,23 @@ import os
 
 from hdlLogger import *
 
+class BuildException(Exception):
+  def __init__(self, iString):
+    self.string = iString
+  def __str__(self):
+    return self.string
+  
+
+gSYN_EXT  = 'v; vm; vhd; vhdl'
+gIMPL_EXT = 'ucf; edf; ndf; ngc' 
+
+
 def genPredef(iPath, iDsnName):
   '''
   Generates predefined build.xml
   '''
+  global gSYN_EXT
+  global gIMPL_EXT
   log.debug('def genPredef IN iPath='+iPath+' iDsnName='+iDsnName)
   buildContent = '''\
   <!--default build-->
@@ -19,8 +32,8 @@ def genPredef(iPath, iDsnName):
   </wsp>
   '''.format(DESIGN_NAME=iDsnName,
              DEP='',
-             SYN_EXT = 'v; vm; vhd; vhdl',
-             IMPL_EXT = 'ucf; edf; ndf; ngc'
+             SYN_EXT = gSYN_EXT,
+             IMPL_EXT = gIMPL_EXT
              )
   pathBuild = iPath+'/build.xml'
   if not os.path.exists(pathBuild):
@@ -70,17 +83,33 @@ def getSrcExtensions(iTag, iBuildFile='../resource/build.xml'):
   Output: list of extensions (e.g. [.v, .vhdl, .vm])
   Tag example: <synthesis_ext>v;vhdl;vm</synthesis_ext>
   '''
-  log.debug('def getSrc IN iTag='+iTag+'; iBuildFile='+iBuildFile)
+  log.debug('def getSrcExtensions IN iTag='+iTag+'; iBuildFile='+iBuildFile)
   iBuildFile = os.path.abspath(iBuildFile)
-  if not os.path.exists(iBuildFile):
-    log.warning("Can't find file: "+iBuildFile)
-    return  
-  dom = minidom.parse(iBuildFile)
-  extensions = dom.getElementsByTagName(iTag)
-  if not extensions:
-    log.warning("Can't find tag="+iTag+'; in file='+iBuildFile)
-    return
-  extensions = extensions[0].childNodes[0].toxml().strip().strip(';')
+  try:
+    if not os.path.exists(iBuildFile):
+      raise BuildException("Can't find file: "+iBuildFile)  
+    dom = minidom.parse(iBuildFile)
+    extensionsNode = dom.getElementsByTagName(iTag)
+    if not extensionsNode:
+      raise BuildException("Can't find tag="+iTag+'; in file='+iBuildFile)  
+    extensions = extensionsNode[0].childNodes[0].toxml().strip().strip(';')
+    if not extensions:
+      raise BuildException("Empty value for tag="+iTag+'; in file='+iBuildFile)  
+  except BuildException as msg:
+    log.warning(msg)
+    if iTag == 'synthesis_ext':
+      global gSYN_EXT
+      extensions = gSYN_EXT
+      log.warning("Can't get extensions from build.xml. Using default="+str(gSYN_EXT))
+    elif iTag == 'implement_ext':
+      global gIMPL_EXT
+      extensions = gIMPL_EXT
+      log.warning("Can't get extensions from build.xml. Using default="+str(gIMPL_EXT))
+    else:
+      log.warning('Invalid tag='+iTag)
+      return ''
+    
   extensions = [i.strip() for i in extensions.split(';')]
+  log.debug('def getSrcExtensions OUT extensions='+str(extensions))
   return extensions
-  
+
