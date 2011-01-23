@@ -129,7 +129,7 @@ def gen_script_tb(iTopModule, iDsn):
   '''
   Generates .tcl script for Aldec to create and run TestBench design.  
   '''
-  log.debug('def gen_script_tb: iTopModule='+iTopModule+' iDsn=\n'+str(iDsn))
+  log.debug('def gen_script_tb IN iTopModule='+iTopModule+' iDsn=\n'+str(iDsn))
   pathTmp = getPathTmp(iDsn)
   f = open(pathTmp +'/'+ iTopModule + '.tcl', 'w')
   scriptContent = (wsp_script_header + '''
@@ -146,9 +146,10 @@ def gen_script_tb(iTopModule, iDsn):
   f.write(
   'design create -a -flow "' + iTopModule + '" "$WSP"\n' + 
   'design activate "' + iTopModule + '"\n')
-  filesMain = iDsn.getFileMain(iOnly = ['src', 'TestBench'])
-#  filesDep = list(iDsn.getDeps())
-  filesDep = list(iDsn.getFileDep())
+  filesMain = structure.search(iPath = '..', iIgnore = ['\.svn/'], iOnly = ['src/', 'TestBench/'])
+  log.debug('filesMain= '+str(filesMain))
+  filesDep = list(structure.getDepSrc(iSrc = filesMain))
+  log.debug('filesDep= '+str(filesDep))
   for dsnFile in filesMain + filesDep:
     pathAsList = dsnFile.split('/')
     if dsnFile in filesDep:

@@ -1,15 +1,15 @@
 from autohdl.all import *
 
 
-iTopModule = ''
+top = 'YOUR_TOP_MODULE_NAME'
 
 # test them ALL!
-#aldec.tb(iTopModule = iTopModule)
+#aldec.tb(iTopModule = top)
 
 # default - batch mode
-#synthesis.run(iTopModule = iTopModule)
+#synthesis.run(iTopModule = top)
 
 # wanna to run in gui mode?
-#synthesis.run('synplify_gui', iTopModule)
+#synthesis.run(iMode = 'synplify_gui', iTopModule = top)
 
-#implement.run(iTopModule = iTopModule)
+#implement.run(iTopModule = top)
