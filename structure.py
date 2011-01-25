@@ -60,7 +60,7 @@ class Design(object):
   
   @filesDep.setter
   def filesDep(self, value):
-    return self._filesDep
+    self._filesDep = value
   
   def init(self):
     self.initFilesMain()
@@ -209,7 +209,7 @@ def getLocToBuildXml(iPathFile):
   log.debug('def getLocToBuildXml OUT pathBuildXml='+str(pathBuildXml)+' dsnName='+str(dsnName))
   return pathBuildXml, dsnName
 
-
+# BUGAGA: got direct file
 def getFilesFromXml(iUndefInst, iIgnore = [], iOnly = []):
   '''
     Input: undefined instances as a dictionary
@@ -236,9 +236,10 @@ def getFilesFromXml(iUndefInst, iIgnore = [], iOnly = []):
       
 def getDepSrc(iSrc, iIgnore = [], iOnly = []):
   log.debug('def getDepSrc IN iSrc='+str(iSrc)+' iIgnore='+str(iIgnore)+' iOnly='+str(iOnly))
-  only = []
   if not iIgnore and not iOnly:
     only = build.getSrcExtensions(iTag = 'synthesis_ext')
+  else:
+      only = iOnly
   files = set(iSrc)
   parsed = {}
   undef = {}

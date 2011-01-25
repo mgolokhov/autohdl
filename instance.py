@@ -14,14 +14,17 @@ class InstanceException(Exception):
 
 
 def removeComments(ioString):
+  ioString = ioString.replace('\t', '    ')
   log.debug('def removeComments IN ioString=\n'+ioString)
   withoutQuotedStr = ioString
   for tokens in QuotedString(quoteChar='"').searchString(withoutQuotedStr):
-    log.debug('quoted string= ' + tokens[0])
-    withoutQuotedStr = withoutQuotedStr.replace(tokens[0], '', 1)
+    tok = tokens[0]
+    log.debug('quoted string= ' + tok)
+    withoutQuotedStr = withoutQuotedStr.replace(tok, '', 1)
   for tokens in cppStyleComment.searchString(withoutQuotedStr):
-    log.debug('comment= ' + tokens[0])
-    ioString = ioString.replace(tokens[0], '', 1)
+    tok = tokens[0]
+    log.debug('comment= ' + tok)
+    ioString = ioString.replace(tok, '', 1)
   log.debug('def removeComment OUT ioString=\n'+ioString)
   return ioString
   
@@ -64,12 +67,13 @@ def parseFiles(iPathFiles):
   '''
   log.debug('def parseFiles IN iPathFiles='+str(iPathFiles))
   parsed = {}
-  for oneFile in iPathFiles:
-    try:
-      parsedNew = parseFile(oneFile)
-      parsed.update(parsedNew)
-    except IOError:
-      log.warning("Can't open file: "+oneFile)
+  if iPathFiles:
+    for oneFile in iPathFiles:
+      try:
+        parsedNew = parseFile(oneFile)
+        parsed.update(parsedNew)
+      except IOError:
+        log.warning("Can't open file: "+oneFile)
   log.debug('def parseFiles OUT parsed='+str(parsed))
   return parsed
 
@@ -96,28 +100,31 @@ def getInstances(iString):
   log.debug('def getInstances IN iString=\n'+iString)
   instances = {}
 
-  regexp = formRegexp()
-  for tokens in regexp.searchString(iString):
-    log.debug('''\
-    moduleInst={0}
-    params={1}
-    instName={2}
-    ports={3}
-    '''.format(tokens.get('moduleInst'),
-        tokens.get('params'),
-        tokens.get('instName'),
-        tokens.get('ports')))
-    
-    moduleInst = tokens.get('moduleInst')
-    if moduleInst == 'module':
-      moduleName = tokens.get('instName') 
-      instances[moduleName] = []
-    else:  
-      try:
-        if moduleInst not in instances[moduleName]:
-          instances[moduleName].append(moduleInst)
-      except NameError:
-        InstanceException('Can\'t find module body')
+  statements = iString.split(';')
+  for statement in [i+';' for i in statements]:
+    log.debug('Parsing statement=\n'+statement)
+    regexp = formRegexp()
+    for tokens in regexp.searchString(statement):
+      log.debug('''\
+      moduleInst={0}
+      params={1}
+      instName={2}
+      ports={3}
+      '''.format(tokens.get('moduleInst'),
+          tokens.get('params'),
+          tokens.get('instName'),
+          tokens.get('ports')))
+      
+      moduleInst = tokens.get('moduleInst')
+      if moduleInst == 'module':
+        moduleName = tokens.get('instName') 
+        instances[moduleName] = []
+      else:  
+        try:
+          if moduleInst not in instances[moduleName]:
+            instances[moduleName].append(moduleInst)
+        except NameError:
+          InstanceException('Can\'t find module body')
       
   log.debug('def getInstances OUT instances='+str(instances))
   return instances
@@ -175,6 +182,7 @@ def analyze(iPathFiles, ioParsed = {}, iUndefInst = {}):
         {key = instance name, value = path to file};
   '''
   log.debug('def analyze IN iPathFiles='+str(iPathFiles)+' ioParsed'+str(ioParsed)+' iUndefInst'+str(iUndefInst))
+  log.info('Analizing dependences...')
   parsed = parseFiles(iPathFiles=iPathFiles)
   undefInst = {}
   # first call

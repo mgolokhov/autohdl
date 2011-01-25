@@ -67,6 +67,55 @@ class Tests(unittest.TestCase):
     
     self.assertDictEqual(expected, getDeps(iDsnName = dsnName, iBuildFile = buildFile))
 
+  def test_getDeps2(self):
+    t = '''
+  <!--default build-->
+  <wsp>
+    <dsn id="masker">
+      <dep>../../hdl_dev/cores</dep>
+      <dep>curtain</dep>
+      <synthesis_ext>v; vm; vhd; vhdl</synthesis_ext>
+      <implement_ext>ucf; edf; ndf; ngc</implement_ext>
+    </dsn>
+  </wsp>
+      '''
+    buildFile = os.getcwd()+'/tmp_test_dir/masker/resource/build.xml'
+    if not os.path.exists('tmp_test_dir/masker/resource'):
+      os.makedirs('tmp_test_dir/masker/resource')
+    if not os.path.exists('tmp_test_dir/curtain'):
+      os.makedirs('tmp_test_dir/curtain')
+
+    f = open(buildFile, 'w')
+    f.write(t)
+    f.close()
+    
+    dsnName = 'masker'
+    expected = {'masker':[os.getcwd().replace('\\','/')+'/tmp_test_dir/curtain']}
+    self.assertDictEqual(expected, getDeps(iDsnName = dsnName, iBuildFile = buildFile))  
+    
+    
+  def test_getDeps3(self):
+    t = '''
+  <!--default build-->
+  <wsp>
+    <dsn id="curtain">
+      <dep></dep>
+      <synthesis_ext>v; vm; vhd; vhdl</synthesis_ext>
+      <implement_ext>ucf; edf; ndf; ngc</implement_ext>
+    </dsn>
+  </wsp>
+  '''
+    buildFile = os.getcwd()+'/tmp_test_dir/resource/build.xml'
+    if not os.path.exists('tmp_test_dir/resource/'):
+      os.makedirs('tmp_test_dir/resource/')  
+    f = open(buildFile, 'w')
+    f.write(t)
+    f.close()
+    
+    dsnName = 'curtain'
+    expected = {'curtain':[]}
+    self.assertDictEqual(expected, getDeps(iDsnName = dsnName, iBuildFile = buildFile))  
+    
     
   def test_getSrcExtensions(self):
     t = '''
@@ -142,6 +191,8 @@ def runTests():
   tests = [
            'test_genPredef',
            'test_getDeps',
+           'test_getDeps2',
+           'test_getDeps3',
            'test_getSrcExtensions',
            'test_getSrcExtensions2',
            'test_getSrcExtensions3',

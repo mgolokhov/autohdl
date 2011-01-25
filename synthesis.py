@@ -68,11 +68,11 @@ def getSrcFromFileSys(iDsn):
   log.debug('def getSrcFromFileSys IN iDsn=\n'+str(iDsn))
   ext = build.getSrcExtensions(iTag = 'synthesis_ext')
   if ext:
-    only = ['/src/.*?.'+i+'$' for i in ext]
+    only = ['/src/.*?\.'+i+'$' for i in ext]
   else:
     only = [] # all files
   filesMain = structure.search(iPath = iDsn.pathRoot, iOnly = only)
-  filesDep = structure.getDepSrc(iSrc = filesMain)
+  filesDep = structure.getDepSrc(iSrc = filesMain, iOnly = only)
   files = filesMain + list(filesDep)
   log.debug('getSrcFromFileSys OUT files'+str(files))
   return files  

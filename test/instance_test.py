@@ -6,7 +6,6 @@ import unittest
 sys.path.insert(0, '..')
 from instance import *
 from hdlLogger import *
-logging.disable(logging.ERROR)
 
 
 class Test(unittest.TestCase):
@@ -50,8 +49,9 @@ class Test(unittest.TestCase):
     '''   
     self.assertMultiLineEqual(expected, removeComments(t)) 
     
+  def test_removeComments2(self):
     t = '''\
-module ctrl_v2_kiortest
+    module ctrl_v2_kiortest
     (
     // Global Inputs
     
@@ -69,7 +69,7 @@ module ctrl_v2_kiortest
     output  [1:0]  box_out,// Box multiplexers signals    
     '''
     expected = '''\
-module ctrl_v2_kiortest
+    module ctrl_v2_kiortest
     (
     
     
@@ -86,6 +86,11 @@ module ctrl_v2_kiortest
     input  [1:0]  box_in, 
     output  [1:0]  box_out,
     '''
+    self.assertMultiLineEqual(expected, removeComments(t))
+    
+  def test_removeComments3(self):
+    t = '''input rst_in, // \tAsynch reset; Active-low;'''
+    expected = '''input rst_in, '''
     self.assertMultiLineEqual(expected, removeComments(t))
     
   def test_removeFunc(self):
@@ -364,17 +369,176 @@ module ctrl_v2_kiortest
       expectedUndef = {}
       self.assertDictEqual(expectedParsed, parsed)
       self.assertDictEqual(expectedUndef, undef)
-
+      
+      
+  def test_parseFile(self):
+    t = ('module dsn1_m1 (input a, output b);'+
+        'dsn1_m2 inst0 (a, b);'+
+        'core1 inst1 (a, b);'+
+        'core2 inst2 (a, b);'+
+        'endmodule')
+    f = open('tmp_test_dir/dsn1.v', 'w')
+    f.write(t)
+    f.close()
+    expected = {'dsn1_m1': ['tmp_test_dir/dsn1.v', 'dsn1_m2', 'core1', 'core2']}
+    self.assertDictEqual(expected, parseFile('tmp_test_dir/dsn1.v'))
+    
+    
+  def test_parseFile2(self):
+    t = '''\
+    module rs232_rx #(parameter pWORDw = 8,pBitCellCnt = 434,pModulID=0,parity=0)(
+      input rst,         //async reset
+      input clk,         //system clock
+      input iSerial,       //goes in uart
+      output reg [7:0] oRxD,    //paralell received data
+      output reg oRxDReady,  //received data ready; active '1'
+       output      [7:0]oErrorCountRx
+      );
+      
+    
+       reg ErrorFlag;
+       reg [8:0]ErrorCount;
+       assign oErrorCountRx[7:0]=ErrorCount[7:0];
+    
+      //  
+      // Bit-cell counter
+      //
+      reg [12:0] BitCellCnt,BitCellCnt_;
+      reg [3:0] BitCnt;
+    
+      //
+      // CurSt Machine
+      //
+      reg[2:0] NextSt, CurSt;
+       reg Sample,Sample_;
+       reg PrivSerial;
+      `define ST_START   3'b000
+      `define ST_CENTER  3'b001
+      `define ST_WAIT    3'b010
+      `define ST_STOP    3'b011
+      `define ST_PARITY  3'b100
+      reg rSerial;
+      // Next CurSt and Output Decode
+      always @(posedge clk)
+       begin
+          NextSt  = CurSt;
+          BitCellCnt_=BitCellCnt+1;
+          rSerial<=iSerial;
+          PrivSerial<=rSerial;
+          ErrorFlag=0;
+          Sample_=0;
+          case (CurSt)
+             default:NextSt = `ST_START;
+             //
+             // Wait for the start bit
+             //
+             `ST_START: begin
+                if ((rSerial==0)&&(PrivSerial==1)) NextSt = `ST_CENTER;
+                BitCellCnt_ = 0;  // allow counter to tick          
+                BitCnt   <= 0;
+                oRxDReady<= 0;
+             end
+             //
+             // Find the center of the bit-cell; 
+             // if it is still 0, then go on, otherwise, it was noise
+             //
+             `ST_CENTER: begin
+                if (BitCellCnt == pBitCellCnt/2) begin
+                   if (rSerial==0) NextSt = `ST_WAIT;
+                   else NextSt = `ST_START;
+                   BitCellCnt_= 0;  // allow counter to tick          
+                end else begin
+                   NextSt = `ST_CENTER;
+                end
+             end
+             //
+             // Pick up some info near the bit-cell center
+             // Wait a bit-cell time before sampling the  next bit
+             //
+             `ST_WAIT: begin
+                if (BitCellCnt == pBitCellCnt)begin
+                   NextSt = `ST_WAIT;
+                   Sample_=1;
+                end
+                //
+                // Load  bit in Deserializer, after voting
+                //
+                if(Sample)begin
+    /*         end
+             `ST_SAMPLE: begin*/
+                   BitCnt<=BitCnt+1;
+                   oRxD <= {rSerial,oRxD[7:1]};
+                   if(BitCnt>=(pWORDw-1))begin
+          if(parity == 0)
+            NextSt = `ST_STOP;
+          else
+            NextSt = `ST_PARITY;
+                   end else NextSt = `ST_WAIT;
+                   BitCellCnt_= 0;
+                end
+             end
+             //
+             // make sure that we've seen the stop bit?
+             //
+             `ST_STOP: begin
+                if(BitCellCnt == pBitCellCnt)begin
+                   if(rSerial == 0)begin
+                      ErrorFlag=1;
+                      $display("rs232_rx:Stop bit error pModulID %d",pModulID);
+                   end else oRxDReady<= 1;
+    
+                   NextSt = `ST_START;
+                end
+             end
+    
+             `ST_PARITY: begin
+                if(BitCellCnt == pBitCellCnt)begin // Skip Parity bit at now
+                   /*if(rSerial == 0)begin
+                      ErrorFlag=1;
+                      $display("rs232_rx:Stop bit error pModulID %d",pModulID);
+                   end else oRxDReady<= 1;*/
+             BitCellCnt_ = 0;
+                   NextSt = `ST_STOP;
+                end
+             end
+          endcase
+    
+          if(rst==0) begin
+             ErrorCount<=0;
+             CurSt<=`ST_START;
+             oRxDReady<= 0;
+          end else begin
+             if((ErrorFlag)&&(ErrorCount[8]==0)) ErrorCount<=ErrorCount+1;
+             CurSt<=NextSt;
+          end
+          BitCellCnt<=BitCellCnt_;
+          Sample<=Sample_;
+       end
+    endmodule
+    '''
+    f = open('tmp_test_dir/dsn1.v', 'w')
+    f.write(t)
+    f.close()
+    expected = {'rs232_rx': ['tmp_test_dir/dsn1.v']}
+    self.assertDictEqual(expected, parseFile('tmp_test_dir/dsn1.v'))
+    
+    
+    
     
 if __name__ == '__main__':
 #  unittest.main()
+  logging.disable(logging.ERROR)
   tests = [
            'test_removeComments',
+           'test_removeComments2',
+           'test_removeComments3',
            'test_removeFunc',
            'test_getInstances',
            'test_parseFiles',
            'test_instTreeDep',
-           'test_analyze'
+           'test_analyze',
+           'test_parseFile',
+           'test_parseFile2'
            ]
 
   suite = unittest.TestSuite(map(Test, tests))

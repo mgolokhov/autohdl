@@ -3,10 +3,15 @@
 
   #device options
   set_option -technology SPARTAN3E
+  #DCS2
   set_option -part XC3S250E
   set_option -package TQ144
+  #NEXYS2
   #set_option -part XC3S1200E
   #set_option -package FG320
+  #ctrl_v4
+  #set_option -part XC3S250
+  #set_option -package VQ100
   set_option -speed_grade -5
   
   #compilation/mapping options

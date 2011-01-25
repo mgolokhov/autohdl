@@ -42,7 +42,8 @@ def genPredef(iPath, iDsnName):
     f.close()
   log.debug('def genParedef OUT')
 
-def getDeps(iDsnName = '', iBuildFile = 'build.xml'):
+#BUGAGA: errors in logic
+def _getDeps(iDsnName = '', iBuildFile = 'build.xml'):
   '''
   Returns: dictionary key=dsnName, value=list of dependences as full path;
   '''
@@ -58,12 +59,52 @@ def getDeps(iDsnName = '', iBuildFile = 'build.xml'):
   dsnNodes = dom.firstChild.childNodes
   dependences = {}
   for node in  dsnNodes:
+    print 'WTF!'
+    if node.attributes:
+      dsnName = node.attributes['id'].value
+      dep = node.getElementsByTagName('dep')
+      print 'deps!!! ', dep.toxml()
+      dsnDep = []
+      for k in dep:
+        pathDep = (k.firstChild.data).strip()
+        pathDepAbs = '%s/%s' % (pathDsn, pathDep)
+        pathDepAbs = os.path.abspath(pathDepAbs).replace('\\','/')
+        if not os.path.exists(pathDepAbs):
+          log.warning('Wrong dep path: '+pathDepAbs+'; in file: '+iBuildFile)
+          continue 
+        dsnDep.append(pathDepAbs)
+      dependences[dsnName] = dsnDep
+      if iDsnName == dsnName:
+        break
+  log.debug('def getDeps OUT dependences='+str(dependences))
+  return dependences
+
+
+def getDeps(iDsnName = '', iBuildFile = 'build.xml'):
+  '''
+  Returns: dictionary key=dsnName, value=list of dependences as full path;
+  '''
+  log.debug('def getDeps IN iDsnName='+iDsnName+' iBuildFile='+iBuildFile)
+  if not os.path.exists(iBuildFile):
+    log.warning("Can't find file: " + iBuildFile)
+    return
+  
+  pathBuildFile = os.path.abspath(iBuildFile).replace('\\','/')
+  pathDsn = '/'.join(pathBuildFile.split('/')[:-3])
+
+  dom = minidom.parse(pathBuildFile)
+  dsnNodes = dom.getElementsByTagName('dsn')
+  dependences = {}
+  for node in  dsnNodes:
     if node.attributes:
       dsnName = node.attributes['id'].value
       dep = node.getElementsByTagName('dep')
       dsnDep = []
       for k in dep:
-        pathDep = (k.firstChild.data).strip()
+        tagContent = k.firstChild
+        if not tagContent:
+          continue
+        pathDep = tagContent.toxml().strip()
         pathDepAbs = '%s/%s' % (pathDsn, pathDep)
         pathDepAbs = os.path.abspath(pathDepAbs).replace('\\','/')
         if not os.path.exists(pathDepAbs):
