@@ -19,8 +19,8 @@ if __name__ == '__main__':
     log.removeHandler(fileHandler)
 
   if options.test:
-    #BUGAGA: correct import path 
-#    import autohdl.test.all_test
+    #BUGAGA: correct paths
+    #import autohdl.test.all_test
     pass
   
   else:

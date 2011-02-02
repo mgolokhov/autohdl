@@ -3,10 +3,11 @@ import sys
 import os
 import shutil
 
-sys.path.insert(0, '..')
-from build import *
-logging.disable(logging.ERROR)
-
+try:
+  sys.path.insert(0, '..')
+  from build import *
+except ImportError:
+  from autohdl.build import *
 
 
 class Tests(unittest.TestCase):
@@ -188,6 +189,7 @@ class Tests(unittest.TestCase):
     
         
 def runTests():
+  logging.disable(logging.ERROR)
   tests = [
            'test_genPredef',
            'test_getDeps',

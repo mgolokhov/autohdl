@@ -3,12 +3,60 @@ import sys
 import re
 import shutil
 import subprocess
+import time
 
 import structure
 import toolchain
 import build
 
 from hdlLogger import *
+
+
+class Project(object):
+  def __init__(self, iTopModule, iMode):
+    self._pathTool      = toolchain.getPath(iMode)
+    self._mode          = iMode
+    self._topModule     = iTopModule
+    self._pathSynthesis = '../synthesis'
+    scriptName          = '/synthesis.prj'
+    self._pathScript    = self._pathSynthesis + scriptName
+    self._pathLog       = self._pathSynthesis + '/' + iTopModule + '.srr'
+    self._pathWas       = os.getcwd().replace('\\','/')
+  
+    if os.path.exists(self._pathSynthesis):
+      shutil.rmtree(self._pathSynthesis)
+    os.makedirs(self._pathSynthesis)
+    shutil.copyfile(self._pathWas + scriptName, self._pathScript)
+    os.chdir(self._pathSynthesis)
+  
+  
+  def __enter__(self):
+    return self
+
+  def __exit__(self, type, value, traceback):
+    os.chdir(self._pathWas)  
+  
+  @property
+  def topModule(self):
+    return self._topModule
+  @property
+  def pathSynthesis(self):
+    return self._pathSynthesis
+  @property
+  def pathScript(self):
+    return self._pathScript
+  @property
+  def pathTool(self):
+    return self._pathTool
+  @property
+  def pathLog(self):
+    return self._pathLog
+  @property
+  def pathWas(self):
+    return self._pathWas
+  @property
+  def mode(self):
+    return self._mode
 
 
 class SynthesisException(Exception):
@@ -67,56 +115,40 @@ def merge(ioSrcFresh, ioScriptContent, iTopModule):
 def getSrcFromFileSys(iDsn):
   log.debug('def getSrcFromFileSys IN iDsn=\n'+str(iDsn))
   ext = build.getSrcExtensions(iTag = 'synthesis_ext')
-  if ext:
-    only = ['/src/.*?\.'+i+'$' for i in ext]
-  else:
-    only = [] # all files
-  filesMain = structure.search(iPath = iDsn.pathRoot, iOnly = only)
-  filesDep = structure.getDepSrc(iSrc = filesMain, iOnly = only)
+  ignore = ['\.svn/']
+  only = ['\.'+i+'$' for i in ext]
+  filesMain = structure.search(iPath = iDsn.pathRoot+'/src', iIgnore = ignore, iOnly = only)
+  filesDep = structure.getDepSrc(iSrc = filesMain, iIgnore =ignore, iOnly = only)
   files = filesMain + list(filesDep)
   log.debug('getSrcFromFileSys OUT files'+str(files))
   return files  
 
   
-def genScript(iTopModule = ''):
-  log.debug('def genScript IN iTopModule='+iTopModule)
-  pathCur = os.getcwd()
-  if os.path.split(pathCur)[1] != 'script':
-    msg = 'Expected current directory: script; Got: ' + pathCur
-    log.error(msg)
-    raise SynthesisException(msg)
-  # get src files, regenerate structure
+def genScript(iPrj):
+  log.debug('def genScript IN iPrj')#BUGAGA: __str__
   dsn = structure.Design(iPath = '..', iGen = True, iInit = False)
-  
-  pathSynthesisPrj = '%s/%s' % (pathCur,'synthesis.prj')
-  if os.path.exists(pathSynthesisPrj):
+  if os.path.exists(iPrj.pathScript):
     log.info('Refreshing existing synthesis script')
-    f = open(pathSynthesisPrj, 'r')
+    f = open(iPrj.pathScript, 'r')
   else:  
     log.info('Generating from default synthesis script')
-    f = open(pathCur+'/../resource/synthesis_default', 'r')
+    f = open('../resource/synthesis_default', 'r')
   scriptContent = f.read()
   f.close()
   
   contentAsList = scriptContent.split('\n')
   srcFiles = getSrcFromFileSys(dsn)
-  merge(srcFiles, contentAsList, iTopModule)
+  merge(srcFiles, contentAsList, iTopModule = iPrj.topModule)
   scriptContent = '\n'.join(contentAsList)
 
-  f = open('%s/%s' % (pathCur,'synthesis.prj'), 'w')
+  f = open(iPrj.pathScript, 'w')
   f.write(scriptContent)
   f.close
 
 
-def parseLog(path_this_script, iSilent = False):
-  log.debug('def parseLog IN path_this_script='+path_this_script)
-  f = open(path_this_script + '/synthesis.prj', 'r')
-  scriptContent = f.read()
-  match = re.search(r'-top_module\W+(\w+)', scriptContent)
-  top_module = match.group(1)
-  
-  logFile = path_this_script + '/../synthesis/' + top_module + '.srr'
-  logFile = os.path.abspath(logFile)
+def parseLog(iPrj, iSilent = False):
+  log.debug('def parseLog IN')
+  logFile = os.path.abspath(iPrj.pathLog)
   if os.path.exists(logFile):
     f = open(logFile, 'r')
     res = f.read()
@@ -124,6 +156,7 @@ def parseLog(path_this_script, iSilent = False):
     warningsAll = res.count('@W:')
     ignoreWarnings = res.count('Initial value is not supported on state machine state')
     warnings = warningsAll - ignoreWarnings
+    time.sleep(1)
     if errors:
       log.error('Synthesis ended with errors! Num: '+str(errors))
     elif warnings:
@@ -138,58 +171,58 @@ def parseLog(path_this_script, iSilent = False):
   return logFile 
 
 
+def run_synplify_batch(iPathTool, iPathSctipt):
+  run = '"%s" %s %s %s %s' % (iPathTool,
+                '-product synplify_premier',
+                '-licensetype synplifypremier',
+                '-batch', iPathSctipt)
+  subprocess.Popen(run)
 
-
-def preparation(iPathCur):
-  '''
-  Creates synthesis directory and copies project script
-  '''
-  log.debug('def preparation=> iPathCur='+iPathCur)
-  synthesisDir = '%s/%s' % (iPathCur, '../synthesis')
-  
-  if os.path.exists(synthesisDir):
-    shutil.rmtree(synthesisDir)
-  os.makedirs(synthesisDir)
+  while True:
+    time.sleep(3)
+    log = open('../synthesis/top_masker.srr', 'r')
+    if log:
+      break
     
-  shutil.copyfile(iPathCur     + '/synthesis.prj',
-                  synthesisDir + '/synthesis.prj')
-  
-  os.chdir(synthesisDir)
-  
+  done = False
+  while True:
+    where = log.tell()
+    res = log.readline()
+    if res.find('Process took') != -1:
+      done = True
+    if res.endswith('\n'):
+      print res
+    elif done:
+      break
+    else:  
+      log.seek(where)
+      time.sleep(1)
+      
+  log.close()
 
 
-def runTool(iMode, iPathCur):
+def run_synplify_gui(iPathTool, iPathSctipt):
+  subprocess.call([iPathTool, iPathSctipt])
+
+
+def runTool(iPrj, iSilent):
   '''
   Runs external tool for synthesis
   '''
-  log.debug('def runTool')
-  
-  synplify = toolchain.getPath(iMode)
-  synthesisScript = iPathCur + '/../synthesis/synthesis.prj'
-  
-  if iMode == 'synplify_batch':
-    run = '"%s" %s %s %s %s' % (synplify,
-                  '-product synplify_premier',
-                  '-licensetype synplifypremier',
-                  '-batch', synthesisScript)
-    subprocess.call(run)
-  elif iMode == 'synplify_gui':
-    subprocess.call([synplify, synthesisScript])
-    return #doesn't need to parse log
-  else:
-    log.error('No such tool for synthesis: ' + iMode)
-        
-  return parseLog(iPathCur)
-  
+  log.debug('def runTool IN')
+  if iPrj.mode == 'synplify_batch':
+    run_synplify_batch(iPathTool = iPrj.pathTool, iPathSctipt = iPrj.pathScript)
+    parseLog(iPrj = iPrj, iSilent = iSilent)
+  elif iPrj.mode == 'synplify_gui':
+    run_synplify_gui(iPathTool = iPrj.pathTool, iPathSctipt = iPrj.pathScript)
 
 
-def run(iMode = 'synplify_batch', iTopModule = ''):
+def run(iTopModule, iMode = 'synplify_batch', iSilent = False):
   log.debug('def run IN iMode='+iMode+' iTopModule='+iTopModule)
-  pathCur = os.getcwd()
-  genScript(iTopModule)
   # changing current location to synthesis directory
-  preparation(pathCur)
-  logFile = runTool(iMode = iMode, iPathCur = pathCur)
-  os.chdir(pathCur)
+  with Project(iTopModule = iTopModule, iMode = iMode) as prj:
+    genScript(iPrj = prj)
+    runTool(iPrj = prj, iSilent = iSilent)
   log.info('Synthesis done!')  
-  return logFile
+
+

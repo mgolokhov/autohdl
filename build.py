@@ -42,43 +42,6 @@ def genPredef(iPath, iDsnName):
     f.close()
   log.debug('def genParedef OUT')
 
-#BUGAGA: errors in logic
-def _getDeps(iDsnName = '', iBuildFile = 'build.xml'):
-  '''
-  Returns: dictionary key=dsnName, value=list of dependences as full path;
-  '''
-  log.debug('def getDeps IN iDsnName='+iDsnName+' iBuildFile='+iBuildFile)
-  if not os.path.exists(iBuildFile):
-    log.warning("Can't find file: " + iBuildFile)
-    return
-  
-  pathBuildFile = os.path.abspath(iBuildFile).replace('\\','/')
-  pathDsn = '/'.join(pathBuildFile.split('/')[:-3])
-
-  dom = minidom.parse(pathBuildFile)
-  dsnNodes = dom.firstChild.childNodes
-  dependences = {}
-  for node in  dsnNodes:
-    print 'WTF!'
-    if node.attributes:
-      dsnName = node.attributes['id'].value
-      dep = node.getElementsByTagName('dep')
-      print 'deps!!! ', dep.toxml()
-      dsnDep = []
-      for k in dep:
-        pathDep = (k.firstChild.data).strip()
-        pathDepAbs = '%s/%s' % (pathDsn, pathDep)
-        pathDepAbs = os.path.abspath(pathDepAbs).replace('\\','/')
-        if not os.path.exists(pathDepAbs):
-          log.warning('Wrong dep path: '+pathDepAbs+'; in file: '+iBuildFile)
-          continue 
-        dsnDep.append(pathDepAbs)
-      dependences[dsnName] = dsnDep
-      if iDsnName == dsnName:
-        break
-  log.debug('def getDeps OUT dependences='+str(dependences))
-  return dependences
-
 
 def getDeps(iDsnName = '', iBuildFile = 'build.xml'):
   '''
@@ -139,11 +102,9 @@ def getSrcExtensions(iTag, iBuildFile='../resource/build.xml'):
   except BuildException as msg:
     log.warning(msg)
     if iTag == 'synthesis_ext':
-      global gSYN_EXT
       extensions = gSYN_EXT
       log.warning("Can't get extensions from build.xml. Using default="+str(gSYN_EXT))
     elif iTag == 'implement_ext':
-      global gIMPL_EXT
       extensions = gIMPL_EXT
       log.warning("Can't get extensions from build.xml. Using default="+str(gIMPL_EXT))
     else:

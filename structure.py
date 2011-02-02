@@ -67,25 +67,15 @@ class Design(object):
     self.initFilesDep()
 
   def initFilesMain(self):
-    SYN_EXT = ['v', 'vm', 'vhd', 'vhdl']
-    ext = []
     ext = build.getSrcExtensions(iTag = 'synthesis_ext',
                                  iBuildFile = self.pathRoot+'/resource/build.xml')
-    if not ext:
-      log.warning("Can't get extensions from build.xml. Using default="+str(SYN_EXT))
-      ext = SYN_EXT
-    only = ['/src/.*?.'+i+'$' for i in ext]
+    only = ['/src/.*?\.'+i+'$' for i in ext]
     self._filesMain = search(iPath = self.pathRoot, iOnly = only) 
   
   def initFilesDep(self):
-    SYN_EXT = ['v', 'vm', 'vhd', 'vhdl']
-    ext = []
     ext = build.getSrcExtensions(iTag = 'synthesis_ext',
                                  iBuildFile = self.pathRoot+'/resource/build.xml')
-    if not ext:
-      log.warning("Can't get extensions from build.xml. Using default="+str(SYN_EXT))
-      ext = SYN_EXT
-    only = [i+'$' for i in ext]
+    only = ['\.'+i+'$' for i in ext]
     self._filesDep = getDepSrc(iSrc = self.filesMain, iOnly = only)
   
   def __str__(self):
@@ -174,12 +164,17 @@ def search(iPath = '.', iIgnore = [], iOnly = []):
   '''
   log.debug('def search IN iPath='+iPath+' iIgnore='+str(iIgnore)+' iOnly='+str(iOnly))
   resFiles = []
-  for root, dirs, files in os.walk(iPath):
-    for f in files:
-      fullPath = '%s/%s' % (root, f)
-      fullPath = (os.path.abspath(fullPath)).replace('\\', '/')
-      if filter(iFiles = [fullPath], iOnly = iOnly, iIgnore = iIgnore): 
-        resFiles.append(fullPath)
+  if os.path.isfile(iPath):
+    fullPath = (os.path.abspath(iPath)).replace('\\', '/')
+    if filter(iFiles = [fullPath], iOnly = iOnly, iIgnore = iIgnore): 
+      resFiles.append(fullPath)
+  else:  
+    for root, dirs, files in os.walk(iPath):
+      for f in files:
+        fullPath = '%s/%s' % (root, f)
+        fullPath = (os.path.abspath(fullPath)).replace('\\', '/')
+        if filter(iFiles = [fullPath], iOnly = iOnly, iIgnore = iIgnore): 
+          resFiles.append(fullPath)
   log.debug('def search OUT resFiles='+str(resFiles))
   return resFiles
 

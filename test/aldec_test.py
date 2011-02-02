@@ -3,12 +3,16 @@ import os
 import shutil
 import unittest
 
-
-sys.path.insert(0, '..')
-import utils
-from aldec import *
-from hdlLogger import *
-#logging.disable(logging.ERROR)
+try:
+  sys.path.insert(0, '..')
+  import utils
+  from aldec import *
+  from hdlLogger import *
+except ImportError:
+  import autohdl.test.utils
+  from autohdl.aldec import *
+  from autohdl.hdlLogger import *
+  
 
 class Tests(unittest.TestCase):
   
@@ -32,4 +36,5 @@ class Tests(unittest.TestCase):
     
     
 if __name__ == '__main__':
+  logging.disable(logging.ERROR)
   unittest.main()

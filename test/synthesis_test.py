@@ -3,11 +3,13 @@ import os
 import shutil
 import unittest
 
-
-sys.path.insert(0, '..')
-from synthesis import *
-from hdlLogger import *
-#consoleHandler.setLevel(logging.DEBUG)
+try:
+  sys.path.insert(0, '..')
+  from synthesis import *
+  from hdlLogger import *
+except ImportError:
+  from autohdl.synthesis import *
+  from autohdl.hdlLogger import *
 
 class Tests(unittest.TestCase):
   if not os.path.exists('tmp_test_dir'):
@@ -161,14 +163,41 @@ class Tests(unittest.TestCase):
     
     os.chdir('../..')
     
+    
+  def test_getSrcFromFileSys(self):
+    if not os.path.exists('tmp_test_dir/src'): os.makedirs('tmp_test_dir/src')
+    if not os.path.exists('tmp_test_dir/.svn'): os.makedirs('tmp_test_dir/.svn')
+    if not os.path.exists('tmp_test_dir/src/.svn'): os.makedirs('tmp_test_dir/src/.svn')
+    if not os.path.exists('tmp_test_dir/script'): os.makedirs('tmp_test_dir/script')
+    open('tmp_test_dir/src/should1.v', 'w').close()
+    open('tmp_test_dir/src/should1.vm', 'w').close()
+    open('tmp_test_dir/src/should1.vhdl', 'w').close()
+    open('tmp_test_dir/src/nope.txt', 'w').close()
+    open('tmp_test_dir/src/v', 'w').close()
+    open('tmp_test_dir/src/.svn/nope.v', 'w').close()
+    open('tmp_test_dir/.svn/nope.v', 'w').close()
+    open('tmp_test_dir/nope.v', 'w').close()
+    open('tmp_test_dir/src.v', 'w').close()
+    os.chdir('tmp_test_dir/script')
+    import structure
+    dsn = structure.Design(iPath = '..', iInit = False, iGen = False)
+    filesPath = os.path.abspath(os.getcwd()+'/../src').replace('\\','/')
+    expected = [filesPath+'/should1.v',
+                filesPath+'/should1.vm',
+                filesPath+'/should1.vhdl']
+    os.chdir('../..')
+    self.assertEqual(set(expected), set(getSrcFromFileSys(iDsn = dsn)))
+
 
 def runTests():
+  consoleHandler.setLevel(logging.ERROR)
   tests = [
            'test_mergeSrc1', 
            'test_synchTopModule',
            'test_synchResultFile',
            'test_synchSrcFile',
-           'test_genScript'
+           'test_genScript',
+           'test_getSrcFromFileSys'
           ]
 
   suite = unittest.TestSuite(map(Tests, tests))

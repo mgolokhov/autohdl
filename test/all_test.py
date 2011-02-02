@@ -1,3 +1,4 @@
+import sys
 import unittest
 
 import build_test
@@ -7,9 +8,14 @@ import synthesis_test
 import toolchain_test
 import implement_test
 
+try:
+  sys.path.insert(0, '..')
+  from hdlLogger import *
+except ImportError:
+  from autohdl.hdlLogger import *
+logging.disable(logging.ERROR)
 
 loader = unittest.TestLoader()
-
 suite = loader.loadTestsFromModule(build_test)
 suite.addTests(loader.loadTestsFromModule(instance_test))
 suite.addTests(loader.loadTestsFromModule(structure_test))

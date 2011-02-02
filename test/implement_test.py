@@ -1,7 +1,12 @@
 import sys
 import unittest
-sys.path.append('..')
-from implement import *
+
+try:
+  sys.path.append('..')
+  from implement import *
+except ImportError:
+  from autohdl.implement import *
+
 
 class Tests(unittest.TestCase):
   @unittest.skip("BUGAGA: unfinished")

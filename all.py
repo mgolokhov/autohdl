@@ -14,6 +14,8 @@ Drops package name and gets alias as module names.
 import synthesis
 import implement
 import instance
+import toolchain
+import build
 import structure
 import aldec
 import build

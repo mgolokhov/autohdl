@@ -3,11 +3,13 @@ import os
 import shutil
 import unittest
 
-
-sys.path.insert(0, '..')
-from structure import *
-from hdlLogger import *
-logging.disable(logging.ERROR)
+try:
+  sys.path.insert(0, '..')
+  from structure import *
+  from hdlLogger import *
+except ImportError:
+  from autohdl.structure import *
+  from autohdl.hdlLogger import *
 
 
 class Tests(unittest.TestCase):
@@ -189,6 +191,7 @@ fileDep:
     print '\n'.join(res)
 
 def runTests():
+  logging.disable(logging.ERROR)
   tests = [
            'test_getDepSrc',
            'test_getLocToBuildXml',

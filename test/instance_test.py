@@ -3,10 +3,13 @@ import os
 import shutil
 import unittest
 
-sys.path.insert(0, '..')
-from instance import *
-from hdlLogger import *
-
+try:
+  sys.path.insert(0, '..')
+  from instance import *
+  from hdlLogger import *
+except ImportError:
+  from autohdl.instance import *
+  from autohdl.hdlLogger import *
 
 class Test(unittest.TestCase):
   def setUp(self):
