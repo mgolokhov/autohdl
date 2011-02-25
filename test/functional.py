@@ -6,6 +6,14 @@ import unittest
 
 
 class Test(unittest.TestCase):
+  def setUp(self):
+    if not os.path.exists('tmp_test_dir'):
+      os.mkdir('tmp_test_dir')
+
+  def tearDown(self):
+    if os.path.exists('tmp_test_dir'):
+       shutil.rmtree('tmp_test_dir') 
+         
   def test_main(self):
     path = os.path.dirname(__file__)
     curDir = os.getcwd().replace('\\', '/')

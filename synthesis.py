@@ -188,7 +188,7 @@ def run_synplify_batch(iPathTool, iPathSctipt):
   while True:
     where = log.tell()
     res = log.readline()
-    if res.find('Process took') != -1:
+    if res.find('Mapper successful!') != -1:
       done = True
     if res.endswith('\n'):
       print res

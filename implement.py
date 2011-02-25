@@ -82,16 +82,18 @@ def getPureFile(iSrc):
   '''
   Strip everything except file location.
   '''
-  log.debug('def getPureFile=> iSrc='+iSrc)
+  log.debug('def getPureFile IN iSrc='+iSrc)
   match = re.search(r'xfile\s+add\s+"([^"]+)"\s*#?', iSrc)
-  return match.group(1).strip().strip('"')
+  res = match.group(1).strip().strip('"')
+  log.debug('def getPureFile OUT res='+res)
+  return res
 
 
 def mergeSrc(iSrcFileSys, iSrcScript):
   '''
   Returns merged list with metadata.
   '''
-  log.debug('def mergeSrc<= iSrcFileSys='+str(iSrcFileSys)+'iSrcScript='+str(iSrcScript))
+  log.debug('def mergeSrc IN iSrcFileSys='+str(iSrcFileSys)+'iSrcScript='+str(iSrcScript))
   srcFileSys = iSrcFileSys[:]
   srcScript = iSrcScript[:]
   merged = []
@@ -109,7 +111,7 @@ def mergeSrc(iSrcFileSys, iSrcScript):
       
   for src in srcFileSys:
     merged.append(['xfile add "' + src + '"', 'new'])
-  log.debug('def mergeSrc=> merged='+str(merged))
+  log.debug('def mergeSrc OUT merged='+str(merged))
   return merged
 
 
@@ -231,14 +233,13 @@ def genScript(iTopModule = ''):
   log.debug('def genScript=> iTopModule='+iTopModule)
   pathCur = os.getcwd().replace('\\', '/')
   
-  if needResynthesis(iTopModule):
-    log.info('Resynthesis...')
-    synthesis.run('synplify_batch', iTopModule = iTopModule)
+#  if needResynthesis(iTopModule):
+#    log.info('Resynthesis...')
+#    synthesis.run('synplify_batch', iTopModule = iTopModule)
 
   scriptContentSyn = getContentSyn()
   scriptContentImpl = getContentImpl()
   
-  global gSynToImpl
   scriptContentImplNew = refreshParams(scriptContentSyn,
                                       scriptContentImpl,
                                       gSynToImpl)
@@ -248,8 +249,12 @@ def genScript(iTopModule = ''):
   f.close()
 
 
+def genScript_m():
+  pass
+
+
 def run(iTopModule = ''):  
-  log.debug('def run=> iTopModule='+iTopModule)  
+  log.debug('def run IN iTopModule='+iTopModule)  
   try:
     if os.path.exists('../implement'):
       shutil.rmtree('../implement')
