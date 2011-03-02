@@ -4,6 +4,10 @@ import re
 import time
 import shutil
 import subprocess
+import ConfigParser
+import io
+
+import yaml
 
 import structure
 import toolchain
@@ -34,7 +38,9 @@ gWspScriptHeader = '''
 gPathTmp = '../aldec'
 
 
-gContentAdf = '''\
+
+
+gContentAdf = r'''
 [Project]
 Current Flow=Multivendor
 VCS=0
@@ -72,7 +78,7 @@ RUN_MODE_IMPL=0
 
 [IMPLEMENTATION]
 FLOW_STEPS_RESET=0
-UCF=src\top.ucf
+UCF=
 DEVICE_TECHNOLOGY_MIGRATION_LIST=
 FAMILY=Xilinx11x SPARTAN3E
 DEVICE=3s250etq144
@@ -96,7 +102,7 @@ SYNTH_TOOL_RESET=0
 DEVICE_SET_FLAG=1
 OBSOLETE_ALIASES=1
 VIEW_MODE=RTL
-TOPLEVEL=top
+TOPLEVEL=
 FAMILY=Xilinx11x SPARTAN3E
 OLD_FAMILY=Xilinx11x SPARTAN3E
 DEVICE=3s250etq144
@@ -203,38 +209,85 @@ HierarchyInformation=
 ShowHide=ShowTopLevel
 Selected=
 
+[Files]
 '''
 
 
-#[Groups]
-#
-#[Files]
-#
-#[Files.Data]
+def read_build_yaml():
+  build = yaml.safe_load(file('../resource/build.yaml', 'r'))
+  global gContentAdf
+  config = ConfigParser.RawConfigParser(allow_no_value=True)
+  config.optionxform = str
+  config.readfp(io.BytesIO(gContentAdf))
+  for key in build:
+    for section in config.sections():
+      try:
+        config.get(section, key)
+        config.set(section, key, build[key])
+      except ConfigParser.NoOptionError:
+        continue 
+  return config, build
+
+def gen_aws():
+  content = '[Designs]\ndsn=./dsn.adf'
+  f = open('../aldec/wsp.aws', 'w')
+  f.write(content)
+  f.close()
+  
+def gen_adf(iFilesMain, iFilesDep, iFilesTb, iConfig):
+  main = ['/' + i + '=-1' for i in iFilesMain]
+  dep  = ['dep/' + i + '=-1' for i in iFilesDep]
+  tb   = ['TestBench/' + i + '=-1' for i in iFilesTb]
+  src = '\n'.join(main+dep+tb)
+  iConfig.set('Files', src)
+  f = open('../aldec/dsn.adf', 'w')
+  iConfig.write(f)
+  f.close()
 
 
-# generate adf file from build.yaml
-# get src
-# get dep
-# append to adf
-# generate compile.cfg
+def gen_compile_cfg(iFiles):
+  src = [] 
+  for i in iFiles:
+    try:
+      res = '[file:.\\' + os.path.relpath(i) + ']\nEnabled=1'
+    except ValueError:
+      res = '[file:' + i + ']\nEnabled=1'
+    src.append(res)
+      
+  content = '\n'.join(src)
+  f = open('../aldec/compile.cfg', 'w')
+  f.write(content)
+  f.close()
+  
+def get_pattern_regexp(iBuild, iKey):
+  pattern = iBuild.get(iKey, [])
+  if iBuild.get('avhdl'):
+    pattern_avhdl = iBuild.get('avhdl').get(iKey)
+    if pattern_avhdl:
+      pattern += pattern_avhdl 
+  return pattern 
+
 
 def export():
-  dsnName = ''
-  f = open('../workspace.aws', 'w')
-  f.write(
-  '[Designs]\n'
-  'dsn=.\dsn.adf')
-  f.close()
-  global gContentAdf
-  str = gContentAdf
-  str += '[Files.Data]\n.\\mega_file.v'
-  f = open('../dsn.adf', 'w')
-  f.write(str)
-  f.close()
+  if not os.path.exists('../aldec/src'):
+    os.makedirs('../aldec/src')
+  config, build = read_build_yaml()
+  ignore = get_pattern_regexp(iBuild = build, iKey = 'ignore_regexp')
+  only = get_pattern_regexp(iBuild = build, iKey = 'only_regexp')
+  filesMain = structure.search(iPath = '../src', iIgnore = ignore, iOnly = only)
+  filesDep = list(structure.getDepSrc(iSrc=filesMain))
+  filesTb = structure.search(iPath='../Testbench', iIgnore = ignore, iOnly = only)
+  filesAll = filesMain + filesDep + filesTb
+  
+  gen_aws()
+  gen_adf(iFilesMain=filesMain,
+          iFilesDep=filesDep,
+          iFilesTb=filesTb,
+          iConfig=config)
+  gen_compile_cfg(iFiles=filesAll)
+    
   aldec = toolchain.getPath(iTag = 'avhdl_gui')
-#  os.chdir('..')
-#  subprocess.call(aldec +'../ workspace.aws')
+  subprocess.call(aldec+' ../aldec/wsp.aws')
   
 
 def getPathTmp(iDsn = ''):
@@ -491,8 +544,11 @@ def tb(iTopModule, iPrjName = '', iClean = False):
 
   
 if __name__ == '__main__':
-  print 'hi'
-
+#  res = yaml.load(t)
+#  print res.get('synthesis')
+#  print yaml.dump(res, default_flow_style=False)
+#  print res.get('key3')
+  pass
 
   
   
