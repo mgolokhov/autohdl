@@ -210,6 +210,7 @@ ShowHide=ShowTopLevel
 Selected=
 
 [Files]
+[Files.Data]
 '''
 
 
@@ -240,6 +241,9 @@ def gen_adf(iFilesMain, iFilesDep, iFilesTb, iConfig):
   tb   = ['TestBench/' + i + '=-1' for i in iFilesTb]
   src = '\n'.join(main+dep+tb)
   iConfig.set('Files', src)
+  tb_data = ['.\\' + os.path.relpath(i)+'=Verilog Test Bench' for i in iFilesTb] #os.path.relpath(i)
+  src_data = '\n'.join(tb_data)
+  iConfig.set('Files.Data', src_data)
   f = open('../aldec/dsn.adf', 'w')
   iConfig.write(f)
   f.close()
