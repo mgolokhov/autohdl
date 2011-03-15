@@ -209,6 +209,9 @@ def analyze(iPathFiles, ioParsed = {}, iUndefInst = {}):
       undefInst[undef] = iUndefInst[undef]
   log.debug('def analyze OUT undefInst='+str(undefInst))
   return undefInst
+
+
+
     
 
 

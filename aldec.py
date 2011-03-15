@@ -7,7 +7,9 @@ import subprocess
 import ConfigParser
 import io
 
-import yaml
+#import yaml
+#from autohdl.lib.yaml import yaml
+import autohdl.lib.yaml as yaml
 
 import structure
 import toolchain
@@ -215,7 +217,7 @@ Selected=
 
 
 def read_build_yaml():
-  build = yaml.safe_load(file('../resource/build.yaml', 'r'))
+  build = yaml.load(file('../resource/build.yaml', 'r'))
   global gContentAdf
   config = ConfigParser.RawConfigParser(allow_no_value=True)
   config.optionxform = str
@@ -241,7 +243,10 @@ def gen_adf(iFilesMain, iFilesDep, iFilesTb, iConfig):
   tb   = ['TestBench/' + i + '=-1' for i in iFilesTb]
   src = '\n'.join(main+dep+tb)
   iConfig.set('Files', src)
-  tb_data = ['.\\' + os.path.relpath(i)+'=Verilog Test Bench' for i in iFilesTb] #os.path.relpath(i)
+  
+  tb_data = ['.\\' + os.path.relpath(i)+'=Verilog Test Bench'
+             for i in iFilesTb
+             if os.path.splitext(i)[1] in ['.v']]
   src_data = '\n'.join(tb_data)
   iConfig.set('Files.Data', src_data)
   f = open('../aldec/dsn.adf', 'w')
@@ -279,9 +284,15 @@ def export():
   ignore = get_pattern_regexp(iBuild = build, iKey = 'ignore_regexp')
   only = get_pattern_regexp(iBuild = build, iKey = 'only_regexp')
   filesMain = structure.search(iPath = '../src', iIgnore = ignore, iOnly = only)
-  filesDep = list(structure.getDepSrc(iSrc=filesMain))
+  filesDep = list(structure.getDepSrc(iSrc=filesMain, iIgnore = ignore, iOnly = only))
   filesTb = structure.search(iPath='../Testbench', iIgnore = ignore, iOnly = only)
   filesAll = filesMain + filesDep + filesTb
+
+  build['src_main'] = filesMain
+  build['src_dep']  = [str(i) for i in filesDep]
+  build['src_tb']   = filesTb
+
+  yaml.dump(build, open('../resource/build.yaml', 'w'), default_flow_style=False)
   
   gen_aws()
   gen_adf(iFilesMain=filesMain,

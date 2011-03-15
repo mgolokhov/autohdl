@@ -42,7 +42,7 @@ setup(name='autohdl',
       description='Automatization Utilities',
       author='Max Golohov',
       author_email='hex_wer@mail.ru',
-      packages=['autohdl', 'autohdl.test', 'autohdl.lib'],
+      packages=['autohdl', 'autohdl.test', 'autohdl.lib', 'autohdl.lib.yaml'],
       package_data={'autohdl': data_resource},
       data_files=[('', ['autohdl/hdl.py'])]
      )

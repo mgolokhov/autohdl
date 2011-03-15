@@ -1,6 +1,8 @@
 from xml.dom import minidom
 import os
 
+import autohdl.lib.yaml as yaml
+
 from hdlLogger import *
 
 class BuildException(Exception):
@@ -43,7 +45,75 @@ def genPredef(iPath, iDsnName):
   log.debug('def genParedef OUT')
 
 
-def getDeps(iDsnName = '', iBuildFile = 'build.xml'):
+def getBuilds(iFiles):
+  '''
+  Input:  list/set of path to files with undefined instances
+  Output: one or set of path to build.yaml's
+  '''
+  pathBuilds = set()
+  for f in iFiles:
+    pathAsList = f.replace('\\','/').split('/')
+    if pathAsList.count('src'):
+      index = pathAsList.index('src')
+    else:
+      log.warning('Wrong location for source file: ' + iPathFile)
+      log.warning('Expecting in <dsn_name>/src/ directory')
+      continue
+    rootPath = '/'.join(pathAsList[:index])
+    pathBuild = os.path.join(rootPath, 'resource', 'build.yaml')
+    if not os.path.exists(pathBuild):
+      log.warning("Can't find build file: " + pathBuild)
+      continue
+    pathBuilds.add(pathBuild)
+  return pathBuilds
+    
+
+def getParam(iKey, iBuild = '../resource/build.yaml'):
+  build = yaml.load(open(iBuild, 'r'))
+  try:
+    param = build[iKey]
+  except KeyError:
+    log.error('No such key: '+iKey+'; in file: '+iBuild)
+    return
+  return param
+    
+    
+def getDeps(iBuilds):
+  '''
+  Input:  set of path to build.yaml's
+  Output: set of new paths/files to parse
+  '''
+  for pathBuild in iBuilds:
+    deps = getParam(iKey='dependences', iBuild=pathBuild)
+    path = set()
+    for d in deps:
+      if not os.path.exists(d):
+        log.warning('Path does not exists: '+ d + '; in file: ' + pathBuild)
+      else:
+        path.add(d)
+  return path
+
+
+
+def getDepTree(iFile):
+  if type(iFile) == type(""):
+    iFile = [iFile]
+  pathBuilds = getBuilds(iFile)
+  paths = getFiles(pathBuilds)
+  depTree = []
+  for path in paths:
+    if os.path.isfile(path):
+      depTree.append(path)
+    else:
+      for root, dirs, files in os.path.walk(path):
+        for f in files:
+          depTree.append(os.path.join(root, f))
+  return depTree
+
+  
+      
+
+def _getDeps(iDsnName = '', iBuildFile = 'build.xml'):
   '''
   Returns: dictionary key=dsnName, value=list of dependences as full path;
   '''
@@ -81,7 +151,25 @@ def getDeps(iDsnName = '', iBuildFile = 'build.xml'):
   return dependences
 
 
-def getSrcExtensions(iTag, iBuildFile='../resource/build.xml'):
+
+def getSrcExtensions(iTag, iBuildFile='../resource/build.yaml'):
+  if os.path.splitext(iBuildFile) != '.yaml':
+    iBuildFile = os.path.join(iBuildFile, 'resource', 'build.yaml')
+  if not os.path.exists(iBuildFile):
+    log.warning("No such path or file: " + iBuildFile)
+    return
+  
+  build = yaml.load(open(iBuildFile, 'r'))
+  ext = build.get(iTag)
+  if not ext:
+    log.warning("Can't get file extensions in file: " + iBuildFile)
+    return
+  extensions = [i.strip() for i in ext.split(';')]
+  return extensions
+
+
+
+def _getSrcExtensions(iTag, iBuildFile='../resource/build.xml'):
   '''
   Input: tag (e.g. synthesis_ext, implement_ext), path to buildXml;
   Output: list of extensions (e.g. [.v, .vhdl, .vm])

@@ -67,14 +67,14 @@ class Design(object):
     self.initFilesDep()
 
   def initFilesMain(self):
-    ext = build.getSrcExtensions(iTag = 'synthesis_ext',
-                                 iBuildFile = self.pathRoot+'/resource/build.xml')
+#    pass
+    ext = build.getSrcExtensions(iTag = 'synthesis_ext', iBuildFile = self.pathRoot)
     only = ['/src/.*?\.'+i+'$' for i in ext]
     self._filesMain = search(iPath = self.pathRoot, iOnly = only) 
   
   def initFilesDep(self):
-    ext = build.getSrcExtensions(iTag = 'synthesis_ext',
-                                 iBuildFile = self.pathRoot+'/resource/build.xml')
+#    pass
+    ext = build.getSrcExtensions(iTag = 'synthesis_ext', iBuildFile = self.pathRoot)
     only = ['\.'+i+'$' for i in ext]
     self._filesDep = getDepSrc(iSrc = self.filesMain, iOnly = only)
   
@@ -85,24 +85,39 @@ class Design(object):
     '\nfileMain:\n\t' + '\n\t'.join(self.filesMain) +\
     '\nfileDep:\n\t'  + '\n\t'.join(self.filesDep)
 
+  pathData = os.path.dirname(__file__)
+  
+  def _copyFile(self, iDestination):
+    pathDestination = os.path.join(self._pathRoot, iDestination)
+    pathSource = os.path.join(self.pathData, 'data', os.path.split(iDestination)[1])
+    if not os.path.exists(pathDestination):
+      shutil.copyfile(pathSource, pathDestination)
+  
   def _copyFiles(self):
     '''
     Copy data files to predefined destinations
     '''
     log.debug('def _copyFiles')
-    pathData = os.path.dirname(__file__)
 
-    pathDestination = '%s/%s/%s' % (self._pathRoot,'script','kungfu.py')
-    if not os.path.exists(pathDestination):
-      shutil.copyfile('%s/%s' % (pathData,'data/kungfu.py'), pathDestination)
-    
-    pathDestination = '%s/%s/%s' % (self._pathRoot,'resource','synthesis_default') 
-    if not os.path.exists(pathDestination):
-      shutil.copyfile('%s/%s' % (pathData,'data/synthesis_default'), pathDestination)
-    
-    pathDestination = '%s/%s/%s' % (self._pathRoot,'resource','implement_default')
-    if not os.path.exists(pathDestination):
-      shutil.copyfile('%s/%s' % (pathData,'data/implement_default'), pathDestination)
+    listToCopy = ['script/kungfu.py',
+                  'resource/synthesis_default',
+                  'resource/implement_default',
+                  'resource/build.yaml']
+    for l in listToCopy:
+      self._copyFile(iDestination = l)
+
+    #pathData = os.path.dirname(__file__)
+#    pathDestination = '%s/%s/%s' % (self._pathRoot,'script','kungfu.py')
+#    if not os.path.exists(pathDestination):
+#      shutil.copyfile('%s/%s' % (pathData,'data/kungfu.py'), pathDestination)
+#    
+#    pathDestination = '%s/%s/%s' % (self._pathRoot,'resource','synthesis_default') 
+#    if not os.path.exists(pathDestination):
+#      shutil.copyfile('%s/%s' % (pathData,'data/synthesis_default'), pathDestination)
+#    
+#    pathDestination = '%s/%s/%s' % (self._pathRoot,'resource','implement_default')
+#    if not os.path.exists(pathDestination):
+#      shutil.copyfile('%s/%s' % (pathData,'data/implement_default'), pathDestination)
   
   def genPredef(self):
     '''
@@ -247,7 +262,9 @@ def getDepSrc(iSrc, iIgnore = [], iOnly = []):
         log.warning('Undefined instance: '+inst+'; in file: '+undefNew[inst])
       break
     if undefNew:
-      files = getFilesFromXml(iUndefInst = undefNew, iIgnore = iIgnore, iOnly = only)
+#      files = getFilesFromXml(iUndefInst = undefNew, iIgnore = iIgnore, iOnly = only)
+      depTree = getDepTree(undefNew.values())
+      files = filter(depTree, iIgnore = iIgnore, iOnly = only)
     else:
       break
     undef = undefNew

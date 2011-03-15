@@ -1,0 +1,24 @@
+SYNTH_TOOL : MV_SYNPLIFY_PREMIER_C2009_06
+IMPL_TOOL  : MV_ISE111
+FAMILY     : Xilinx11x SPARTAN3E
+DEVICE     : 3s250etq144  # DCS2
+#DEVICE     : 3s250epq208  # ctrl_v3
+#DEVICE     : 3s250evq100  # ctrl_v4
+#DEVICE     : 3s1200efg320 # nexys2
+UCF        : 
+TOPLEVEL   : 
+
+ignore_regexp:
+- \.svn
+- \.git
+only_regexp:
+- *?\.v
+- *?\.vm
+- *?\.vhd
+- *?\.vhdl
+
+synthesis_ext: v; vm; vhd; vhdl
+implement_ext: ucf; edf; ndf; ngc
+
+#gSYN_EXT  = 'v; vm; vhd; vhdl'
+#gIMPL_EXT = 'ucf; edf; ndf; ngc'
