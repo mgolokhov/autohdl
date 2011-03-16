@@ -41,224 +41,57 @@ gPathTmp = '../aldec'
 
 
 
-
-gContentAdf = r'''
-[Project]
-Current Flow=Multivendor
-VCS=0
-version=3
-Current Config=compile
-
-[Settings]
-AccessRead=0
-AccessReadWrite=0
-AccessACCB=0
-AccessACCR=0
-AccessReadWriteSLP=0
-AccessReadTopLevel=1
-DisableC=1
-ENABLE_ADV_DATAFLOW=0
-FLOW_TYPE=HDL
-LANGUAGE=VERILOG
-REFRESH_FLOW=1
-SYNTH_TOOL=MV_SYNPLIFY_PREMIER_C2009_06
-RUN_MODE_SYNTH=1
-IMPL_TOOL=MV_ISE111
-CSYNTH_TOOL=<none>
-PHYSSYNTH_TOOL=<none>
-FLOWTOOLS=IMPL_WITH_SYNTH
-ON_SERVERFARM_SYNTH=0
-ON_SERVERFARM_IMPL=0
-ON_SERVERFARM_SIM=0
-DVM_DISPLAY=NO
-VerilogDirsChanged=1
-FAMILY=Xilinx11x SPARTAN3E
-SYNTH_STATUS=none
-IMPL_STATUS=none
-RUN_MODE_IMPL=0
-
-
-[IMPLEMENTATION]
-FLOW_STEPS_RESET=0
-UCF=
-DEVICE_TECHNOLOGY_MIGRATION_LIST=
-FAMILY=Xilinx11x SPARTAN3E
-DEVICE=3s250etq144
-SPEED=-5
-IS_BAT_MODE=0
-BAT_FILE=
-NETLIST=
-DEF_UCF=2
-OLD_FAMILY=Xilinx11x SPARTAN3E
-wasChanged_Change_Device_Speed=0
-wasChanged_Change_Device_Speed_To=0
-wasChanged_Change_Device_Speed_To2=0
-Place_And_Route_Mode_old_value=Normal
-JOB_DESCRIPTION=ImplementationTask
-SERVERFARM_INCLUDE_INPUT_FILES=*.*
-SERVERFARM_EXCLUDE_INPUT_FILES=log\*.*
-JOB_SFM_RESOURCE=
-SYNTH_TOOL_RESET=0
-
-[SYNTHESIS]
-DEVICE_SET_FLAG=1
-OBSOLETE_ALIASES=1
-VIEW_MODE=RTL
-TOPLEVEL=
-FAMILY=Xilinx11x SPARTAN3E
-OLD_FAMILY=Xilinx11x SPARTAN3E
-DEVICE=3s250etq144
-SPEED=-5
-ADDITIONAL_OPTIONS_ON_STARTUP=
-FORCE_GSR=no
-OP_COND=Default
-FIX_GATED_CLOCKS=3
-FIX_GENERATED_CLOCK=3
-ADD_SPECIAL_LIBRARY_SOURCES=1
-XILINX_92I_COMPATIBLE_MODE=0
-USE_NCF_FOR_TIMING_CONSTRAINTS=0
-ALTERA_MODELS=on
-USE_XILINX_XFLOW=0
-INCREMENTAL_FLOW=0
-ENCHANCED_OPTIMIZATION=1
-PMUXSLICE=1
-HARDCOPY_DEVICE_OPTION=1
-DOVERILOGHEADER=1
-INSERT_IO_PADS=1
-DISABLED_RESET=1
-HARD_LIMIT_FANOUT=0
-MAP_LOGIC=1
-PERFORM_CLIQUING=1
-SOFT_LCELLS=1
-UPDATE_MODELS=0
-VER_MODE=0
-MODULAR=0
-FORCE_RESET_PIN=1
-CLOCK_FREQ=1
-obtain_max_frequency=1
-FANOUT_LIMIT=10000
-FANIN_LIMIT=20
-OPTIMIZE_PERCENT=0
-MAX_TERMS=16
-REPORT_PATH=4000
-SYNTHESIS.USE_DEF_FANOUT=1
-SYNTHESIS.USE_DEF_FANIN=1
-SYMBOLIC_FSM=1
-FSM_EXPLORER=0
-FSM_ENCODE=default
-RESOURCE_SHARING=1
-RESULT_FORMAT=EDIF
-ADD_SYS_LIB=0
-CONSTRAINT_PATH=
-PROPERTY_PATH=
-SIMOUTFORM=2
-AUTO_CLOSE_GUI=0
-OVERRIDE_EXISTING_PROJECT=1
-Retiming=0
-Pipeline=1
-VERILOG_LANGUAGE=SystemVerilog
-VERILOG_COMPILER_DIRECTIVES=
-PHYSICAL_SYNTHESIS=0
-USE_TIMEQUEST_TIMING_ANALYZER=0
-ENABLE_ADVANCED_LUT_COMBINING=1
-COMPILE_WITH_DESIGNWARE_LIBRARY=0
-FAST_SYNTHESIS=0
-NETLIST_FORMAT=
-POWERUP_VALUE_OF_A_REGISTER=0
-QUARTUS_VERSION=Quartus II 7.2
-PROMOTE_GLOBAL_BUFFER_THRESHOLD=50
-NUMBER_OF_CRITICAL_PATHS=
-NUMBER_OF_START_END_POINTS=
-GENERATE_ISLAND_REPORT=1
-PATH_PER_ISLAND=10
-GROUP_RANGE=0.5
-GLOBAL_RANGE=0.5
-ENABLE_NETLIST_OPTIMIZATION=0
-FEEDTHROUGH_OPTIMIZATION=0
-CONSTANT_PROPAGATION=0
-CREATE_LEVEL_HIERARCHY=0
-CREATE_MAC_HIERARCHY=1
-USE_CLOCK_PERIOD_FOR_UNCONSTRAINED_IO=0
-ALLOW_DUPLICATE_MODULES=0
-ANNOTATED_PROPERTIES_FOR_ANALYST=1
-CONSERVATIVE_REGISTER_OPTIMIZATION=0
-WRITE_VERIFICATION_INTERFACE_FORMAT_FILE=1
-WRITE_VENDOR_CONSTRAINT_FILE=1
-PUSH_TRISTATES=1
-SYNTHESIS_ONOFF_IMPLEMENTED_AS_TRANSLATE_ONOFF=0
-VHDL_2008=0
-VENDOR_COMPATIBLE_MODE=0
-DISABLE_SEQUENTIAL_OPTIMIZATIONS=0
-HARDCOPY_II_DEVICE=
-STRATIX_II_DEVICE=
-STRATIX_II_SPEED=
-NETLIST_RESTRUCTURE_FILES=
-DESIGN_PLANS_FILES=
-JOB_DESCRIPTION=SynthesisTask
-SERVERFARM_INCLUDE_INPUT_FILES=*.*
-SERVERFARM_EXCLUDE_INPUT_FILES=log\*.*:implement\*.*
-JOB_SFM_RESOURCE=
-LAST_RUN=1297366639
-
-[PHYS_SYNTHESIS]
-FAMILY=Xilinx11x SPARTAN3E
-DEVICE=3s250etq144
-SPEED=-5
-
-[HierarchyViewer]
-SortInfo=u
-HierarchyInformation=
-ShowHide=ShowTopLevel
-Selected=
-
-[Files]
-[Files.Data]
-'''
-
-
-def read_build_yaml():
-  build = yaml.load(file('../resource/build.yaml', 'r'))
-  global gContentAdf
+def synch_adf(iBuildContent):
+  pathDefaultAdf = os.path.join(os.path.dirname(__file__), 'data', 'aldec_adf')
+  contentAdf = open(pathDefaultAdf, 'r').read()
   config = ConfigParser.RawConfigParser(allow_no_value=True)
   config.optionxform = str
-  config.readfp(io.BytesIO(gContentAdf))
-  for key in build:
+  config.readfp(io.BytesIO(contentAdf))
+  for key in iBuildContent:
     for section in config.sections():
       try:
         config.get(section, key)
-        config.set(section, key, build[key])
+        config.set(section, key, iBuildContent[key])
       except ConfigParser.NoOptionError:
         continue 
-  return config, build
+  return config
+
 
 def gen_aws():
   content = '[Designs]\ndsn=./dsn.adf'
   f = open('../aldec/wsp.aws', 'w')
   f.write(content)
   f.close()
+
   
-def gen_adf(iFilesMain, iFilesDep, iFilesTb, iConfig):
+def gen_adf(iFilesMain, iFilesDep, iFilesTb, iBuild):
+  
   main = ['/' + i + '=-1' for i in iFilesMain]
   dep  = ['dep/' + i + '=-1' for i in iFilesDep]
   tb   = ['TestBench/' + i + '=-1' for i in iFilesTb]
-  src = '\n'.join(main+dep+tb)
-  iConfig.set('Files', src)
+  src_all = '\n'.join(main+dep+tb)
   
-  tb_data = ['.\\' + os.path.relpath(i)+'=Verilog Test Bench'
-             for i in iFilesTb
-             if os.path.splitext(i)[1] in ['.v']]
-  src_data = '\n'.join(tb_data)
-  iConfig.set('Files.Data', src_data)
+  src_tb = ['.\\' + os.path.relpath(i) + '=Verilog Test Bench'
+            for i in iFilesTb
+            if os.path.splitext(i)[1] in ['.v']]
+  src_tb = '\n'.join(src_tb)
+
+  config = synch_adf(iBuild)
+  config.set('Files', src_all)
+  config.set('Files.Data', src_tb)
+  
   f = open('../aldec/dsn.adf', 'w')
-  iConfig.write(f)
+  config.write(f)
   f.close()
 
 
 def gen_compile_cfg(iFiles):
   src = [] 
+  start = os.path.dirname('../aldec/compile.cfg')
   for i in iFiles:
+    path = os.path.abspath(i)
     try:
-      res = '[file:.\\' + os.path.relpath(i) + ']\nEnabled=1'
+      res = '[file:.\\' + os.path.relpath(path = path, start = start) + ']\nEnabled=1'
     except ValueError:
       res = '[file:' + i + ']\nEnabled=1'
     src.append(res)
@@ -268,43 +101,50 @@ def gen_compile_cfg(iFiles):
   f.write(content)
   f.close()
   
-def get_pattern_regexp(iBuild, iKey):
-  pattern = iBuild.get(iKey, [])
-  if iBuild.get('avhdl'):
-    pattern_avhdl = iBuild.get('avhdl').get(iKey)
-    if pattern_avhdl:
-      pattern += pattern_avhdl 
-  return pattern 
 
+def clean_aldec():
+  cl = structure.search(iPath = '../aldec', iIgnore = ['/implement/', '/synthesis/', '/src/'])
+  for i in cl:
+    if os.path.isdir(i):
+      shutil.rmtree(i)
+    else:
+      os.remove(i)
 
 def export():
+  clean_aldec()
   if not os.path.exists('../aldec/src'):
     os.makedirs('../aldec/src')
-  config, build = read_build_yaml()
-  ignore = get_pattern_regexp(iBuild = build, iKey = 'ignore_regexp')
-  only = get_pattern_regexp(iBuild = build, iKey = 'only_regexp')
+  
+  buildContent = build.load()
+  ignore = buildContent.get('ignore_regexp', [])
+  only = buildContent.get('only_regexp', [])
+  
   filesMain = structure.search(iPath = '../src', iIgnore = ignore, iOnly = only)
   filesDep = list(structure.getDepSrc(iSrc=filesMain, iIgnore = ignore, iOnly = only))
   filesTb = structure.search(iPath='../Testbench', iIgnore = ignore, iOnly = only)
-  filesAll = filesMain + filesDep + filesTb
 
-  build['src_main'] = filesMain
-  build['src_dep']  = [str(i) for i in filesDep]
-  build['src_tb']   = filesTb
+  buildContent['src_main'] = filesMain
+  buildContent['src_dep']  = [str(i) for i in filesDep]
+  buildContent['src_tb']   = filesTb
 
-  yaml.dump(build, open('../resource/build.yaml', 'w'), default_flow_style=False)
+  build.dump(iContent = buildContent)
   
   gen_aws()
   gen_adf(iFilesMain=filesMain,
           iFilesDep=filesDep,
           iFilesTb=filesTb,
-          iConfig=config)
+          iBuild=buildContent)
+  
+  filesAll = filesMain + filesDep + filesTb
   gen_compile_cfg(iFiles=filesAll)
     
-  aldec = toolchain.getPath(iTag = 'avhdl_gui')
-  subprocess.call(aldec+' ../aldec/wsp.aws')
-  
-
+  subprocess.Popen('python ' + os.path.dirname(__file__) + '/aldec_run.py')  
+    
+#  aldec = toolchain.getPath(iTag = 'avhdl_gui')
+#  subprocess.Popen(aldec+' ../aldec/wsp.aws')
+######################################################################
+######################################################################
+######################################################################
 def getPathTmp(iDsn = ''):
   '''
   Defines and creates temporary folder.
@@ -499,23 +339,6 @@ def clean(iPath, iPrjName):
     print 'wsp to del=', wsp
 
       
-#def export(iTopModule = '', iDsnName = '', iClean = False):
-#  '''
-#  Exports all design in Aldec.
-#  '''
-#  log.debug('def export IN iTopModule='+iTopModule+' iDsnName='+iDsnName+' iClean='+str(iClean))
-#  dsn = structure.Design(iPath = '..', iInit = False)
-#  if iDsnName:
-#    dsnName = iDsnName
-#  else:
-#    dsnName = dsn.name
-#  path = getPathTmp(dsn)
-#  if iClean:
-#    clean(path, dsnName)
-##  gen_run(dsn)
-#  log.info('Export done')
-#  return dsn
-
 
 def setPrjName(iDsnName, iTopModule = '', iPrjName = ''):
   if iPrjName:

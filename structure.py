@@ -16,6 +16,9 @@ class StructureException(Exception):
     return self.string
 
 
+gPredefined = ['src', 'TestBench', 'resource', 'script']
+
+
 class Design(object):
   def __init__(self, iName = '', iPath = '.', iGen = True, iInit = True):
     path = os.path.abspath(iPath).replace('\\','/')
@@ -67,23 +70,43 @@ class Design(object):
     self.initFilesDep()
 
   def initFilesMain(self):
-#    pass
-    ext = build.getSrcExtensions(iTag = 'synthesis_ext', iBuildFile = self.pathRoot)
-    only = ['/src/.*?\.'+i+'$' for i in ext]
-    self._filesMain = search(iPath = self.pathRoot, iOnly = only) 
+    pass
+#    ext = build.getSrcExtensions(iTag = 'synthesis_ext', iBuildFile = self.pathRoot)
+#    only = ['/src/.*?\.'+i+'$' for i in ext]
+#    self._filesMain = search(iPath = self.pathRoot, iOnly = only) 
   
   def initFilesDep(self):
-#    pass
-    ext = build.getSrcExtensions(iTag = 'synthesis_ext', iBuildFile = self.pathRoot)
-    only = ['\.'+i+'$' for i in ext]
-    self._filesDep = getDepSrc(iSrc = self.filesMain, iOnly = only)
+    pass
+#    ext = build.getSrcExtensions(iTag = 'synthesis_ext', iBuildFile = self.pathRoot)
+#    only = ['\.'+i+'$' for i in ext]
+#    self._filesDep = getDepSrc(iSrc = self.filesMain, iOnly = only)
   
   def __str__(self):
+    structure = []
+    for d in os.listdir(self.pathRoot):
+      if d in gPredefined:
+        structure.append('\t' + d)
+#      if d not in gPredefined:
+#        structure.append(d+' -external')
+#        continue
+
+        for root, dirs, files in os.walk(d):
+          for d in dirs:
+            adirectory = os.path.join(root, d)
+            if filter(iFiles = adirectory, iIgnore = ['\.git', '\.svn']):
+              structure.append('\t\t' + d)
+          for f in files:
+            afile = os.path.join(root, f)
+            if filter(iFiles = [afile], iIgnore = ['\.git', '\.svn']):
+              structure.append('\t\t' + f)
+
     return \
-    'DsnName: '       + self.name +\
-    '\npathRoot:\n\t' + self.pathRoot +\
+    'Design name: '       + self.name +\
+    '\nRoot path:\n\t' + self.pathRoot +\
+    '\nStructure:\n'    + '\n'.join(structure) +\
     '\nfileMain:\n\t' + '\n\t'.join(self.filesMain) +\
     '\nfileDep:\n\t'  + '\n\t'.join(self.filesDep)
+    
 
   pathData = os.path.dirname(__file__)
   
@@ -106,26 +129,13 @@ class Design(object):
     for l in listToCopy:
       self._copyFile(iDestination = l)
 
-    #pathData = os.path.dirname(__file__)
-#    pathDestination = '%s/%s/%s' % (self._pathRoot,'script','kungfu.py')
-#    if not os.path.exists(pathDestination):
-#      shutil.copyfile('%s/%s' % (pathData,'data/kungfu.py'), pathDestination)
-#    
-#    pathDestination = '%s/%s/%s' % (self._pathRoot,'resource','synthesis_default') 
-#    if not os.path.exists(pathDestination):
-#      shutil.copyfile('%s/%s' % (pathData,'data/synthesis_default'), pathDestination)
-#    
-#    pathDestination = '%s/%s/%s' % (self._pathRoot,'resource','implement_default')
-#    if not os.path.exists(pathDestination):
-#      shutil.copyfile('%s/%s' % (pathData,'data/implement_default'), pathDestination)
   
   def genPredef(self):
     '''
     Generates predefined structure
     '''
     log.debug('def genPredef')
-    predefined = ['src', 'TestBench', 'resource', 'script']
-    for d in predefined:
+    for d in gPredefined:
       create = '%s/%s' % (self._pathRoot, d)
       if not os.path.exists(create):
         os.makedirs(create)
@@ -146,6 +156,9 @@ def filter(iFiles, iIgnore = [], iOnly = []):
   log.debug('def filter IN iFiles='+str(iFiles)+' iIgnore='+str(iIgnore)+' iOnly='+str(iOnly))
   if not iIgnore and not iOnly:
     return iFiles
+  # make a list if there is one file
+  if type(iFiles) == type(''):
+    iFiles = [iFiles]
   
   files = iFiles[:]
   
@@ -188,7 +201,7 @@ def search(iPath = '.', iIgnore = [], iOnly = []):
       for f in files:
         fullPath = '%s/%s' % (root, f)
         fullPath = (os.path.abspath(fullPath)).replace('\\', '/')
-        if filter(iFiles = [fullPath], iOnly = iOnly, iIgnore = iIgnore): 
+        if filter(iFiles = fullPath, iOnly = iOnly, iIgnore = iIgnore): 
           resFiles.append(fullPath)
   log.debug('def search OUT resFiles='+str(resFiles))
   return resFiles
@@ -244,12 +257,13 @@ def getFilesFromXml(iUndefInst, iIgnore = [], iOnly = []):
   return list(possibleFiles)
 
       
-def getDepSrc(iSrc, iIgnore = [], iOnly = []):
+def getDepSrc(iSrc, iIgnore = None, iOnly = None):
   log.debug('def getDepSrc IN iSrc='+str(iSrc)+' iIgnore='+str(iIgnore)+' iOnly='+str(iOnly))
-  if not iIgnore and not iOnly:
-    only = build.getSrcExtensions(iTag = 'synthesis_ext')
-  else:
-      only = iOnly
+  iIgnore = iIgnore or []
+  iOnly = iOnly or []
+  only = build.getSrcExtensions(iTag = 'dep_parse_ext')
+  only += iOnly
+  
   files = set(iSrc)
   parsed = {}
   undef = {}
@@ -263,7 +277,7 @@ def getDepSrc(iSrc, iIgnore = [], iOnly = []):
       break
     if undefNew:
 #      files = getFilesFromXml(iUndefInst = undefNew, iIgnore = iIgnore, iOnly = only)
-      depTree = getDepTree(undefNew.values())
+      depTree = build.getDepTree(undefNew.values())
       files = filter(depTree, iIgnore = iIgnore, iOnly = only)
     else:
       break

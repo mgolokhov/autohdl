@@ -3,6 +3,7 @@ from autohdl.all import *
 
 top = 'YOUR_TOP_MODULE_NAME'
 
+aldec.export()
 # test them ALL!
 #aldec.tb(iTopModule = top)
 

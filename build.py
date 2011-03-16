@@ -1,7 +1,9 @@
 from xml.dom import minidom
+from collections import OrderedDict
 import os
 
 import autohdl.lib.yaml as yaml
+
 
 from hdlLogger import *
 
@@ -16,33 +18,72 @@ gSYN_EXT  = 'v; vm; vhd; vhdl'
 gIMPL_EXT = 'ucf; edf; ndf; ngc' 
 
 
+class OrderedDictYAMLLoader(yaml.Loader):
+  """
+  A YAML loader that loads mappings into ordered dictionaries.
+  """
+
+  def __init__(self, *args, **kwargs):
+    yaml.Loader.__init__(self, *args, **kwargs)
+
+    self.add_constructor(u'tag:yaml.org,2002:map', type(self).construct_yaml_map)
+    self.add_constructor(u'tag:yaml.org,2002:omap', type(self).construct_yaml_map)
+
+  def construct_yaml_map(self, node):
+    data = OrderedDict()
+    yield data
+    value = self.construct_mapping(node)
+    data.update(value)
+
+  def construct_mapping(self, node, deep=False):
+    if isinstance(node, yaml.MappingNode):
+      self.flatten_mapping(node)
+    else:
+      raise yaml.constructor.ConstructorError(None, None,
+            'expected a mapping node, but found %s' % node.id, node.start_mark)
+
+    mapping = OrderedDict()
+    for key_node, value_node in node.value:
+      key = self.construct_object(key_node, deep=deep)
+      try:
+        hash(key)
+      except TypeError, exc:
+        raise yaml.constructor.ConstructorError('while constructing a mapping',
+            node.start_mark, 'found unacceptable key (%s)' % exc, key_node.start_mark)
+      value = self.construct_object(value_node, deep=deep)
+      mapping[key] = value
+    return mapping
+
+
 def genPredef(iPath, iDsnName):
-  '''
-  Generates predefined build.xml
-  '''
-  global gSYN_EXT
-  global gIMPL_EXT
-  log.debug('def genPredef IN iPath='+iPath+' iDsnName='+iDsnName)
-  buildContent = '''\
-  <!--default build-->
-  <wsp>
-    <dsn id="{DESIGN_NAME}">
-      <dep>{DEP}</dep>
-      <synthesis_ext>{SYN_EXT}</synthesis_ext>
-      <implement_ext>{IMPL_EXT}</implement_ext>
-    </dsn>
-  </wsp>
-  '''.format(DESIGN_NAME=iDsnName,
-             DEP='',
-             SYN_EXT = gSYN_EXT,
-             IMPL_EXT = gIMPL_EXT
-             )
-  pathBuild = iPath+'/build.xml'
-  if not os.path.exists(pathBuild):
-    f = open(pathBuild, 'w')
-    f.write(buildContent)
-    f.close()
-  log.debug('def genParedef OUT')
+  pass
+
+
+def load(iBuildFile = '../resource/build.yaml'):
+#  content = yaml.load(open(iBuildFile, 'r'), OrderedDictYAMLLoader)
+  content = yaml.load(open(iBuildFile, 'r'))
+  return content
+
+
+def dump(iContent, iBuildFile = '../resource/build.yaml'):
+#  content = []
+#  for i in iContent:
+#    if type(iContent[i]) == type(list()):
+#      content.append(i + ': ')
+#      for a in iContent[i]:
+#        if os.path.exists(a):
+#          a = os.path.relpath(path=a, start=os.path.dirname(iBuildFile))
+#        content.append('- ' + a)
+#    else:
+#      if os.path.exists(i):
+#        i = os.path.relpath(path=iContent[i], start=os.path.dirname(iBuildFile))
+#      content.append(i + ': ' + str(iContent[i]))
+#
+#  f = open(iBuildFile, 'w')
+#  f.write('\n'.join(content))
+#  f.close()
+  yaml.dump(iContent, open(iBuildFile, 'w'), default_flow_style=False)
+    
 
 
 def getBuilds(iFiles):
@@ -68,13 +109,13 @@ def getBuilds(iFiles):
   return pathBuilds
     
 
-def getParam(iKey, iBuild = '../resource/build.yaml'):
-  build = yaml.load(open(iBuild, 'r'))
+def getParam(iKey, iBuild = '../resource/build.yaml', iDefault = []):
+  content = load(iBuild)
   try:
-    param = build[iKey]
+    param = content[iKey]
   except KeyError:
     log.error('No such key: '+iKey+'; in file: '+iBuild)
-    return
+    return iDefault
   return param
     
     
@@ -84,7 +125,7 @@ def getDeps(iBuilds):
   Output: set of new paths/files to parse
   '''
   for pathBuild in iBuilds:
-    deps = getParam(iKey='dependences', iBuild=pathBuild)
+    deps = getParam(iKey='src_dep', iBuild=pathBuild)
     path = set()
     for d in deps:
       if not os.path.exists(d):
@@ -99,13 +140,13 @@ def getDepTree(iFile):
   if type(iFile) == type(""):
     iFile = [iFile]
   pathBuilds = getBuilds(iFile)
-  paths = getFiles(pathBuilds)
+  paths = getDeps(pathBuilds)
   depTree = []
   for path in paths:
     if os.path.isfile(path):
       depTree.append(path)
     else:
-      for root, dirs, files in os.path.walk(path):
+      for root, dirs, files in os.walk(path):
         for f in files:
           depTree.append(os.path.join(root, f))
   return depTree
@@ -153,18 +194,19 @@ def _getDeps(iDsnName = '', iBuildFile = 'build.xml'):
 
 
 def getSrcExtensions(iTag, iBuildFile='../resource/build.yaml'):
-  if os.path.splitext(iBuildFile) != '.yaml':
+  
+  if os.path.splitext(iBuildFile)[1] != '.yaml':
     iBuildFile = os.path.join(iBuildFile, 'resource', 'build.yaml')
   if not os.path.exists(iBuildFile):
     log.warning("No such path or file: " + iBuildFile)
-    return
+    return []
   
-  build = yaml.load(open(iBuildFile, 'r'))
-  ext = build.get(iTag)
+  content = load(iBuildFile)
+  ext = content.get(iTag)
   if not ext:
     log.warning("Can't get file extensions in file: " + iBuildFile)
-    return
-  extensions = [i.strip() for i in ext.split(';')]
+    return []
+  extensions = ['\.'+i.strip() for i in ext.split(';')]
   return extensions
 
 
