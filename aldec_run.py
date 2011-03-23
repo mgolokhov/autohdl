@@ -7,35 +7,53 @@ import os
 import shutil
 
 import structure
+import os
 
-def budger():
+
+
+def action(iMode = 'copy'):
+    # cwd = <dsnName>/script
+    rootPathAldec = '../aldec/src'
+    rootPathDsn = '..'
+    for root, dirs, files in os.walk('../aldec/src'):
+      virtDir = root.split(rootPathAldec)[1][1:] # exclude slash
+      if not virtDir:
+        continue
+      for afile in files:
+        src = os.path.join(root, afile)
+        dst = os.path.join(rootPathDsn, virtDir, afile)
+      
+        try:
+          if iMode == 'copy':
+            print 'copying...' 
+            print 'src=', os.path.abspath(src)
+            print 'dst=', os.path.abspath(dst)
+            shutil.copyfile(src, dst)  
+          elif iMode == 'move':
+            print 'moving...' 
+            print 'src=', os.path.abspath(src)
+            print 'dst=', os.path.abspath(dst)
+            shutil.move(src, dst)  
+        except IOError, e:
+          print os.getcwd()
+          print e
+        
+def copyInRepo():
   while(1):
-    src = structure.search(iPath = '../aldec/src', iIgnore = ['/TestBench/'])
-    tb  = structure.search(iPath = '../aldec/src/TestBench')
-    print 'src: ', src
-    print 'tb: ', tb
-    for i in src:
-      shutil.copyfile(i, '../src/'+os.path.split(i)[1])
-    for i in tb:
-      shutil.copyfile(i, '../TestBench/'+os.path.split(i)[1])
+    action(iMode = 'copy')
     time.sleep(1)
 
-def move_in_repo():
-  src = structure.search(iPath = '../aldec/src', iIgnore = ['/TestBench/'])
-  tb  = structure.search(iPath = '../aldec/src/TestBench')
-  for i in src:
-    shutil.move(i, '../src/'+os.path.split(i)[1])
-  for i in tb:
-    shutil.move(i, '../TestBench/'+os.path.split(i)[1])
-    
+def moveInRepo():
+  action(iMode = 'move')
+  
 aldec = toolchain.getPath(iTag = 'avhdl_gui')
 
-b = threading.Thread(target=budger)
+b = threading.Thread(target=copyInRepo)
 b.setDaemon(1)
 b.start()
 
 subprocess.call(aldec + ' ../aldec/wsp.aws')
-move_in_repo()
+moveInRepo()
 
 sys.exit()
 

@@ -207,61 +207,11 @@ def search(iPath = '.', iIgnore = [], iOnly = []):
   return resFiles
 
 
-def getLocToBuildXml(iPathFile):
-  '''
-    Input:  path to file in some dsn;
-    Output: tuple (path to build.xml, dsn_name);
-  '''
-  log.debug('def getLocToBuildXml IN iPathFile='+ iPathFile)
-#  log.info('Searching build.xml for file: '+iPathFile)
-  if not os.path.exists(iPathFile):
-    log.warning("Can't find file: " + iPathFile)
-    return
-  pathAsList = iPathFile.replace('\\', '/').split('/')
-  if pathAsList.count('src'):
-    index = pathAsList.index('src')
-  else:
-    log.warning('Wrong location for source file: ' + iPathFile)
-    log.warning('Expecting in <dsn_name>/src/ directory')
-    return
-  rootPath = '/'.join(pathAsList[:index])
-  pathBuildXml = '%s/%s/%s' % (rootPath, 'resource', 'build.xml')
-  if not os.path.exists(pathBuildXml):
-    log.warning("Can't find " + pathBuildXml)
-  dsnName = pathAsList[(index-1)] # <dsnName>/src/
-  log.debug('def getLocToBuildXml OUT pathBuildXml='+str(pathBuildXml)+' dsnName='+str(dsnName))
-  return pathBuildXml, dsnName
-
-# BUGAGA: got direct file
-def getFilesFromXml(iUndefInst, iIgnore = [], iOnly = []):
-  '''
-    Input: undefined instances as a dictionary
-      {key=instance name, value=path to file where it was instanced};
-    Output: list of path to possible files;
-  '''
-  log.debug('def getFilesFromXml IN iUndefInst='+str(iUndefInst)+' iIgnore='+str(iIgnore)+' iOnly='+str(iOnly))
-  possibleFiles = set()
-  for afile in set(iUndefInst.values()):
-    res = getLocToBuildXml(afile)
-    if not res:
-      return
-    dirBuildXml, dsnName = res 
-    depsDic = build.getDeps(iDsnName = dsnName,
-                            iBuildFile = dirBuildXml)
-    if not depsDic or not depsDic.get(dsnName):
-      log.info('File read but no dependences for design: '+dsnName+' in file: '+dirBuildXml)
-      continue
-    for path in depsDic.get(dsnName):
-      possibleFiles.update(search(iPath = path, iIgnore = iIgnore, iOnly = iOnly))
-  log.debug('def getFilesFromXml OUT possibleFiles='+str(possibleFiles))
-  return list(possibleFiles)
-
-      
 def getDepSrc(iSrc, iIgnore = None, iOnly = None):
   log.debug('def getDepSrc IN iSrc='+str(iSrc)+' iIgnore='+str(iIgnore)+' iOnly='+str(iOnly))
   iIgnore = iIgnore or []
   iOnly = iOnly or []
-  only = build.getSrcExtensions(iTag = 'dep_parse_ext')
+  only = ['\.v']#build.getSrcExtensions(iTag = 'dep_parse_ext')
   only += iOnly
   
   files = set(iSrc)

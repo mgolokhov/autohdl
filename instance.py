@@ -182,7 +182,7 @@ def analyze(iPathFiles, ioParsed = {}, iUndefInst = {}):
         {key = instance name, value = path to file};
   '''
   log.debug('def analyze IN iPathFiles='+str(iPathFiles)+' ioParsed'+str(ioParsed)+' iUndefInst'+str(iUndefInst))
-  log.info('Analizing dependences...')
+  log.info('Analyzing dependences...')
   parsed = parseFiles(iPathFiles=iPathFiles)
   undefInst = {}
   # first call
