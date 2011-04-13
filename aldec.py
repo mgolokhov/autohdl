@@ -61,6 +61,7 @@ def getStructure():
   
   other = list(set(other) - set(main) - set(dep) - set(TestBench))
   
+  dict['dsnName'] = os.path.split(dict['rootPath'])[1]
   dict['other'] = other
   dict['main'] = main
   dict['dep'] = dep
@@ -87,8 +88,8 @@ def synch_adf(iBuildContent):
   return config
 
 
-def gen_aws():
-  content = '[Designs]\ndsn=./dsn.adf'
+def gen_aws(iStructure):
+  content = '[Designs]\ndsn=./{dsn}.adf'.format(dsn=iStructure['dsnName'])
   f = open('../aldec/wsp.aws', 'w')
   f.write(content)
   f.close()
@@ -120,7 +121,7 @@ def gen_adf(iStructure):
   config.set('Files', src_all)
   config.set('Files.Data', src_tb)
   
-  f = open('../aldec/dsn.adf', 'w')
+  f = open('../aldec/{dsn}.adf'.format(dsn=iStructure['dsnName']), 'w')
   config.write(f)
   f.close()
 
@@ -165,7 +166,7 @@ def export():
       os.makedirs(folder)
   copyNetlists()
   prjStructure = getStructure()
-  gen_aws()
+  gen_aws(iStructure = prjStructure)
   gen_adf(iStructure = prjStructure)
   filesToCompile = prjStructure['main'] + prjStructure['dep'] + prjStructure['TestBench']
   gen_compile_cfg(iFiles = filesToCompile)

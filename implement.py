@@ -213,8 +213,11 @@ def getSrcFromFileSys():
   if ext:
     ext = ['/src/.*?'+i+'$' for i in ext]
   only = ext + topRes
-  src = structure.search(iPath = '..', iOnly = only)
+  ignore = ['/aldec/', '\.svn', '\.git']
+  src = structure.search(iPath = '..', iOnly = only, iIgnore = ignore)
+  src.append(build.getParam(iKey = 'UCF'))
   src = [(os.path.abspath(i)).replace('\\', '/') for i in src]
+  src = list(set(src))
   log.debug('def getSrcFromFileSys OUT src='+str(src))
   return src
 
@@ -264,6 +267,7 @@ def run(iTopModule = ''):
   genScript(iTopModule = iTopModule)
   
   ise_batch = toolchain.getPath('ise_batch')
+  print os.getcwd()
   subprocess.call([ise_batch, os.getcwd() + '/implement.tcl'])
 
   log.info('Implementation done')

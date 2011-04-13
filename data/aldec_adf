@@ -166,5 +166,10 @@ HierarchyInformation=
 ShowHide=ShowTopLevel
 Selected=
 
+[LocalVerilogDirs]
+Count=10
+IncludeDir0=
+IncludeDir1=
+
 [Files]
 [Files.Data]

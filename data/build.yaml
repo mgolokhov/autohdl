@@ -1,3 +1,5 @@
+# All comments will be deleted after first start
+
 FAMILY     : Xilinx11x SPARTAN3E
 DEVICE     : 3s250etq144  # DCS2
 #DEVICE     : 3s250epq208  # ctrl_v3
@@ -8,11 +10,25 @@ IMPL_TOOL  : MV_ISE111
 UCF        : 
 TOPLEVEL   : 
 
+IncludeDir0:
+
+main:
+dep:
+TestBench:
+
+
+
 ignore_regexp:
+
+#set empty param to turn off feature
+ignore_regexp_default: 
 - '\.svn'
 - '\.git'
 
-dep_parse_ext: v; vm; vhd; vhdl   
+#netlist_ext_default: sedif; edn; edf; edif; ngc;
+
+#RFU
+#parse_ext_default: v; vm; 
 
 avhdl:
     only_regexp:

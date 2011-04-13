@@ -2,6 +2,9 @@ from xml.dom import minidom
 from collections import OrderedDict
 import os
 
+import structure
+import hdlGlobals
+
 import autohdl.lib.yaml as yaml
 
 
@@ -15,14 +18,79 @@ class BuildException(Exception):
   
 
 
+def convertToRelpath(iContent, iBuildFile):
+  os.chdir('../resource')
+  pathUCF = iContent['UCF']
+#  pathBuild = os.path.abspath(iBuildFile)
+  if pathUCF:
+    pathUCF = os.path.relpath(pathUCF)
+    iContent['UCF'] = pathUCF
+  
+  depSrc = iContent['dep']
+  if depSrc:
+    dep = [os.path.relpath(i) for i in depSrc]
+    iContent['dep'] = dep
+  os.chdir('../script')
 
-def genPredef(iPath, iDsnName):
-  pass
 
 
-def load(iBuildFile = '../resource/build.yaml'):
-#  content = yaml.load(open(iBuildFile, 'r'), OrderedDictYAMLLoader)
-  content = yaml.load(open(iBuildFile, 'r'))
+def convertToAbspath(iContent, iBuildFile):
+  os.chdir('../resource')
+  pathUCF = iContent['UCF']
+  if pathUCF and os.path.exists(pathUCF):
+    path = os.path.abspath(pathUCF)
+    iContent['UCF'] = path
+    
+  depSrc = iContent['dep']
+
+  if depSrc:
+    dep = [os.path.abspath(i) for i in depSrc if os.path.exists(i)]
+    iContent['dep'] = dep
+  os.chdir('../script')
+
+
+def defUCFandTop(iContent):
+  ucf = iContent['UCF']
+  top = iContent['TOPLEVEL']
+  if ucf and top:
+    return
+  elif not ucf and top:
+    ucfList = structure.search(iPath = '../src', iIgnore = hdlGlobals.ignore, iOnly = ['\.ucf'])
+    ucf = ucfList[0] # first occurrence
+    for i in ucfList:
+     if top+'.ucf' in i:
+       ucf = i
+       break
+  elif ucf and not top:
+    topPath = structure.search(iPath = '../src', iIgnore = hdlGlobals.ignore, iOnly = [ucf+'\.v'])
+    topFile = os.path.split(topPath)[1]
+    top = os.path.splitext(topFile)[0]
+  elif not ucf and not top:
+    ucfList = structure.search(iPath = '../src', iIgnore = hdlGlobals.ignore, iOnly = ['\.ucf'])
+    for i in ucfList:
+      ucfName = os.path.split(i)[1]
+      ucfName = os.path.splitext(ucfName)[0]
+      topPath = structure.search(iPath = '../src', iIgnore = hdlGlobals.ignore, iOnly = [ucfName+'\.v'])
+      if topPath:
+        topFile = os.path.split(topPath[0])[1]
+        top = os.path.splitext(topFile)[0]
+        ucf = i
+        break
+      else:
+        ucf = i
+  iContent['UCF'] = ucf
+  iContent['TOPLEVEL'] = top
+
+
+def load(iBuildFile = '../resource/build.yaml', cacheBuild = {}):
+  if cacheBuild:
+    content = cacheBuild     
+  else:
+    content = yaml.load(open(iBuildFile, 'r'))
+    convertToAbspath(content, iBuildFile)
+    defUCFandTop(iContent = content)
+    cacheBuild.update(content) 
+
   return content
 
 
@@ -32,7 +100,8 @@ def dump(iStructure = '', iContent = '', iBuildFile = '../resource/build.yaml'):
     content['main'] = iStructure['main']
     content['dep']  = [str(i) for i in iStructure['dep']]
     content['TestBench']   = iStructure['TestBench']
-    
+  
+  convertToRelpath(content, iBuildFile)  
   yaml.dump(content, open(iBuildFile, 'w'), default_flow_style=False)
     
 
@@ -58,7 +127,7 @@ def getBuilds(iFiles):
       continue
     pathBuilds.add(pathBuild)
   return pathBuilds
-    
+
 
   
 def getParam(iKey, iBuild = '../resource/build.yaml', iDefault = None):
@@ -79,8 +148,10 @@ def getDeps(iBuilds):
   Output: set of new paths/files to parse
   '''
   for pathBuild in iBuilds:
-    deps = getParam(iKey='src_dep', iBuild=pathBuild)
+    deps = getParam(iKey='dep', iBuild=pathBuild)
     path = set()
+    if not deps:
+      return []
     for d in deps:
       if not os.path.exists(d):
         log.warning('Path does not exists: '+ d + '; in file: ' + pathBuild)

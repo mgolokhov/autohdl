@@ -19,16 +19,21 @@ class Project(object):
     self._topModule     = iTopModule
     self._pathSynthesis = '../synthesis'
     scriptName          = '/synthesis.prj'
-    self._pathScript    = self._pathSynthesis + scriptName
+    #self._pathScript    = self._pathSynthesis + scriptName
+    self._pathScript    = './' + scriptName
     self._pathLog       = self._pathSynthesis + '/' + iTopModule + '.srr'
     self._pathWas       = os.getcwd().replace('\\','/')
   
     if os.path.exists(self._pathSynthesis):
       shutil.rmtree(self._pathSynthesis)
     os.makedirs(self._pathSynthesis)
-    shutil.copyfile(self._pathWas + scriptName, self._pathScript)
+#    shutil.copyfile(self._pathWas + scriptName, self._pathScript)
     os.chdir(self._pathSynthesis)
   
+  
+#  def __str__(self):
+#    s = 
+#    return
   
   def __enter__(self):
     return self
@@ -143,7 +148,8 @@ def genScript(iPrj):
 
   f = open(iPrj.pathScript, 'w')
   f.write(scriptContent)
-  f.close
+  f.close()
+  shutil.copy(iPrj.pathScript, '../synthesis/synthesis.prj')
 
 
 def parseLog(iPrj, iSilent = False):
@@ -171,7 +177,7 @@ def parseLog(iPrj, iSilent = False):
   return logFile 
 
 
-def run_synplify_batch(iPathTool, iPathSctipt):
+def run_synplify_batch(iPathTool, iPathSctipt, iPrj):
   run = '"%s" %s %s %s %s' % (iPathTool,
                 '-product synplify_premier',
                 '-licensetype synplifypremier',
@@ -180,14 +186,18 @@ def run_synplify_batch(iPathTool, iPathSctipt):
 
   while True:
     time.sleep(3)
-    log = open('../synthesis/top_masker.srr', 'r')
-    if log:
+    try:
+      loge = open('../synthesis/'+iPrj.topModule+'.srr', 'r')
+    except IOError, e:
+      log.warning(e)
+      continue
+    if loge:
       break
     
   done = False
   while True:
-    where = log.tell()
-    res = log.readline()
+    where = loge.tell()
+    res = loge.readline()
     if res.find('Mapper successful!') != -1:
       done = True
     if res.endswith('\n'):
@@ -195,10 +205,10 @@ def run_synplify_batch(iPathTool, iPathSctipt):
     elif done:
       break
     else:  
-      log.seek(where)
+      loge.seek(where)
       time.sleep(1)
       
-  log.close()
+  loge.close()
 
 
 def run_synplify_gui(iPathTool, iPathSctipt):
@@ -210,8 +220,9 @@ def runTool(iPrj, iSilent):
   Runs external tool for synthesis
   '''
   log.debug('def runTool IN')
+  os.chdir(iPrj.pathSynthesis)
   if iPrj.mode == 'synplify_batch':
-    run_synplify_batch(iPathTool = iPrj.pathTool, iPathSctipt = iPrj.pathScript)
+    run_synplify_batch(iPathTool = iPrj.pathTool, iPathSctipt = '../synthesis/synthesis.prj', iPrj = iPrj)
     parseLog(iPrj = iPrj, iSilent = iSilent)
   elif iPrj.mode == 'synplify_gui':
     run_synplify_gui(iPathTool = iPrj.pathTool, iPathSctipt = iPrj.pathScript)

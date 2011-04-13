@@ -6,6 +6,7 @@ import sys
 
 import instance
 import build
+import hdlGlobals
 from hdlLogger import *
 
 
@@ -93,11 +94,11 @@ class Design(object):
         for root, dirs, files in os.walk(d):
           for d in dirs:
             adirectory = os.path.join(root, d)
-            if filter(iFiles = adirectory, iIgnore = ['\.git', '\.svn']):
+            if filter(iFiles = adirectory, iIgnore = hdlGlobals.ignore):
               structure.append('\t\t' + d)
           for f in files:
             afile = os.path.join(root, f)
-            if filter(iFiles = [afile], iIgnore = ['\.git', '\.svn']):
+            if filter(iFiles = [afile], iIgnore = hdlGlobals.ignore):
               structure.append('\t\t' + f)
 
     return \
@@ -140,7 +141,6 @@ class Design(object):
       if not os.path.exists(create):
         os.makedirs(create)
     self._copyFiles()
-    build.genPredef(iPath = self.pathRoot+'/resource', iDsnName = self.name)
     log.info('Predefined generation done! PathRoot: '+self.pathRoot)
    
 #
@@ -184,24 +184,26 @@ def filter(iFiles, iIgnore = [], iOnly = []):
   return files
 
 
-def search(iPath = '.', iIgnore = [], iOnly = []):
+def search(iPath = '.', iIgnore = None, iOnly = None):
   '''
     Search files by pattern.
     Input: path (by default current directory), ignore and only patterns (should be lists)
     Returns list of files.
   '''
   log.debug('def search IN iPath='+iPath+' iIgnore='+str(iIgnore)+' iOnly='+str(iOnly))
+  ignore = iIgnore or []
+  only = iOnly or []
   resFiles = []
   if os.path.isfile(iPath):
     fullPath = (os.path.abspath(iPath)).replace('\\', '/')
-    if filter(iFiles = [fullPath], iOnly = iOnly, iIgnore = iIgnore): 
+    if filter(iFiles = [fullPath], iOnly = only, iIgnore = ignore): 
       resFiles.append(fullPath)
   else:  
     for root, dirs, files in os.walk(iPath):
       for f in files:
         fullPath = '%s/%s' % (root, f)
         fullPath = (os.path.abspath(fullPath)).replace('\\', '/')
-        if filter(iFiles = fullPath, iOnly = iOnly, iIgnore = iIgnore): 
+        if filter(iFiles = fullPath, iOnly = only, iIgnore = ignore): 
           resFiles.append(fullPath)
   log.debug('def search OUT resFiles='+str(resFiles))
   return resFiles
