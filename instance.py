@@ -69,6 +69,8 @@ def parseFiles(iPathFiles):
   parsed = {}
   if iPathFiles:
     for oneFile in iPathFiles:
+      if os.path.split(oneFile) not in ['.v']:
+        continue 
       try:
         parsedNew = parseFile(oneFile)
         parsed.update(parsedNew)

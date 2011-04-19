@@ -124,8 +124,8 @@ class Design(object):
     log.debug('def _copyFiles')
 
     listToCopy = ['script/kungfu.py',
-                  'resource/synthesis_default',
-                  'resource/implement_default',
+#                  'resource/synthesis_default',
+#                  'resource/implement_default',
                   'resource/build.yaml']
     for l in listToCopy:
       self._copyFile(iDestination = l)

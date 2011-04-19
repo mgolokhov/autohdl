@@ -8,60 +8,9 @@ import time
 import structure
 import toolchain
 import build
+import hdlGlobals
 
 from hdlLogger import *
-
-
-class Project(object):
-  def __init__(self, iTopModule, iMode):
-    self._pathTool      = toolchain.getPath(iMode)
-    self._mode          = iMode
-    self._topModule     = iTopModule
-    self._pathSynthesis = '../synthesis'
-    scriptName          = '/synthesis.prj'
-    #self._pathScript    = self._pathSynthesis + scriptName
-    self._pathScript    = './' + scriptName
-    self._pathLog       = self._pathSynthesis + '/' + iTopModule + '.srr'
-    self._pathWas       = os.getcwd().replace('\\','/')
-  
-    if os.path.exists(self._pathSynthesis):
-      shutil.rmtree(self._pathSynthesis)
-    os.makedirs(self._pathSynthesis)
-#    shutil.copyfile(self._pathWas + scriptName, self._pathScript)
-    os.chdir(self._pathSynthesis)
-  
-  
-#  def __str__(self):
-#    s = 
-#    return
-  
-  def __enter__(self):
-    return self
-
-  def __exit__(self, type, value, traceback):
-    os.chdir(self._pathWas)  
-  
-  @property
-  def topModule(self):
-    return self._topModule
-  @property
-  def pathSynthesis(self):
-    return self._pathSynthesis
-  @property
-  def pathScript(self):
-    return self._pathScript
-  @property
-  def pathTool(self):
-    return self._pathTool
-  @property
-  def pathLog(self):
-    return self._pathLog
-  @property
-  def pathWas(self):
-    return self._pathWas
-  @property
-  def mode(self):
-    return self._mode
 
 
 class SynthesisException(Exception):
@@ -69,92 +18,78 @@ class SynthesisException(Exception):
     self.string = iString
   def __str__(self):
     return self.string
+  
 
 
-def synchSrcFile(ioSrcFresh, ioScriptContent, iNum, iLine):
-  match = re.search(r'add_file\s+?"(.*?)"', iLine)
-  if match:
-    res = match.group(1)
-    if ioSrcFresh.count(res):
-      ioSrcFresh.remove(res)
-    else:
-      if iLine.strip()[0] != '#':
-        ioScriptContent[iNum] = '# {0} WAS DELETED'.format(iLine) 
-    return True
-
-
-def synchTopModule(ioScriptContent, iTopModule, iNum, iLine):
-  match = re.search(r'set_option\s+?-top_module\s+?"(.*?)"', iLine)
-  if match:
-    ioScriptContent[iNum] = 'set_option -top_module "{0}"'.format(iTopModule)
-    return True
-
-
-def synchResultFile(ioScriptContent, iTopModule, iNum, iLine):
-  match = re.search(r'project\s+?-result_file\s+"(.*?)"', iLine)
-  if match:
-#    resultFile = '%s/%s/%s%s' % (os.getcwd(), '../synthesis', iTopModule, '.edf')
-#    resultFile = os.path.abspath(resultFile).replace('\\','/')
-    resultFile = '../synthesis/'+iTopModule+'.edf'
-    ioScriptContent[iNum] = 'project -result_file "{0}"'.format(resultFile)
-    return True
+def setParams(iPrj):
+  device = build.getParam('DEVICE')
+  part = 'xc' + device[:-5]
+  package = device[-5:]
+  family = build.getParam('FAMILY')
+  technology = family.split()[1] # e.g. 'Xilinx11x SPARTAN3E'
+  iPrj['scriptContent'] = iPrj['scriptContent'].format(
+                          device=device,
+                          part=part,
+                          package=package,
+                          technology=technology,
+                          topModule=iPrj['topModule'],
+                          netlist=iPrj['pathSynthesis']+'/'+iPrj['topModule'],
+                          src_files=iPrj['srcFiles'])
+  f = open(iPrj['pathScript'], 'w')
+  f.write(iPrj['scriptContent'])
+  f.close()
   
   
-def merge(ioSrcFresh, ioScriptContent, iTopModule):
-  '''
-  Precondition: items trimmed, files in in quotes
-  '''
-  lastEntry = 1
-  for num, line in enumerate(ioScriptContent):
-    if synchSrcFile(ioSrcFresh, ioScriptContent, num, line):
-      lastEntry = num+1
-      continue
-    if synchTopModule(ioScriptContent, iTopModule, num, line):
-      continue
-    if synchResultFile(ioScriptContent, iTopModule, num, line):
-      continue
-
-  ioScriptContent[lastEntry:lastEntry] = ['add_file "{0}"'.format(k) for k in ioSrcFresh]
-
-
-def getSrcFromFileSys(iDsn):
-  log.debug('def getSrcFromFileSys IN iDsn=\n'+str(iDsn))
-  ext = build.getSrcExtensions(iTag = 'synthesis_ext')
-  ignore = ['\.svn/']
-  only = ['\.'+i+'$' for i in ext]
-  filesMain = structure.search(iPath = iDsn.pathRoot+'/src', iIgnore = ignore, iOnly = only)
+def setSrc(iPrj):
+  ignore = hdlGlobals.ignore
+  only = []
+  filesMain = structure.search(iPath = '../src', iIgnore = ignore, iOnly = only)
   filesDep = structure.getDepSrc(iSrc = filesMain, iIgnore =ignore, iOnly = only)
-  files = filesMain + list(filesDep)
-  log.debug('getSrcFromFileSys OUT files'+str(files))
-  return files  
-
+  srcFiles = filesMain + list(filesDep)
+  iPrj['srcFiles'] = '\n'.join(['add_file "{0}"'.format(i) for i in srcFiles])
   
-def genScript(iPrj):
-  log.debug('def genScript IN iPrj')#BUGAGA: __str__
-  dsn = structure.Design(iPath = '..', iGen = True, iInit = False)
-  if os.path.exists(iPrj.pathScript):
-    log.info('Refreshing existing synthesis script')
-    f = open(iPrj.pathScript, 'r')
-  else:  
-    log.info('Generating from default synthesis script')
-    f = open('../resource/synthesis_default', 'r')
-  scriptContent = f.read()
-  f.close()
-  
-  contentAsList = scriptContent.split('\n')
-  srcFiles = getSrcFromFileSys(dsn)
-  merge(srcFiles, contentAsList, iTopModule = iPrj.topModule)
-  scriptContent = '\n'.join(contentAsList)
+@log_call  
+def getStructure(iTopModule, iMode):
+  prj = {}
+  prj['pathTool']      = toolchain.getPath(iMode)
+  prj['mode']          = iMode
+  prj['topModule']     = iTopModule
+  prj['pathSynthesis'] = '../synthesis'
+  prj['pathScript']    = prj['pathSynthesis']+ '/synthesis.prj'
+  prj['pathLog']       = prj['pathSynthesis'] + '/' + iTopModule + '.srr'
+  prj['pathWas']       = os.getcwd().replace('\\','/')
 
-  f = open(iPrj.pathScript, 'w')
-  f.write(scriptContent)
-  f.close()
-  shutil.copy(iPrj.pathScript, '../synthesis/synthesis.prj')
+  try:
+    if os.path.exists(prj['pathSynthesis']):
+      shutil.rmtree(prj['pathSynthesis'])
+  except OSError as e:
+    log.warning(e)
+  
+  for i in range(5):  
+    if os.path.exists(prj['pathSynthesis']):
+      break
+    else:
+      time.sleep(0.5)
+      try:
+        os.makedirs(prj['pathSynthesis'])
+      except OSError as e:
+        log.warning(e)
+
+  synthesis_template = os.path.join(os.path.dirname(__file__), 'data', 'synplify')
+  
+  f = open(synthesis_template, 'r')
+  prj['scriptContent'] = f.read()
+  f.close()  
+  
+  setSrc(prj)
+  setParams(prj)
+  
+  return prj
 
 
 def parseLog(iPrj, iSilent = False):
   log.debug('def parseLog IN')
-  logFile = os.path.abspath(iPrj.pathLog)
+  logFile = os.path.abspath(iPrj['pathLog'])
   if os.path.exists(logFile):
     f = open(logFile, 'r')
     res = f.read()
@@ -170,25 +105,25 @@ def parseLog(iPrj, iSilent = False):
     else:
       log.info('Errors: '+str(errors)+'; Warnings: '+ str(warnings))
       
-    if not iSilent and (errors or warnings):
+    if errors or (not iSilent and warnings):
       subprocess.Popen(['notepad', logFile])
     log.info('See logfile: '+logFile)
     
   return logFile 
 
 
-def run_synplify_batch(iPathTool, iPathSctipt, iPrj):
-  run = '"%s" %s %s %s %s' % (iPathTool,
+def run_synplify_batch(iPrj):
+  run = '"%s" %s %s %s %s' % (iPrj['pathTool'],
                 '-product synplify_premier',
                 '-licensetype synplifypremier',
-                '-batch', iPathSctipt)
+                '-batch', iPrj['pathScript'])
   subprocess.Popen(run)
 
   while True:
     time.sleep(3)
     try:
-      loge = open('../synthesis/'+iPrj.topModule+'.srr', 'r')
-    except IOError, e:
+      loge = open(iPrj['pathLog'], 'r')
+    except IOError as e:
       log.warning(e)
       continue
     if loge:
@@ -211,8 +146,8 @@ def run_synplify_batch(iPathTool, iPathSctipt, iPrj):
   loge.close()
 
 
-def run_synplify_gui(iPathTool, iPathSctipt):
-  subprocess.call([iPathTool, iPathSctipt])
+def run_synplify_gui(iPrj):
+  subprocess.call([iPrj['pathTool'], iPrj['pathSctipt']])
 
 
 def runTool(iPrj, iSilent):
@@ -220,20 +155,22 @@ def runTool(iPrj, iSilent):
   Runs external tool for synthesis
   '''
   log.debug('def runTool IN')
-  os.chdir(iPrj.pathSynthesis)
-  if iPrj.mode == 'synplify_batch':
-    run_synplify_batch(iPathTool = iPrj.pathTool, iPathSctipt = '../synthesis/synthesis.prj', iPrj = iPrj)
+  os.chdir(iPrj['pathSynthesis'])
+  
+  if iPrj['mode'] == 'synplify_batch':
+    run_synplify_batch(iPrj = iPrj)
     parseLog(iPrj = iPrj, iSilent = iSilent)
-  elif iPrj.mode == 'synplify_gui':
-    run_synplify_gui(iPathTool = iPrj.pathTool, iPathSctipt = iPrj.pathScript)
+  elif iPrj['mode'] == 'synplify_gui':
+    run_synplify_gui(iPrj=iPrj)
+  
+  os.chdir(iPrj['pathWas'])
 
 
-def run(iTopModule, iMode = 'synplify_batch', iSilent = False):
+def run(iTopModule, iMode = 'synplify_batch', iSilent = True):
   log.debug('def run IN iMode='+iMode+' iTopModule='+iTopModule)
   # changing current location to synthesis directory
-  with Project(iTopModule = iTopModule, iMode = iMode) as prj:
-    genScript(iPrj = prj)
-    runTool(iPrj = prj, iSilent = iSilent)
+  prj = getStructure(iTopModule = iTopModule, iMode = iMode)
+  runTool(iPrj = prj, iSilent = iSilent)
   log.info('Synthesis done!')  
 
 

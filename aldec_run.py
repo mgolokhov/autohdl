@@ -9,9 +9,10 @@ import shutil
 import structure
 import os
 
+from hdlLogger import *
 
 
-def action(iMode = 'copy'):
+def action(iMode = 'copy', _logOnce = []):
     # cwd = <dsnName>/script
     rootPathAldec = '../aldec/src'
     rootPathDsn = '..'
@@ -25,14 +26,16 @@ def action(iMode = 'copy'):
       
         try:
           if iMode == 'copy':
-            print 'copying...' 
-            print 'src=', os.path.abspath(src)
-            print 'dst=', os.path.abspath(dst)
+            if not _logOnce:
+              log.info('copying... (every second)') 
+              log.info('src= ' + os.path.abspath(src))
+              log.info('dst= ' + os.path.abspath(dst))
+              _logOnce.append('')
             shutil.copyfile(src, dst)  
           elif iMode == 'move':
-            print 'moving...' 
-            print 'src=', os.path.abspath(src)
-            print 'dst=', os.path.abspath(dst)
+            log.info('moving...') 
+            log.info('src= ' + os.path.abspath(src))
+            log.info('dst= ' + os.path.abspath(dst))
             shutil.move(src, dst)  
         except IOError, e:
           print os.getcwd()
@@ -46,6 +49,7 @@ def copyInRepo():
 def moveInRepo():
   action(iMode = 'move')
   
+
 aldec = toolchain.getPath(iTag = 'avhdl_gui')
 
 b = threading.Thread(target=copyInRepo)
