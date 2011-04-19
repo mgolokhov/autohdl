@@ -21,6 +21,17 @@ class SynthesisException(Exception):
   
 
 
+def getIncludePath(iPrj):
+    includePath = ['.']
+    for i in range(11):
+      incl = build.getParam('IncludeDir'+str(i))
+      if not incl:
+        break
+      includePath.append(incl)
+    return ';'.join(includePath) 
+    
+
+
 def setParams(iPrj):
   device = build.getParam('DEVICE')
   part = 'xc' + device[:-5]
@@ -33,8 +44,9 @@ def setParams(iPrj):
                           package=package,
                           technology=technology,
                           topModule=iPrj['topModule'],
-                          netlist=iPrj['pathSynthesis']+'/'+iPrj['topModule'],
-                          src_files=iPrj['srcFiles'])
+                          netlist=iPrj['pathSynthesis']+'/'+iPrj['topModule']+'.edf',
+                          src_files=iPrj['srcFiles'],
+                          includePath=getIncludePath(iPrj))
   f = open(iPrj['pathScript'], 'w')
   f.write(iPrj['scriptContent'])
   f.close()
@@ -147,7 +159,7 @@ def run_synplify_batch(iPrj):
 
 
 def run_synplify_gui(iPrj):
-  subprocess.call([iPrj['pathTool'], iPrj['pathSctipt']])
+  subprocess.call([iPrj['pathTool'], iPrj['pathScript']])
 
 
 def runTool(iPrj, iSilent):

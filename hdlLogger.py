@@ -7,9 +7,14 @@ from autohdl.lib.decorator import decorator
 log=logging.getLogger('hdlLogger')
 log.setLevel(logging.DEBUG)
 
-if os.path.exists('hdlLogger.log') and\
-   time.time() - os.path.getmtime('hdlLogger.log') > 30:
-  os.remove('hdlLogger.log')
+
+try:
+  if os.path.exists('hdlLogger.log') and\
+     time.time() - os.path.getmtime('hdlLogger.log') > 30:
+    os.remove('hdlLogger.log')
+except OSError as e:
+  log.warning(e)
+  
 fileHandler = logging.FileHandler(filename='hdlLogger.log',
                                   mode='a',
                                   delay=True)
