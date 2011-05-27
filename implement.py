@@ -20,7 +20,11 @@ def run(iTopModule = '', iFlashSize = ''):
   log.debug('def run IN iTopModule='+iTopModule)  
   try:
     if os.path.exists('../implement'):
-      shutil.rmtree('../implement')
+      for root, dirs, files in os.walk('../implement'):
+        for f in files:
+          if os.path.splitext(f)[1] not in ['.mcs', '.bit']:
+            os.remove(os.path.join(root, f))
+#      shutil.rmtree('../implement')
   except OSError:
     log.warning('Can\'t delete folder ../implement')
   if not os.path.exists('../implement'):

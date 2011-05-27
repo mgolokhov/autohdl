@@ -209,14 +209,15 @@ def search(iPath = '.', iIgnore = None, iOnly = None):
   return resFiles
 
 
-def getDepSrc(iSrc, iIgnore = None, iOnly = None):
+def _getDepSrc(iSrc, iIgnore = None, iOnly = None):
   log.debug('def getDepSrc IN iSrc='+str(iSrc)+' iIgnore='+str(iIgnore)+' iOnly='+str(iOnly))
   iIgnore = iIgnore or []
   iOnly = iOnly or []
   only = ['\.v']#build.getSrcExtensions(iTag = 'dep_parse_ext')
   only += iOnly
   
-  files = set(iSrc)
+  filesIn = set(iSrc)
+  files = filesIn
   parsed = {}
   undef = {}
   while(True):
@@ -236,9 +237,22 @@ def getDepSrc(iSrc, iIgnore = None, iOnly = None):
     undef = undefNew
     
   allSrcFiles = set([parsed[module][0] for module in parsed])     
-  depSrcFiles = allSrcFiles - set(iSrc)
+  depSrcFiles = list(allSrcFiles - filesIn)
   log.debug('def getDepSrc OUT depSrcFiles='+str(depSrcFiles))
   return depSrcFiles 
 
 
+def getDepSrc(iSrc, iIgnore = None, iOnly = None):
+  parsed = instance.parseFilesMultiproc(iSrc)
+  while(True):
+    new = instance.anal(iParsed = parsed)
+    if new:
+      parsed.update(new)
+    else:
+      break
+  allSrcFiles = [val[0] for val in parsed.values()]     
+  depSrcFiles = set(allSrcFiles) - set(iSrc)
+  return list(depSrcFiles)
+  
+  
 

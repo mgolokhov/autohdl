@@ -1,9 +1,13 @@
 import re
 import os
 import sys
-from autohdl.lib.pyparsing import *
+import subprocess
 
+from autohdl.lib.pyparsing import *
 from hdlLogger import *
+
+import build
+
 
 
 class InstanceException(Exception):
@@ -46,6 +50,8 @@ def parseFile(iPathFile):
     Output: dictionary {key = module name, value = [path to file, instance1, instance2,...]}
   '''
   log.debug('def parseFile IN iPathFile='+str(iPathFile))
+  if os.path.splitext(iPathFile)[1] not in ['.v']:
+    return 
   content = readContent(iPathFile)
   content = removeComments(content)
   content = removeFunc(content)
@@ -69,7 +75,7 @@ def parseFiles(iPathFiles):
   parsed = {}
   if iPathFiles:
     for oneFile in iPathFiles:
-      if os.path.split(oneFile) not in ['.v']:
+      if os.path.splitext(oneFile)[1] not in ['.v']:
         continue 
       try:
         parsedNew = parseFile(oneFile)
@@ -169,6 +175,89 @@ def instTreeDep(iTop, iSrc):
   log.debug('def instTreeDep OUT dep: '+str(dep)+' undef: '+str(undef))
   return dep, undef
 
+  
+
+def _runMoreProc(proc, num):
+  cnt = 0
+  for i in proc:
+    if i.poll() == None:
+      cnt += 1
+  if cnt > num:
+    return False
+  else:
+    return True
+
+
+def parseFilesMultiproc(iFiles):
+  proc = []
+  for i, f in enumerate(iFiles):
+    while(True):
+      if _runMoreProc(proc, 13):
+        break
+      else:
+        time.sleep(0.2)
+    path = os.path.dirname(__file__)+'/instance_proc.py'
+    p = subprocess.Popen('python {0} '.format(path) + f, stdout = subprocess.PIPE)
+    proc.append(p)
+    
+  parsed = {}  
+  while(True):
+    cnt = 0
+    for i, e in enumerate(proc):
+      if e.poll() != None:
+        cnt += 1
+      else:
+        time.sleep(0.1)
+        break
+
+    if cnt == len(proc):
+      for i in proc:
+        res = eval(i.communicate()[0])
+        if res:
+          parsed.update(res)    
+      break  
+  
+  return parsed
+
+
+
+def resolveUndef(iInstance, iInFile, _parsed = {}):
+  mayBe = _parsed.get(iInstance)
+  if mayBe:
+    return {iInstance: mayBe}
+  
+  afile = build.getFile(iInstance = iInstance, iInFile = iInFile)
+  if afile:
+    parsedFile = parseFile(afile)
+    _parsed.update(parsedFile)
+    if parsedFile.get(iInstance):
+      return parsedFile
+     
+  files = build.getFile() #return all cache
+  parsedFiles = parseFilesMultiproc(files)
+  _parsed.update(parsedFiles)
+  val = parsedFiles.get(iInstance)
+  if val:
+    return {iInstance:val}
+
+
+  
+def anal(iParsed, _undef = set()):
+  log.info('Analyzing...')
+  for module in iParsed:
+    val = iParsed[module]
+    inFile = val[0]
+    for instance in val[1:]:
+      if instance in _undef:
+        continue
+      if not iParsed.get(instance):
+        parsed = resolveUndef(iInstance = instance, iInFile = inFile)
+        if not parsed:
+          log.warning("Undefined instance="+instance+' in file='+inFile)
+          _undef.add(instance)
+        else:
+          return parsed
+
 
 def analyze(iPathFiles, ioParsed = {}, iUndefInst = {}):
   '''
@@ -186,6 +275,7 @@ def analyze(iPathFiles, ioParsed = {}, iUndefInst = {}):
   log.debug('def analyze IN iPathFiles='+str(iPathFiles)+' ioParsed'+str(ioParsed)+' iUndefInst'+str(iUndefInst))
   log.info('Analyzing dependences...')
   parsed = parseFiles(iPathFiles=iPathFiles)
+  log.debug('PARSED: ' + str(parsed))
   undefInst = {}
   # first call
   if not iUndefInst:

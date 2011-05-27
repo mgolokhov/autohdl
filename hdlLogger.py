@@ -2,32 +2,42 @@ import logging
 import sys
 import os
 import time
+
+import socket
+import logging.handlers
+import subprocess
+
 from autohdl.lib.decorator import decorator
 
-log=logging.getLogger('hdlLogger')
-log.setLevel(logging.DEBUG)
+
+class MyLogger(logging._loggerClass):
+  def makeRecord(self, name, level, fn, lno, msg, args, exc_info, func=None, extra=None):
+    """Let the caller modify any of the parameters"""
+    record = logging.LogRecord(name, level, fn, lno, msg, args, exc_info, func)
+    if extra:
+      for key in extra:
+        record.__dict__[key] = extra[key]
+    return record
 
 
-try:
-  if os.path.exists('hdlLogger.log') and\
-     time.time() - os.path.getmtime('hdlLogger.log') > 30:
-    os.remove('hdlLogger.log')
-except OSError as e:
-  log.warning(e)
-  
-fileHandler = logging.FileHandler(filename='hdlLogger.log',
-                                  mode='a',
-                                  delay=True)
-fileHandler.setLevel(level=logging.DEBUG)
-fileFormatter = logging.Formatter("%(filename)s:%(lineno)d:%(levelname)s:%(message)s")
-fileHandler.setFormatter(fileFormatter)
-log.addHandler(fileHandler)
+
+logging.setLoggerClass(MyLogger)
+
+
+
+# rootLogger
+rootLogger = logging.getLogger('')
+rootLogger.setLevel(logging.DEBUG)
+socketHandler = logging.handlers.SocketHandler('localhost',
+                    logging.handlers.DEFAULT_TCP_LOGGING_PORT)
+
+rootLogger.addHandler(socketHandler)
 
 consoleHandler = logging.StreamHandler()
 consoleHandler.setLevel(logging.INFO)
 consoleFormatter = logging.Formatter("%(levelname)s:%(message)s")
 consoleHandler.setFormatter(consoleFormatter)
-log.addHandler(consoleHandler)
+rootLogger.addHandler(consoleHandler)
 
 
 
@@ -48,20 +58,56 @@ def log_call(fn, *args, **kw):
     if kw:
       arglist += ', '.join(['{0}={1}'.format(k, v) for k, v in kw.viewitem()])
     
-    log.debug("{file} {line} {func} IN ({args})".format(
-                              file = os.path.split(frame.f_code.co_filename)[1],
-                              line = frame.f_lineno,
-                              func = fn.__name__,
-                              args = arglist))
+#    log.debug("{file} {line} {func} IN ({args})".format(
+#                              file = os.path.split(frame.f_code.co_filename)[1],
+#                              line = frame.f_lineno,
+#                              func = fn.__name__,
+#                              args = arglist))
+    
+    logger = logging.getLogger(fn.__module__)
+    logger.debug("%(func)s IN (%(args)s)" % (
+                            {'func': fn.__name__,
+                             'args': arglist,
+                             }),
+                        extra={
+                            'filename': os.path.split(frame.f_code.co_filename)[-1],
+                            'pathname': frame.f_code.co_filename,
+                            'lineno': frame.f_lineno,
+                            'module': fn.__module__,
+                            'funcName': fn.__name__})
+    
     result = fn(*args, **kw)
 
   except Exception as e:
-    log.exception(e)
-    log.debug('crashed')
+    logger.exception(e)
+    logger.debug('crashed')
     raise
   else:
-    log.debug('{func} OUT {res}'.format(func = fn.__name__,
-                                        res = toShortStr(result)))
+#    rootLogger.debug('{file} {line} {func} OUT {res}'.format(
+#                                        file = os.path.split(frame.f_code.co_filename)[1],
+#                                        line = frame.f_lineno,
+#                                        func = fn.__name__,
+#                                        res = toShortStr(result)))
+    logger.debug("%(func)s OUT %(ret)s" % (
+                          {'func': fn.__name__,
+                           'ret': toShortStr(result),
+                           }),
+                      extra={
+                          'filename': os.path.split(frame.f_code.co_filename)[-1],
+                          'pathname': frame.f_code.co_filename,
+                          'lineno': frame.f_lineno,
+                          'module': fn.__module__,
+                          'funcName': fn.__name__})
+
+    
+    
     
   return result
+
+log = logging.getLogger('my')
+s = socket.socket()  #socket.AF_INET, socket.SOCK_STREAM
+if s.connect_ex(('localhost', logging.handlers.DEFAULT_TCP_LOGGING_PORT)): #9020
+#  print 'start server'
+  path = os.path.dirname(__file__) + '/log_server.py'
+  subprocess.Popen('pythonw '+ path)
 

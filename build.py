@@ -18,6 +18,7 @@ class BuildException(Exception):
   
 
 
+@log_call    
 def convertToRelpath(iContent, iBuildFile):
   os.chdir('../resource')
   pathUCF = iContent['UCF']
@@ -34,6 +35,7 @@ def convertToRelpath(iContent, iBuildFile):
 
 
 
+@log_call    
 def convertToAbspath(iContent, iBuildFile):
   os.chdir('../resource')
   pathUCF = iContent['UCF']
@@ -49,6 +51,7 @@ def convertToAbspath(iContent, iBuildFile):
   os.chdir('../script')
 
 
+@log_call    
 def defUCFandTop(iContent):
   ucf = iContent['UCF']
   top = iContent['TOPLEVEL']
@@ -62,9 +65,11 @@ def defUCFandTop(iContent):
        ucf = i
        break
   elif ucf and not top:
-    topPath = structure.search(iPath = '../src', iIgnore = hdlGlobals.ignore, iOnly = [ucf+'\.v'])
-    topFile = os.path.split(topPath)[1]
-    top = os.path.splitext(topFile)[0]
+#    topPath = structure.search(iPath = '../src', iIgnore = hdlGlobals.ignore, iOnly = [ucf.rstrip('.ucf')+'\.v'])
+    pathTop = ucf.rstrip('.ucf')+'.v'
+    if os.path.exists(pathTop):
+      topFile = os.path.split(topPath)[1]
+      top = os.path.splitext(topFile)[0]
   elif not ucf and not top:
     ucfList = structure.search(iPath = '../src', iIgnore = hdlGlobals.ignore, iOnly = ['\.ucf'])
     for i in ucfList:
@@ -82,6 +87,7 @@ def defUCFandTop(iContent):
   iContent['TOPLEVEL'] = top
 
 
+@log_call    
 def load(iBuildFile = '../resource/build.yaml', cacheBuild = {}):
   if cacheBuild:
     content = cacheBuild     
@@ -90,22 +96,42 @@ def load(iBuildFile = '../resource/build.yaml', cacheBuild = {}):
     convertToAbspath(content, iBuildFile)
     defUCFandTop(iContent = content)
     cacheBuild.update(content) 
-
+    #dump(iContent = content, iBuildFile = iBuildFile)
+  
   return content
 
 
+@log_call    
 def dump(iStructure = '', iContent = '', iBuildFile = '../resource/build.yaml'):
   content  = iContent or load(iBuildFile = iBuildFile)
-  if iStructure:
+#  if iStructure:
 #    content['main'] = iStructure['main']
-    content['dep']  = [str(i) for i in iStructure['dep']]
+#    content['dep']  = [str(i) for i in iStructure['dep']]
 #    content['TestBench']   = iStructure['TestBench']
   
   convertToRelpath(content, iBuildFile)  
   yaml.dump(content, open(iBuildFile, 'w'), default_flow_style=False)
     
+    
+@log_call
+def getBuild(iFile):
+  pathAsList = iFile.replace('\\','/').split('/')
+  pathBuild = ''
+  if pathAsList.count('src'):
+    index = pathAsList.index('src')
+    rootPath = '/'.join(pathAsList[:index])
+    pathBuild = os.path.join(rootPath, 'resource', 'build.yaml')
+    if not os.path.exists(pathBuild):
+      log.warning("Can't find build file: " + pathBuild)
+      pathBuild = ''
+  else:
+    log.warning('Wrong location for source file: ' + iPathFile)
+    log.warning('Expecting in <dsn_name>/src/ directory')
+  return pathBuild
+  
 
 
+@log_call
 def getBuilds(iFiles):
   '''
   Input:  list/set of path to files with undefined instances
@@ -116,32 +142,52 @@ def getBuilds(iFiles):
     pathAsList = f.replace('\\','/').split('/')
     if pathAsList.count('src'):
       index = pathAsList.index('src')
+      rootPath = '/'.join(pathAsList[:index])
+      pathBuild = os.path.join(rootPath, 'resource', 'build.yaml')
+      if not os.path.exists(pathBuild):
+        log.warning("Can't find build file: " + pathBuild)
+        continue
+      pathBuilds.add(pathBuild)
     else:
       log.warning('Wrong location for source file: ' + iPathFile)
       log.warning('Expecting in <dsn_name>/src/ directory')
       continue
-    rootPath = '/'.join(pathAsList[:index])
-    pathBuild = os.path.join(rootPath, 'resource', 'build.yaml')
-    if not os.path.exists(pathBuild):
-      log.warning("Can't find build file: " + pathBuild)
-      continue
-    pathBuilds.add(pathBuild)
   return pathBuilds
 
 
-  
+
+@log_call  
 def getParam(iKey, iBuild = '../resource/build.yaml', iDefault = None):
   iDefault = iDefault or []
   content = load(iBuild)
-  try:
-    for k in iKey.split('.'):
-      content = content[k]
-  except KeyError:
-    log.info('No such key: ' + k + '; in file: ' + iBuild)
-    return iDefault
-  return content
+  res = None
+  for key in [iKey.upper(), iKey.lower()]: 
+    try:
+      res = content[key]
+    except KeyError:
+      continue
+  res = res or iDefault
+  return res
     
-    
+@log_call
+def getDep(iBuild):
+  deps = getParam(iKey = 'dep', iBuild = iBuild)
+  if not deps:
+    return 
+  # os.chdir('../resource') for relative path same as '../script'
+  deps = [os.path.abspath(d) for d in deps]
+  paths = set()
+  for d in deps:
+    if not os.path.exists(d):
+      log.warning('Path does not exists: '+ d + '; in file: ' + pathBuild)
+    else:
+      paths.add(d)
+  return paths 
+
+
+
+
+@log_call    
 def getDeps(iBuilds):
   '''
   Input:  set of path to build.yaml's
@@ -152,6 +198,9 @@ def getDeps(iBuilds):
     path = set()
     if not deps:
       return []
+    os.chdir('../resource')
+    deps = [os.path.abspath(d) for d in deps]
+    os.chdir('../script')
     for d in deps:
       if not os.path.exists(d):
         log.warning('Path does not exists: '+ d + '; in file: ' + pathBuild)
@@ -160,10 +209,44 @@ def getDeps(iBuilds):
   return path
 
 
+def getTree(iPaths):
+  tree = []
+  for path in iPaths:
+    if os.path.isfile(path):
+      tree.append(path)
+    else:
+      for root, dirs, files in os.walk(path):
+        for f in files:
+          tree.append(os.path.join(root, f))
+  return tree  
 
+
+def getFileName(iPath):
+  return os.path.splitext(os.path.split(iPath)[1])[0]
+
+
+def getFile(iInstance = '', iInFile = '', _cache = {}):
+  if not iInstance and not iInFile:
+    return _cache.values()
+  build = getBuild(iInFile)
+  key = (iInstance, build)
+  res = _cache.get(key)
+  if not res:
+    paths = getDep(build)
+    if not paths:
+      return
+    tree = getTree(paths)
+    new = {(getFileName(i), build):i for i in tree}
+    _cache.update(new)
+    res = _cache.get(key)
+  return res
+
+
+@log_call
 def getDepTree(iFile):
   if type(iFile) == type(""):
     iFile = [iFile]
+  iFile = list(set(iFile))
   pathBuilds = getBuilds(iFile)
   paths = getDeps(pathBuilds)
   depTree = []
@@ -177,6 +260,8 @@ def getDepTree(iFile):
   return depTree
 
 
+
+@log_call    
 def getSrcExtensions(iTag, iBuildFile='../resource/build.yaml'):
   
   if os.path.splitext(iBuildFile)[1] != '.yaml':

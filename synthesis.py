@@ -21,7 +21,7 @@ class SynthesisException(Exception):
   
 
 
-def getIncludePath(iPrj):
+def _getIncludePath(iPrj):
     includePath = ['.']
     for i in range(11):
       incl = build.getParam('IncludeDir'+str(i))
@@ -29,8 +29,12 @@ def getIncludePath(iPrj):
         break
       includePath.append(incl)
     return ';'.join(includePath) 
+  
     
-
+def getIncludePath(iPrj):
+  return build.getParam('include_path')
+  
+  
 
 def setParams(iPrj):
   device = build.getParam('DEVICE')

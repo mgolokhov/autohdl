@@ -6,6 +6,7 @@ import shutil
 import subprocess
 import ConfigParser
 import io
+import sqlite3
 
 import autohdl.lib.yaml as yaml
 from hdlLogger import *
@@ -13,6 +14,11 @@ import structure
 import toolchain
 import synthesis
 import build
+import hdlGlobals
+
+
+gPrj = ''
+#getStructure()
 
 
 @log_call
@@ -21,51 +27,32 @@ def getStructure():
   Precondition: cwd= <dsn_name>/script
   Output: dictionary { keys=main, dep, tb, other values=list of path files}
   '''
+  preparation()
   dict = {}
-  only = build.getParam('only_regexp')
-  ignore = build.getParam('ignore_regexp')
   dict['rootPath'] = os.path.abspath('..').replace('\\', '/')
-  
-  other = []
-  for i in ['../src', '../TestBench', '../script', '../resource']:
-    other += structure.search(iPath = i, iIgnore = ignore)
-
-  main = structure.search(iPath = '../src',
-                          iOnly = ['\.v', '\.vm', '\.vhdl', '\.vhd'],
-                          iIgnore = ignore)
-  dep = list(structure.getDepSrc(iSrc=main, iIgnore = ignore))
-  TestBench = structure.search(iPath='../TestBench', iIgnore = ignore, iOnly = only)
-  
-  other = list(set(other) - set(main) - set(dep) - set(TestBench))
-  
   dict['dsnName'] = os.path.split(dict['rootPath'])[1]
-  dict['other'] = other
-  dict['main'] = main
-  dict['dep'] = dep
-  dict['TestBench'] = TestBench
-  dict['netlist'] = structure.search(iPath = '../aldec/src',
-                                     iOnly = ['\.sedif', '\.edn', '\.edf', '\.edif', '\.ngc' ],
-                                     iIgnore = ['aldec/src/src/'])  
   
+  allSrc = []
+  ignore = hdlGlobals.ignore
+  for i in ['../src', '../TestBench', '../script', '../resource']:
+    allSrc += structure.search(iPath = i, iIgnore = ignore)
+  dict['allSrc'] = allSrc
+
+  mainSrc = structure.search(iPath = '../src',
+                                     iOnly = ['\.v', '\.vm', '\.vhdl', '\.vhd'],
+                                     iIgnore = ignore)
+  dict['mainSrc'] = mainSrc
+  dict['depSrc'] = structure.getDepSrc(iSrc = mainSrc, iIgnore = ignore)
   
+  dict['TestBenchSrc'] = structure.search(iPath='../TestBench', iIgnore = ignore)
+  
+
+  dict['netlistSrc'] = structure.search(iPath = '../aldec/src',
+                                        iOnly = ['\.sedif', '\.edn', '\.edf', '\.edif', '\.ngc' ])     
+  global gPrj
+  gPrj = dict
+   
   return dict
-
-
-@log_call
-def synch_adf(iBuildContent):
-  pathDefaultAdf = os.path.join(os.path.dirname(__file__), 'data', 'aldec_adf')
-  contentAdf = open(pathDefaultAdf, 'r').read()
-  config = ConfigParser.RawConfigParser(allow_no_value=True)
-  config.optionxform = str
-  config.readfp(io.BytesIO(contentAdf))
-  for key in iBuildContent:
-    for section in config.sections():
-      try:
-        config.get(section, key)
-        config.set(section, key, iBuildContent[key])
-      except ConfigParser.NoOptionError:
-        continue 
-  return config
 
 
 @log_call
@@ -77,38 +64,89 @@ def gen_aws(iStructure):
 
 
 @log_call
-def gen_adf_helper(iKey, iStructure):
-  rootPath = iStructure['rootPath']+'/'
-  list = []
-  for i in iStructure[iKey]:
+def preprFiles():
+  dep  = ['dep/' + i + '=-1' for i in gPrj['depSrc']]
+  netlist = ['/'+ i + '=-1' for i in gPrj['netlistSrc']]
+  
+  allOtherSrc = list(set(gPrj['allSrc']) - set(gPrj['depSrc']))
+  rootPath = gPrj['rootPath']+'/'
+  l = []
+  for i in allOtherSrc:
     virtFolder = os.path.dirname(i).replace('\\', '/').split(rootPath)[1]
     virtFolder = virtFolder.replace('/', '\\')
-    list.append(virtFolder + '/' + i + '=-1')
-  return list
+    l.append(virtFolder + '/' + i + '=-1')
+  allOtherSrc = l
+  files = '\n'.join(dep + netlist + allOtherSrc)
+  return files
 
 
-  
 @log_call
-def gen_adf(iStructure):
-  main = gen_adf_helper(iKey = 'main', iStructure = iStructure)
-  dep  = ['dep/' + i + '=-1' for i in iStructure['dep']]
-  tb = gen_adf_helper(iKey = 'TestBench', iStructure = iStructure)
-  other = gen_adf_helper(iKey = 'other', iStructure = iStructure)
-  netlist = ['/'+ i + '=-1' for i in iStructure['netlist']]
-  src_all = '\n'.join(main+dep+tb+other+netlist)
-  
-  src_tb = ['.\\' + os.path.relpath(i) + '=Verilog Test Bench'
-            for i in iStructure['TestBench']
+def preprFilesData():
+  srcTb = ['.\\' + os.path.relpath(i) + '=Verilog Test Bench'
+            for i in gPrj['TestBenchSrc']
             if os.path.splitext(i)[1] in ['.v']]
-  src_tb = '\n'.join(src_tb)
+  filesData = '\n'.join(srcTb)
+  return filesData
 
-  config = synch_adf(iBuildContent = build.load())
-  config.set('Files', src_all)
-  config.set('Files.Data', src_tb)
+
+@log_call
+def preprLocalVerilogDirs(iArg):
+  res = iArg.split(';')
+  counter = 'Count={0}'.format(len(res))
+  inclDir = ['IncludeDir{0}={1}'.format(i, path) for i, path in enumatate(res)]
+  return counter + '\n'.join(inclDir)
+
+
+@log_call
+def getFromDB(iKey):
+  aconnect = sqlite3.connect(os.path.join(os.path.dirname(__file__),'data', 'autohdl.db'))
+  acursor = aconnect.cursor()
+  ex = 'SELECT * FROM aldec WHERE adf = "{0}"'.format(iKey)
+  acursor.execute(ex)
+  adf, ayaml, bydefault, preprocess = acursor.fetchone()
+  if ayaml:
+    yamlVal = build.getParam(ayaml.upper())
+    if yamlVal:
+      if preprocess:
+        res = eval(preprocess)(yamlVal)
+      else:
+        res = yamlVal
+    else:
+      res = bydefault
+  elif bydefault:
+    res = bydefault
+  else:
+    res = eval(preprocess)()
+
+  return res
+
+
+
+
+@log_call
+def gen_adf(iPrj):
+  templateAdf = os.path.join(os.path.dirname(__file__), 'data', 'template_aldec_adf')
+  contentAdf = open(templateAdf, 'r').read()
+  config = ConfigParser.RawConfigParser(allow_no_value=True)
+  config.optionxform = str
+  config.readfp(io.BytesIO(contentAdf))
   
-  f = open('../aldec/{dsn}.adf'.format(dsn=iStructure['dsnName']), 'w')
+  for section in config.sections():
+    for option in config.options(section):
+      
+      if option.startswith('{') and option.endswith('}'):
+        config.remove_option(section, option)
+        config.set(section, getFromDB(iKey = option[1:-1]))
+        continue
+      
+      val = config.get(section, option)
+      if val and val.startswith('{') and val.endswith('}'):
+        config.set(section, option, getFromDB(iKey = val[1:-1]))  
+  
+  f = open('../aldec/{dsn}.adf'.format(dsn=iPrj['dsnName']), 'w')
   config.write(f)
   f.close()
+
 
 
 @log_call
@@ -147,20 +185,29 @@ def copyNetlists():
   for i in netLists:
     shutil.copyfile(i, '../aldec/src/'+os.path.split(i)[1])
 
-
 @log_call
-def export():
-  cleanAldec()
-  for i in structure.gPredefined:
+def genPredefined():
+  predef = structure.gPredefined + ['dep']
+  for i in predef:
     folder = '../aldec/src/'+i
     if not os.path.exists(folder):
       os.makedirs(folder)
+
+@log_call
+def preparation():  
+  cleanAldec()
+  genPredefined()
   copyNetlists()
-  prjStructure = getStructure()
-  gen_aws(iStructure = prjStructure)
-  gen_adf(iStructure = prjStructure)
-  filesToCompile = prjStructure['main'] + prjStructure['dep'] + prjStructure['TestBench']
+
+@log_call
+def export():
+  preparation()
+  getStructure() # same as gPrj
+  prj = gPrj
+  gen_aws(iStructure = prj)
+  gen_adf(iPrj = prj)
+  filesToCompile = prj['mainSrc'] + prj['depSrc'] + prj['TestBenchSrc']
   gen_compile_cfg(iFiles = filesToCompile)
-  build.dump(iStructure = prjStructure)
+  build.dump(iStructure = prj)
 
   subprocess.Popen('pythonw ' + os.path.dirname(__file__) + '/aldec_run.py')  
