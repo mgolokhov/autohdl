@@ -1,71 +1,43 @@
-#!/usr/bin/env python
-
-from distutils.core import setup
+import logging
+import logging.handlers
+from distutils.core import setup, Command
 import os
 import shutil
 import sys
-import sqlite3
+from log_server import shutdownLogServer
 
+
+
+
+shutdownLogServer()
+# pre-install
+# copy preinstall.py (to shutdown log_server in .exe distribution, clean previous version)    
+# post-install? 
+shutil.copyfile('preinstall.py', '../preinstall.py')
 os.chdir('..')
 
-def getTree(iPathRoot):
-  afiles = []
-  adirs = []
-  for root, dirs, files in os.walk(iPathRoot):
-    r = root.replace('\\', '/')
-    r = r.replace('autohdl/', '')
-    for d in dirs:
-      if not os.listdir(root+'/'+d):
-        path = r + '/' + d + '/*'
-        adirs.append(path)
-    for f in files:
-      path = '%s/%s' % (r, f)
-      afiles.append(path)
-  return afiles, adirs
 
-files, dirs = getTree('autohdl/test')
-data_resource = files + dirs
-files, dirs = getTree('autohdl/data')
-data_resource += files + dirs
-
-
-def getVersionRaw():
-  aconnect = sqlite3.connect('autohdl/data/autohdl.db')
-  acursor = aconnect.cursor()
-  if sys.argv[1] == 'bdist_wininst':
-    acursor.execute('''UPDATE version SET build = build + 1''')
-  res = acursor.execute('''SELECT * FROM version''')
-  version = res.fetchone()
-  aconnect.commit()
-  aconnect.close()
-  return version
-
-gVersion = getVersionRaw()
-
+import database
 def getVersion():
-  version = '.'.join([str(i) for i in gVersion])
-  return version
+  if 'bdist_wininst' in sys.argv[1]: 
+    return database.incBuildVersion()
+  else:
+    return database.getBuildVersion()
 
 
+class Uninstall(Command):
+  description = 'uninstall previous version'
+  user_options = []
+  def initialize_options(self):
+    self.cwd = None
+  def finalize_options(self):
+    self.cwd = os.getcwd()
+  def run(self):
+    path = sys.prefix + '/Lib/site-packages/autohdl'
+    if os.path.exists(path):
+      shutil.rmtree(path)
 
-# BUGAGA: win specific
-if os.name == 'nt':
-  if os.path.exists('build'):
-    shutil.rmtree('build')
 
-  name = 'autohdl-'+'.'.join([str(i)for i in gVersion[:-1]])
-  
-  path = sys.prefix+'/Lib/site-packages/autohdl'
-  if os.path.exists(path):
-    shutil.rmtree(path)
-  
-#  if os.path.exists('dist'):
-#    for root, dirs, files in os.walk('dist'):
-#      for f in files:
-#        if name in f:
-#          os.remove(f)
-    
-  
 
 setup(name         = 'autohdl',
       version      = getVersion(),
@@ -74,6 +46,7 @@ setup(name         = 'autohdl',
       author_email = 'hex_wer@mail.ru',
       platforms    = ['win32'],
       packages     = ['autohdl', 'autohdl.test', 'autohdl.lib', 'autohdl.lib.yaml'],
-      package_data = {'autohdl': data_resource},
-      data_files   = [('', ['autohdl/hdl.py'])]
+      package_data = {'autohdl': ['data/*']},
+      data_files   = [('', ['autohdl/hdl.py'])],
+      cmdclass     = {'uninstall': Uninstall},
      )

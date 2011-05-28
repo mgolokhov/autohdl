@@ -19,24 +19,26 @@ class MyLogger(logging._loggerClass):
         record.__dict__[key] = extra[key]
     return record
 
-
-
 logging.setLoggerClass(MyLogger)
 
 
 
-# rootLogger
-rootLogger = logging.getLogger('')
-rootLogger.setLevel(logging.DEBUG)
-socketHandler = logging.handlers.SocketHandler('localhost',
-                    logging.handlers.DEFAULT_TCP_LOGGING_PORT)
 
-rootLogger.addHandler(socketHandler)
+
+socketHandler = logging.handlers.SocketHandler('localhost',
+                                               logging.handlers.DEFAULT_TCP_LOGGING_PORT)
+socketHandler.setLevel(logging.DEBUG)
+
 
 consoleHandler = logging.StreamHandler()
 consoleHandler.setLevel(logging.INFO)
 consoleFormatter = logging.Formatter("%(levelname)s:%(message)s")
 consoleHandler.setFormatter(consoleFormatter)
+
+# rootLogger
+rootLogger = logging.getLogger('')
+rootLogger.setLevel(logging.DEBUG)
+rootLogger.addHandler(socketHandler)
 rootLogger.addHandler(consoleHandler)
 
 
@@ -58,12 +60,6 @@ def log_call(fn, *args, **kw):
     if kw:
       arglist += ', '.join(['{0}={1}'.format(k, v) for k, v in kw.viewitem()])
     
-#    log.debug("{file} {line} {func} IN ({args})".format(
-#                              file = os.path.split(frame.f_code.co_filename)[1],
-#                              line = frame.f_lineno,
-#                              func = fn.__name__,
-#                              args = arglist))
-    
     logger = logging.getLogger(fn.__module__)
     logger.debug("%(func)s IN (%(args)s)" % (
                             {'func': fn.__name__,
@@ -83,11 +79,6 @@ def log_call(fn, *args, **kw):
     logger.debug('crashed')
     raise
   else:
-#    rootLogger.debug('{file} {line} {func} OUT {res}'.format(
-#                                        file = os.path.split(frame.f_code.co_filename)[1],
-#                                        line = frame.f_lineno,
-#                                        func = fn.__name__,
-#                                        res = toShortStr(result)))
     logger.debug("%(func)s OUT %(ret)s" % (
                           {'func': fn.__name__,
                            'ret': toShortStr(result),
@@ -104,10 +95,13 @@ def log_call(fn, *args, **kw):
     
   return result
 
-log = logging.getLogger('my')
-s = socket.socket()  #socket.AF_INET, socket.SOCK_STREAM
-if s.connect_ex(('localhost', logging.handlers.DEFAULT_TCP_LOGGING_PORT)): #9020
-#  print 'start server'
-  path = os.path.dirname(__file__) + '/log_server.py'
-  subprocess.Popen('pythonw '+ path)
 
+s = socket.socket()  #socket.AF_INET, socket.SOCK_STREAM
+# check if logging server up, else - run
+if s.connect_ex(('localhost', logging.handlers.DEFAULT_TCP_LOGGING_PORT)): #9020
+  path = os.path.dirname(__file__) + '/log_server.py'
+  subprocess.Popen('python '+ path)
+
+
+
+log = logging.getLogger('')

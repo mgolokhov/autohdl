@@ -9,7 +9,9 @@ import io
 import sqlite3
 
 import autohdl.lib.yaml as yaml
-from hdlLogger import *
+
+from hdlLogger import log_call
+import logging
 import structure
 import toolchain
 import synthesis
@@ -18,7 +20,6 @@ import hdlGlobals
 
 
 gPrj = ''
-#getStructure()
 
 
 @log_call

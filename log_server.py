@@ -3,6 +3,33 @@ import logging
 import logging.handlers
 import SocketServer
 import struct
+import select
+import socket
+import time
+
+def shutdownLogServer():
+  attempt = 10
+  # 0 - connect ok
+  # 10061 no socket
+  # 10056 already binded
+  while True:
+    print 'shutting down log server...'
+    s = socket.socket()
+    if not s.connect_ex(('localhost', logging.handlers.DEFAULT_TCP_LOGGING_PORT)):
+      rootLogger = logging.getLogger('')
+      rootLogger.setLevel(logging.DEBUG)
+      socketHandler = logging.handlers.SocketHandler('localhost',
+                                                     logging.handlers.DEFAULT_TCP_LOGGING_PORT)
+      rootLogger.addHandler(socketHandler)
+      logging.warning('shutdown_log_server')
+      attempt += 1
+      time.sleep(1)
+    else:
+      print 'log server were shut down'
+      break
+    if attempt == 5:
+      break
+
 
 
 class LogRecordStreamHandler(SocketServer.StreamRequestHandler):
@@ -28,6 +55,9 @@ class LogRecordStreamHandler(SocketServer.StreamRequestHandler):
                 chunk = chunk + self.connection.recv(slen - len(chunk))
             obj = self.unPickle(chunk)
             record = logging.makeLogRecord(obj)
+            if 'shutdown_log_server' in str(record):
+                print record
+                self.server.abort = True
             self.handleLogRecord(record)
 
     def unPickle(self, data):
@@ -47,12 +77,13 @@ class LogRecordStreamHandler(SocketServer.StreamRequestHandler):
         # cycles and network bandwidth!
         logger.handle(record)
 
+
 class LogRecordSocketReceiver(SocketServer.ThreadingTCPServer):
     """simple TCP socket-based logging receiver suitable for testing.
     """
 
-    allow_reuse_address = 1
-
+    
+    
     def __init__(self, host='localhost',
                  port=logging.handlers.DEFAULT_TCP_LOGGING_PORT,
                  handler=LogRecordStreamHandler):
@@ -60,18 +91,20 @@ class LogRecordSocketReceiver(SocketServer.ThreadingTCPServer):
         self.abort = 0
         self.timeout = 1
         self.logname = None
-
+        self.allow_reuse_address = 1
+ 
     def serve_until_stopped(self):
-        import select
         abort = 0
         while not abort:
             rd, wr, ex = select.select([self.socket.fileno()],
                                        [], [],
-                                       self.timeout)
+                                       1)
             if rd:
                 self.handle_request()
             abort = self.abort
 
+            
+            
 def main():
     alog = logging.getLogger('')
     
@@ -79,21 +112,15 @@ def main():
     fileHandler = logging.handlers.RotatingFileHandler(
                                                       'autohdl.log',
                                                       maxBytes=20000000,
-                                                      backupCount=1)
-    
-    fileHandler = logging.FileHandler(filename='autohdl.log',
-                                      mode='a',
-                                      delay=True)
+                                                      backupCount=0)
     fileHandler.setLevel(level=logging.DEBUG)
-    fileFormatter = logging.Formatter("%(filename)s:%(lineno)d:%(levelname)s:%(message)s")
+    fileFormatter = logging.Formatter("%(asctime)s:%(filename)s:%(lineno)d:%(levelname)s:%(message)s")
     fileHandler.setFormatter(fileFormatter)
     alog.addHandler(fileHandler)  
-#    logging.basicConfig(
-#        format="%(asctime)s %(relativeCreated)5d %(name)-15s %(levelname)-8s %(message)s",
-#        level = logging.DEBUG)
+
     tcpserver = LogRecordSocketReceiver()
-    #print "About to start TCP server..."
     tcpserver.serve_until_stopped()
 
+    
 if __name__ == "__main__":
     main()
