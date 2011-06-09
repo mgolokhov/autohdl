@@ -1,9 +1,14 @@
 import httplib, urllib
+import urllib2
 #import lxml
 #from lxml.etree import Element, ElementTree, HTML
 import os
-
+import sys
 import base64
+
+import autohdl.lib.yaml as yaml
+
+
 
 def make_req(method,uri,params,header):
     conn = httplib.HTTPConnection("cs.scircus.ru")
@@ -22,8 +27,8 @@ def put_firmware(fw_file):
         data = fi.read();
         fi.close();
         data_len = len(data)
-        username = 'gnomik'
-        password = ',f,rbgbljhrb'
+        
+        username, password = authenticate()
 
         fw_name = os.path.basename(fw_file)
 
@@ -69,8 +74,46 @@ def put_firmware(fw_file):
         if resp.status < 400:
             print "Rename to " + fw_name
             resp = make_req("MOVE", "/test/distout/rtl/tmpfile", "", headers_move)
+   
     
+def authenticate():
+  ask = False
+  
+  path = sys.prefix + '/Lib/site-packages/autohdl_cfg/open_sesame'
+  if os.path.exists(path):
+    content = yaml.load(open(path, 'r'))
+    try:
+      username = base64.decodestring(content[base64.encodestring('username')])
+      password = base64.decodestring(content[base64.encodestring('password')])
+    except KeyError as e:
+      ask = True
+  else:  
+    ask = True
+
+  while ask:
+    username = raw_input('user:')
+    password = raw_input('password:')
+    request = urllib2.Request("http://cs.scircus.ru/test/distout/rtl")
+    base64string = base64.encodestring('%s:%s' % (username, password)).replace('\n', '')
+    request.add_header("Authorization", "Basic %s" % base64string)   
+    try:
+      result = urllib2.urlopen(request)
+      contentYaml = {
+                     base64.encodestring('username'): base64.encodestring(username),
+                     base64.encodestring('password'): base64.encodestring(password)} 
+      yaml.dump(contentYaml, open(path, 'wb'), default_flow_style = False)
+      break
+    except urllib2.HTTPError as e:
+      quit = raw_input('Wrong user/password, try again hit Enter; To quit hit Q.')
+      if quit.lower() == 'q':
+        print 'Exit...'
+        sys.exit(0)
+  
+  return username, password
+
+
 if __name__ == "__main__":
 	put_firmware("putfw_dav.py")
+
     
 

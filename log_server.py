@@ -6,6 +6,9 @@ import struct
 import select
 import socket
 import time
+import sys
+import os
+
 
 def shutdownLogServer():
   attempt = 10
@@ -109,10 +112,14 @@ def main():
     alog = logging.getLogger('')
     
     # Add the log message handler to the logger
+    path = sys.prefix + '/Lib/site-packages/autohdl_cfg/autohdl.log'
+    dir = sys.prefix + '/Lib/site-packages/autohdl_cfg/'
+    if not os.path.exists(dir):
+      os.mkdir(dir)
     fileHandler = logging.handlers.RotatingFileHandler(
-                                                      'autohdl.log',
+                                                      path,
                                                       maxBytes=20000000,
-                                                      backupCount=0)
+                                                      backupCount=1)
     fileHandler.setLevel(level=logging.DEBUG)
     fileFormatter = logging.Formatter("%(asctime)s:%(filename)s:%(lineno)d:%(levelname)s:%(message)s")
     fileHandler.setFormatter(fileFormatter)

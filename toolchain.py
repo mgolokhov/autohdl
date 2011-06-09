@@ -3,8 +3,9 @@ import xml
 import os
 import sys
 import string
-from hdlLogger import *
-  
+
+from hdlLogger import log_call, logging
+log = logging.getLogger(__name__)  
 
 gTools = {'avhdl'    : {'gui'   : 'avhdl.exe',
                        'batch' : None,
@@ -25,6 +26,7 @@ class ToolchainException(Exception):
     return self.string
     
 
+@log_call
 def refreshXml(iTag, path, iDirToolchainXml):
   log.debug('def refreshXml IN iTag='+iTag+'; path='+path)
   fileToolchainXml = iDirToolchainXml + 'toolchain.xml'
@@ -57,32 +59,30 @@ def refreshXml(iTag, path, iDirToolchainXml):
   finally:
     f.close() 
   
-
+  
+@log_call
 def search(exe_name, path):
-  log.debug('def search IN exe_name='+exe_name+' path='+path)
   for root, dirs, files in os.walk(path): #@UnusedVariable
     for i in files:
       log.info('Searching: '+root+'/'+i)
       if i == exe_name:
         path = '/'.join([root.replace('\\','/'), i])
-        log.debug('def search OUT path='+path)
         return path
 
 
+@log_call
 def getDrivesList():
-  log.debug('def getDrivesList IN')
   drives_list = []
   for i in string.ascii_uppercase:
     if os.path.exists(i+':/'):
       drives_list.append(i+':/')
-  log.debug('def getDrivesList OUT drives_list='+str(drives_list))
   return drives_list
 
 
+@log_call
 def searchTool(iTag):
   '''
   '''
-  log.debug('def searchTool IN iTag='+iTag)
   global gTools
   tool, mode = iTag.split('_')
   toolExe = gTools[tool][mode]
@@ -104,8 +104,8 @@ def searchTool(iTag):
 #
 # Trying to get info from configure file
 #
+@log_call
 def parseXml(iTag, iPathToolchainXml):
-  log.debug('def parseXml IN iTag'+str(iTag)+' iPathToolchainXml='+iPathToolchainXml)
   try:
     dom = minidom.parse(iPathToolchainXml)
   except xml.parsers.expat.ExpatError as e:
@@ -117,10 +117,10 @@ def parseXml(iTag, iPathToolchainXml):
     validPath = i.childNodes[0].toxml().strip()
     if os.path.exists(validPath):
       log.info('Got path from xml='+iPathToolchainXml+'; tag='+iTag)
-      log.debug('def parseXml OUT validPath='+validPath)
       return validPath
 
 
+@log_call
 def getPathFromXml(iTag, iDirToolchainXml):
   '''
   Input: iTag - Tool Name mode, (e.g. ise_gui, ise_batch);
@@ -128,16 +128,15 @@ def getPathFromXml(iTag, iDirToolchainXml):
     predefined design structure;
     current directory - <design_name>/script;
   '''
-  log.debug('def getPathFromXml IN iTag='+iTag)
   pathGlobalXml = iDirToolchainXml + 'toolchain.xml'
   if not os.path.exists(pathGlobalXml):
     log.info("Can't find configure file: " + pathGlobalXml)  
     return
   path = parseXml(iTag, pathGlobalXml)
-  log.debug('def getPathFromXml OUT path='+str(path))
   return path
 
 
+@log_call
 def validateTag(iTag):
   '''
   Checks tag is registered.
@@ -160,13 +159,13 @@ def validateTag(iTag):
 
 
   
+@log_call
 def getPath(iTag):
   '''
   Input:  iTag - Tool Name mode, (e.g. ise_gui, ise_batch);
   Output: path to that tool; 
   Throws exception if there is no path associated with a tool;
   '''
-  log.debug('def getPath IN iTag='+str(iTag))
   path = None
   dirToolchainXml = sys.prefix + '/Lib/site-packages/autohdl_cfg/'
   try:
@@ -181,8 +180,8 @@ def getPath(iTag):
   except ToolchainException as e:
     log.error(e)
     raise e
-  log.debug('def getPath OUT path='+str(path)) 
   return path
+
 
 if __name__ == '__main__':
   getPath('avhdl_gui')

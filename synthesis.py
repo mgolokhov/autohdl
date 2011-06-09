@@ -10,7 +10,9 @@ import toolchain
 import build
 import hdlGlobals
 
-from hdlLogger import *
+import logging
+from hdlLogger import log_call
+log = logging.getLogger(__name__)
 
 
 class SynthesisException(Exception):
@@ -20,7 +22,7 @@ class SynthesisException(Exception):
     return self.string
   
 
-
+@log_call
 def _getIncludePath(iPrj):
     includePath = ['.']
     for i in range(11):
@@ -29,13 +31,14 @@ def _getIncludePath(iPrj):
         break
       includePath.append(incl)
     return ';'.join(includePath) 
+
   
-    
+@log_call
 def getIncludePath(iPrj):
   return build.getParam('include_path')
   
-  
 
+@log_call
 def setParams(iPrj):
   device = build.getParam('DEVICE')
   part = 'xc' + device[:-5]
@@ -54,8 +57,9 @@ def setParams(iPrj):
   f = open(iPrj['pathScript'], 'w')
   f.write(iPrj['scriptContent'])
   f.close()
+
   
-  
+@log_call
 def setSrc(iPrj):
   ignore = hdlGlobals.ignore
   only = []
@@ -63,6 +67,7 @@ def setSrc(iPrj):
   filesDep = structure.getDepSrc(iSrc = filesMain, iIgnore =ignore, iOnly = only)
   srcFiles = filesMain + list(filesDep)
   iPrj['srcFiles'] = '\n'.join(['add_file "{0}"'.format(i) for i in srcFiles])
+
   
 @log_call  
 def getStructure(iTopModule, iMode):
@@ -103,8 +108,8 @@ def getStructure(iTopModule, iMode):
   return prj
 
 
+@log_call
 def parseLog(iPrj, iSilent = False):
-  log.debug('def parseLog IN')
   logFile = os.path.abspath(iPrj['pathLog'])
   if os.path.exists(logFile):
     f = open(logFile, 'r')
@@ -128,6 +133,7 @@ def parseLog(iPrj, iSilent = False):
   return logFile 
 
 
+@log_call
 def run_synplify_batch(iPrj):
   run = '"%s" %s %s %s %s' % (iPrj['pathTool'],
                 '-product synplify_premier',
@@ -162,15 +168,16 @@ def run_synplify_batch(iPrj):
   loge.close()
 
 
+@log_call
 def run_synplify_gui(iPrj):
   subprocess.call([iPrj['pathTool'], iPrj['pathScript']])
 
 
+@log_call
 def runTool(iPrj, iSilent):
   '''
   Runs external tool for synthesis
   '''
-  log.debug('def runTool IN')
   os.chdir(iPrj['pathSynthesis'])
   
   if iPrj['mode'] == 'synplify_batch':
@@ -182,8 +189,8 @@ def runTool(iPrj, iSilent):
   os.chdir(iPrj['pathWas'])
 
 
+@log_call
 def run(iTopModule, iMode = 'synplify_batch', iSilent = True):
-  log.debug('def run IN iMode='+iMode+' iTopModule='+iTopModule)
   # changing current location to synthesis directory
   prj = getStructure(iTopModule = iTopModule, iMode = iMode)
   runTool(iPrj = prj, iSilent = iSilent)

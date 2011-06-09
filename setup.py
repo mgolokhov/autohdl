@@ -12,8 +12,12 @@ from log_server import shutdownLogServer
 shutdownLogServer()
 # pre-install
 # copy preinstall.py (to shutdown log_server in .exe distribution, clean previous version)    
-# post-install? 
-shutil.copyfile('preinstall.py', '../preinstall.py')
+# post-install?
+
+if len(sys.argv) >= 2 and 'bdist_wininst' in sys.argv[1]:
+  shutil.copyfile('preinstall.py', '../preinstall.py')
+
+
 os.chdir('..')
 
 

@@ -1,11 +1,16 @@
 import re
 import os
 import sys
+import time
 import subprocess
+import hashlib
 
-from autohdl.lib.pyparsing import *
-from hdlLogger import *
 
+from lib.pyparsing import *
+from hdlLogger import log_call, logging
+log = logging.getLogger(__name__)
+
+import lib.yaml as yaml
 import build
 
 
@@ -16,10 +21,9 @@ class InstanceException(Exception):
   def __str__(self):
     return self.string
 
-
+@log_call
 def removeComments(ioString):
   ioString = ioString.replace('\t', '    ')
-  log.debug('def removeComments IN ioString=\n'+ioString)
   withoutQuotedStr = ioString
   for tokens in QuotedString(quoteChar='"').searchString(withoutQuotedStr):
     tok = tokens[0]
@@ -29,7 +33,6 @@ def removeComments(ioString):
     tok = tokens[0]
     log.debug('comment= ' + tok)
     ioString = ioString.replace(tok, '', 1)
-  log.debug('def removeComment OUT ioString=\n'+ioString)
   return ioString
   
 
@@ -42,18 +45,167 @@ def readContent(iPathFile):
   content = f.read()
   f.close() 
   return content 
+
+
+def getParsedPaths(iAbsPath):
+  dir = '../resource/parsed'
+  if not os.path.exists(dir):
+    os.mkdir(dir)
+  relPath = os.path.relpath(iAbsPath, '../script')
+  name = relPath.replace(os.sep, '_')
+  name = name.replace('.', '_')
+  pathToFile = dir+'/'+name
+  return relPath, pathToFile 
+
+
+def calcHash(iContent):
+  h = hashlib.sha1()
+  h.update(iContent)
+  return h.hexdigest()  
+
+@log_call
+def saveParsed(iContent, parsed):
+  if not parsed:
+    return
+  hashres = calcHash(iContent)
+  relPath, pathToFile = getParsedPaths(parsed.values()[0][0])
+  f = open(pathToFile, 'w')
+  d = {'sha1': hashres}
+  k = parsed.keys()[0]
+  v = parsed.values()[0]
+  tmp = {}
+  for k, v in parsed.iteritems():
+    tmp.update({k: [relPath] + v[1:]})
+  d.update({'parsed' : tmp})
+  yaml.dump(d, f, default_flow_style=False)
+  f.close()
+
+
+@log_call
+def checkIfParsed(iContent, iPath):
+  relPath, pathToFile = getParsedPaths(iPath)
+  if not os.path.exists(pathToFile):
+    return
+  f = open(pathToFile, 'r')
+  y = yaml.load(f)
+  f.close()
+  hashres = calcHash(iContent)
+  if y['sha1'] == hashres:
+    log.error('OK '+ iPath)
+    return y['parsed']
+  else:
+    log.error('NNNN '+iPath)
+    log.error(y['sha1'])
+    log.error(hashres)
   
+
+class ProcDirectives():
+  def __init__(self, iContent):
+    self.defines = {}
+    self.line = ''
+    self.iterContent = iter(iContent.splitlines())
+    self.result = []
+    for self.line in self.iterContent:
+      if '`' not in self.line:
+        self.result.append(self.line)
+      else:
+        block = self.prepBranch()
+        if block:
+          for line in block:
+            self.line = line
+            self.prepReplace()
+            self.prepDefine()
+            self.result.append(self.line)
+        else:
+            self.prepReplace()
+            self.prepDefine()
+            self.result.append(self.line)
+            
+  def getResult(self):
+    return '\n'.join(self.result)
+
+
   
+  def prepReplace(self):
+    'Return a string with replacement accord to defined macros'
+    words = self.line.split()
+    for word in words:
+      if '`' == word[0]:
+        val = self.defines.get(word[1:])
+        if val:
+          self.line = re.sub(word, val, self.line)
+  
+  def prepDefine(self):
+    if '`define' in self.line:
+      words = self.line.split()
+      qty = len(words)
+      if qty == 3:
+        self.defines.update({words[1]:words[2]})
+      elif qty == 2:
+        self.defines.update({words[1]: ''})
+      else:
+        log.warning('Error in preprocess parsing')
+  
+  def _inDefines(self, iWords):
+    for i, word in enumerate(iWords):
+      if '`' == word[0]:
+        return self.defines.get(word[1:]) 
+
+  
+  def prepBranch(self):
+    if '`ifdef' in self.line:
+      origin = []
+      origin.append(self.line)
+      while True:
+        try:
+          line = self.iterContent.next()
+          origin.append(line)
+          if '`endif' in line:
+            break
+        except StopIteration:
+          log.warning('Error in preprocess parsing')
+          break
+    else: # not a branch
+      return
+    
+    branch = []
+    beginWords = set(['`ifdef', '`elif', '`else'])
+    endWords = set(['`elif', '`else', '`endif'])
+    matched = False
+    for line in origin:
+      words = set(line.split())
+      endBlock = endWords & words
+      if matched and endBlock:
+#        branch.append(line)
+        break
+      elif matched:
+        branch.append(line)
+      else:
+        beginBlock = beginWords & words
+        if '`else' in words or beginBlock and words & set(self.defines.keys()):
+          matched = True
+#          branch.append(line)
+
+    if branch:          
+      return branch
+    else:
+      return origin
+    
+    
+ 
+@log_call
 def parseFile(iPathFile):
   '''
     Input: path to file;
     Output: dictionary {key = module name, value = [path to file, instance1, instance2,...]}
   '''
-  log.debug('def parseFile IN iPathFile='+str(iPathFile))
   if os.path.splitext(iPathFile)[1] not in ['.v']:
     return 
-  content = readContent(iPathFile)
-  content = removeComments(content)
+  contentFull = readContent(iPathFile)
+  res = checkIfParsed(contentFull, iPathFile)
+  if res:
+    return res
+  content = removeComments(contentFull)
   content = removeFunc(content)
   try:
     parsed = getInstances(content)
@@ -62,16 +214,16 @@ def parseFile(iPathFile):
     #continue
   for i in parsed:
      parsed[i].insert(0, iPathFile)
-  log.debug('def parseFile OUT parsed='+str(parsed))
+  saveParsed(contentFull, parsed)
   return parsed
 
 
+@log_call
 def parseFiles(iPathFiles):
   '''
     Input: list of path to files;
     Output: dictionary {key = module name, value = [path to file, instance1, instance2,...]};
   '''
-  log.debug('def parseFiles IN iPathFiles='+str(iPathFiles))
   parsed = {}
   if iPathFiles:
     for oneFile in iPathFiles:
@@ -82,10 +234,10 @@ def parseFiles(iPathFiles):
         parsed.update(parsedNew)
       except IOError:
         log.warning("Can't open file: "+oneFile)
-  log.debug('def parseFiles OUT parsed='+str(parsed))
   return parsed
 
 
+@log_call
 def formRegexp():
   identifier = Word(alphas+"_", alphanums+"_$")
   moduleInstance = identifier
@@ -100,12 +252,12 @@ def formRegexp():
   return regexp
 
 
+@log_call
 def getInstances(iString):
   '''
     Input: file content without comment and verilog2001 functions definition;
     Output: instances as a dictionary {key = module name, value = list of instances}; 
   '''
-  log.debug('def getInstances IN iString=\n'+iString)
   instances = {}
 
   statements = iString.split(';')
@@ -134,10 +286,10 @@ def getInstances(iString):
         except NameError:
           InstanceException('Can\'t find module body')
       
-  log.debug('def getInstances OUT instances='+str(instances))
   return instances
 
     
+@log_call
 def getUndefInst(iParsed):
   '''
     Input: dictionary {key = module name, value = [path to file, instance1, instance2,...]};
@@ -152,6 +304,7 @@ def getUndefInst(iParsed):
   return undefInstances
 
 
+@log_call
 def instTreeDep(iTop, iSrc):
   '''
     Input: iTop - parsed top module 
@@ -159,7 +312,6 @@ def instTreeDep(iTop, iSrc):
     Output: list of parsed modules
       [iTop_parsed, inst1_parsed, inst2_parsed,...];
   '''
-  log.debug('instTreeDep IN iTop='+str(iTop)+'; iSrc='+str(iSrc))
   dep = [iTop]
   undef = {}
   for module in dep: # iterate over a list of dictionaries
@@ -172,11 +324,11 @@ def instTreeDep(iTop, iSrc):
     if len(dep) > len(iSrc):
       log.warning('Cyclic dependencies!')
       break
-  log.debug('def instTreeDep OUT dep: '+str(dep)+' undef: '+str(undef))
   return dep, undef
 
   
 
+@log_call
 def _runMoreProc(proc, num):
   cnt = 0
   for i in proc:
@@ -188,6 +340,7 @@ def _runMoreProc(proc, num):
     return True
 
 
+@log_call
 def parseFilesMultiproc(iFiles):
   proc = []
   for i, f in enumerate(iFiles):
@@ -221,6 +374,7 @@ def parseFilesMultiproc(iFiles):
 
 
 
+@log_call
 def resolveUndef(iInstance, iInFile, _parsed = {}):
   mayBe = _parsed.get(iInstance)
   if mayBe:
@@ -242,6 +396,7 @@ def resolveUndef(iInstance, iInFile, _parsed = {}):
 
 
   
+@log_call
 def anal(iParsed, _undef = set()):
   log.info('Analyzing...')
   for module in iParsed:
@@ -259,6 +414,7 @@ def anal(iParsed, _undef = set()):
           return parsed
 
 
+@log_call
 def analyze(iPathFiles, ioParsed = {}, iUndefInst = {}):
   '''
     Input: 
@@ -272,7 +428,6 @@ def analyze(iPathFiles, ioParsed = {}, iUndefInst = {}):
       undefInst - dictionary
         {key = instance name, value = path to file};
   '''
-  log.debug('def analyze IN iPathFiles='+str(iPathFiles)+' ioParsed'+str(ioParsed)+' iUndefInst'+str(iUndefInst))
   log.info('Analyzing dependences...')
   parsed = parseFiles(iPathFiles=iPathFiles)
   log.debug('PARSED: ' + str(parsed))
@@ -282,7 +437,6 @@ def analyze(iPathFiles, ioParsed = {}, iUndefInst = {}):
     log.debug('first call')
     undefInst = getUndefInst(parsed)
     ioParsed.update(parsed)
-    log.debug('def analyze OUT undefInst='+str(undefInst))
     return undefInst
   
   # next calls
@@ -299,7 +453,6 @@ def analyze(iPathFiles, ioParsed = {}, iUndefInst = {}):
       undefInst.update(undefNew)
     except KeyError:
       undefInst[undef] = iUndefInst[undef]
-  log.debug('def analyze OUT undefInst='+str(undefInst))
   return undefInst
 
 

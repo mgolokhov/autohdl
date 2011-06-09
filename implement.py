@@ -9,15 +9,20 @@ import toolchain
 import synthesis
 import structure
 import build
-from hdlLogger import *
+
+from hdlLogger import log_call, logging
+log = logging.getLogger(__name__)
 
 
+
+@log_call
 def bit2mcs(iTopModule, iSize):
   proc = 'promgen -u 0 '+ iTopModule + ' -s ' + str(iSize) + ' -w'
   subprocess.call(proc)
 
+
+@log_call
 def run(iTopModule = '', iFlashSize = ''):  
-  log.debug('def run IN iTopModule='+iTopModule)  
   try:
     if os.path.exists('../implement'):
       for root, dirs, files in os.walk('../implement'):

@@ -5,10 +5,14 @@ import os
 import structure
 import hdlGlobals
 
-import autohdl.lib.yaml as yaml
+import lib.yaml as yaml
 
 
-from hdlLogger import *
+from hdlLogger import log_call, logging
+log = logging.getLogger(__name__)
+
+
+
 
 class BuildException(Exception):
   def __init__(self, iString):
@@ -115,7 +119,8 @@ def dump(iStructure = '', iContent = '', iBuildFile = '../resource/build.yaml'):
     
 @log_call
 def getBuild(iFile):
-  pathAsList = iFile.replace('\\','/').split('/')
+  path = os.path.abspath(iFile)
+  pathAsList = path.replace('\\','/').split('/')
   pathBuild = ''
   if pathAsList.count('src'):
     index = pathAsList.index('src')

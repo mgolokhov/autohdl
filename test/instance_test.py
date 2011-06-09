@@ -3,13 +3,19 @@ import os
 import shutil
 import unittest
 
-try:
-  sys.path.insert(0, '..')
-  from instance import *
-  from hdlLogger import *
-except ImportError:
-  from autohdl.instance import *
-  from autohdl.hdlLogger import *
+#from ..instance import *
+#try:
+sys.path.insert(0, '..')
+sys.path.insert(0, '.')
+from instance import *
+from hdlLogger import log_call, logging
+log = logging.getLogger(__name__)
+#print sys.path
+#from instance import *
+#  from hdlLogger import *
+#except ImportError:
+#  from autohdl.instance import *
+#  from autohdl.hdlLogger import *
 
 class Test(unittest.TestCase):
   def setUp(self):
@@ -526,24 +532,47 @@ class Test(unittest.TestCase):
     self.assertDictEqual(expected, parseFile('tmp_test_dir/dsn1.v'))
     
     
+  def test_prepoc(self):
+    content = '''\
+    bla bla
+    `define someStuff real_stuff
+    here should be `someStuff replacement
+    `define mega `someStuff
+    `ifdef bugaga
+    in ifdef
+    `elif mega
+    in elif
+    `else
+    in else
+    `endif
+    end of story
+    '''
+    expected = '''\
+    bla bla
+    `define someStuff real_stuff
+    here should be real_stuff replacement
+    `define mega real_stuff
+    in elif
+    end of story
+    '''
+    self.assertMultiLineEqual(expected, ProcDirectives(content).getResult())
     
     
 if __name__ == '__main__':
 #  unittest.main()
   logging.disable(logging.ERROR)
   tests = [
-           'test_removeComments',
-           'test_removeComments2',
-           'test_removeComments3',
-           'test_removeFunc',
-           'test_getInstances',
-           'test_parseFiles',
-           'test_instTreeDep',
-           'test_analyze',
-           'test_parseFile',
-           'test_parseFile2'
+           'test_prepoc',
+#           'test_removeComments',
+#           'test_removeComments2',
+#           'test_removeComments3',
+#           'test_removeFunc',
+#           'test_getInstances',
+##           'test_parseFiles',
+#           'test_instTreeDep',
+#           'test_analyze',
+#           'test_parseFile',
+#           'test_parseFile2'
            ]
-
   suite = unittest.TestSuite(map(Test, tests))
   unittest.TextTestRunner(verbosity=2).run(suite)
-  

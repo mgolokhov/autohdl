@@ -1,4 +1,6 @@
-from autohdl.all import *
+from autohdl import *
+#predicated
+#from autohdl.all import *
 
 
 top = 'YOUR_TOP_MODULE_NAME'

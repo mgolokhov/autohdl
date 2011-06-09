@@ -9,8 +9,12 @@ import shutil
 import structure
 import os
 
-from hdlLogger import *
+from hdlLogger import log_call
+import logging
+log = logging.getLogger(__name__)
 
+
+os.chdir(sys.argv[1])
 
 def action(iMode = 'copy', _logOnce = []):
     # cwd = <dsnName>/script
@@ -41,10 +45,12 @@ def action(iMode = 'copy', _logOnce = []):
           print os.getcwd()
           print e
         
+
 def copyInRepo():
   while(1):
     action(iMode = 'copy')
     time.sleep(1)
+
 
 def moveInRepo():
   action(iMode = 'move')

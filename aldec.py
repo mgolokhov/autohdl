@@ -99,9 +99,13 @@ def preprLocalVerilogDirs(iArg):
 
 
 @log_call
-def getFromDB(iKey):
-  aconnect = sqlite3.connect(os.path.join(os.path.dirname(__file__),'data', 'autohdl.db'))
-  acursor = aconnect.cursor()
+def getFromDB(iKey, _cache = []):
+  if not _cache:
+    aconnect = sqlite3.connect(os.path.join(os.path.dirname(__file__),'data', 'autohdl.db'))
+    acursor = aconnect.cursor()
+    _cache.append(acursor)
+  else:
+    acursor = _cache[0]
   ex = 'SELECT * FROM aldec WHERE adf = "{0}"'.format(iKey)
   acursor.execute(ex)
   adf, ayaml, bydefault, preprocess = acursor.fetchone()
@@ -211,4 +215,4 @@ def export():
   gen_compile_cfg(iFiles = filesToCompile)
   build.dump(iStructure = prj)
 
-  subprocess.Popen('pythonw ' + os.path.dirname(__file__) + '/aldec_run.py')  
+  subprocess.Popen('pythonw ' + os.path.dirname(__file__) + '/aldec_run.py '+ os.getcwd())  

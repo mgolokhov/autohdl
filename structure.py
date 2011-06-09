@@ -7,7 +7,9 @@ import sys
 import instance
 import build
 import hdlGlobals
-from hdlLogger import *
+
+from hdlLogger import log_call, logging
+log = logging.getLogger(__name__)
 
 
 class StructureException(Exception):
@@ -111,12 +113,15 @@ class Design(object):
 
   pathData = os.path.dirname(__file__)
   
+  @log_call
   def _copyFile(self, iDestination):
     pathDestination = os.path.join(self._pathRoot, iDestination)
     pathSource = os.path.join(self.pathData, 'data', os.path.split(iDestination)[1])
     if not os.path.exists(pathDestination):
       shutil.copyfile(pathSource, pathDestination)
   
+  
+  @log_call
   def _copyFiles(self):
     '''
     Copy data files to predefined destinations
@@ -131,11 +136,11 @@ class Design(object):
       self._copyFile(iDestination = l)
 
   
+  @log_call
   def genPredef(self):
     '''
     Generates predefined structure
     '''
-    log.debug('def genPredef')
     for d in gPredefined:
       create = '%s/%s' % (self._pathRoot, d)
       if not os.path.exists(create):
@@ -147,13 +152,13 @@ class Design(object):
 #############################################################
 #
 
+@log_call
 def filter(iFiles, iIgnore = [], iOnly = []):
   '''
   Precondition:
     iFiles should be a list even if there is one file;
     iIgnore and iOnly: lists of regexp
   '''
-  log.debug('def filter IN iFiles='+str(iFiles)+' iIgnore='+str(iIgnore)+' iOnly='+str(iOnly))
   if not iIgnore and not iOnly:
     return iFiles
   # make a list if there is one file
@@ -180,17 +185,16 @@ def filter(iFiles, iIgnore = [], iOnly = []):
           log.debug('Ignore pattern - ignoring ' + f)
           files.remove(f)
         break
-  log.debug('def filter OUT files='+str(files))
   return files
 
 
+@log_call
 def search(iPath = '.', iIgnore = None, iOnly = None):
   '''
     Search files by pattern.
     Input: path (by default current directory), ignore and only patterns (should be lists)
     Returns list of files.
   '''
-  log.debug('def search IN iPath='+iPath+' iIgnore='+str(iIgnore)+' iOnly='+str(iOnly))
   ignore = iIgnore or []
   only = iOnly or []
   resFiles = []
@@ -205,12 +209,11 @@ def search(iPath = '.', iIgnore = None, iOnly = None):
         fullPath = (os.path.abspath(fullPath)).replace('\\', '/')
         if filter(iFiles = fullPath, iOnly = only, iIgnore = ignore): 
           resFiles.append(fullPath)
-  log.debug('def search OUT resFiles='+str(resFiles))
   return resFiles
 
 
+@log_call
 def _getDepSrc(iSrc, iIgnore = None, iOnly = None):
-  log.debug('def getDepSrc IN iSrc='+str(iSrc)+' iIgnore='+str(iIgnore)+' iOnly='+str(iOnly))
   iIgnore = iIgnore or []
   iOnly = iOnly or []
   only = ['\.v']#build.getSrcExtensions(iTag = 'dep_parse_ext')
@@ -238,11 +241,12 @@ def _getDepSrc(iSrc, iIgnore = None, iOnly = None):
     
   allSrcFiles = set([parsed[module][0] for module in parsed])     
   depSrcFiles = list(allSrcFiles - filesIn)
-  log.debug('def getDepSrc OUT depSrcFiles='+str(depSrcFiles))
   return depSrcFiles 
 
 
+@log_call
 def getDepSrc(iSrc, iIgnore = None, iOnly = None):
+  log.info('Analyzing dependences...')
   parsed = instance.parseFilesMultiproc(iSrc)
   while(True):
     new = instance.anal(iParsed = parsed)

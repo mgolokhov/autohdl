@@ -1,3 +1,15 @@
-Баги:
-- в build.yaml не прописывается топовый модуль
-- 
+
+2.4.307
+- refactored deployment for proper shutdown log_server (logging stage 2)
+
+2.4.214
+- correct logging with multiprocesses, stage 1 (logging server up) 
+
+2.4.140
+- мультипроцессорность при парсинге файлов (core i5, cProfile, на небольшом проекте время уменьшилось на 10%);
+- запускать питоновкие скрипты можно из под Active-hdl;
+- хранение и конвертация параметров происходит через БД (задел на маштабируемость, быстрый переход на другой тулчейн);
+
+2.4.117
+- lives .bit & .mcs files in folder implement
+- fixed bug: failed statement 'from autohdl.all import *' with WindowsError exception
