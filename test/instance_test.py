@@ -556,13 +556,19 @@ class Test(unittest.TestCase):
     end of story
     '''
     self.assertMultiLineEqual(expected, ProcDirectives(content).getResult())
-    
+  
+  def test_addIncludes(self):
+    content = ('''
+    dfd
+    `include "file.incl"
+    ''')
     
 if __name__ == '__main__':
 #  unittest.main()
   logging.disable(logging.ERROR)
   tests = [
            'test_prepoc',
+           'test_addIncludes'
 #           'test_removeComments',
 #           'test_removeComments2',
 #           'test_removeComments3',

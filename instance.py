@@ -186,7 +186,38 @@ class ProcDirectives():
     else:
       return origin
     
-    
+
+@log_call
+def addIncludes(ioContent, _unresolved = []):
+  includeFiles = re.findall(r'`include\s+".*?"', ioContent)
+  contineProc = set(includeFiles)-set(_unresolved)
+  if not contineProc:
+    return ioContent
+  incl = {}
+  searchPaths = build.getParam(iKey = 'include_path', iDefault = '.')
+  searchPaths = searchPaths.split(';')
+  searchPaths = [os.path.abspath(os.path.join('../resource', i)) for i in searchPaths]
+  for include in includeFiles:
+    file = re.search(r'".*?"', include).group()
+    for path in searchPaths:
+      fullPath = os.path.join(path, file)
+      if os.path.exists(fullPath):
+        incl.update({include:fullPath})
+        break
+    if not incl.get(include):
+      log.warning('Cannot resolve ' + include)
+      _unresolved.append(include)
+      
+  for k, v in incl.iteritems():
+    f = open(v, 'r')
+    ioContent = ioContent.replace(k, f.read())
+    f.close()
+  ioContent = removeComments(ioContent)
+  return addIncludes(ioContent)
+  
+  
+  
+  
  
 @log_call
 def parseFile(iPathFile):
@@ -203,6 +234,7 @@ def parseFile(iPathFile):
       v[0] = os.path.abspath(v[0])
     return res
   content = removeComments(contentFull)
+  content = addIncludes(content)
   content = ProcDirectives(content).getResult()
   content = removeFunc(content)
   try:
@@ -255,13 +287,14 @@ def getInstances(iString):
   '''
     Input: file content without comment and verilog2001 functions definition;
     Output: instances as a dictionary {key = module name, value = list of instances}; 
+    {key = moduleName, value = {'path': '', 'instances': [list of instances], 'defines': [list of path to included defines]}}
   '''
   instances = {}
 
   statements = iString.split(';')
+  regexp = formRegexp()
   for statement in [i+';' for i in statements]:
     log.debug('Parsing statement=\n'+statement)
-    regexp = formRegexp()
     for tokens in regexp.searchString(statement):
       log.debug('''\
       moduleInst={0}
@@ -412,46 +445,6 @@ def anal(iParsed, _undef = set()):
           return parsed
 
 
-@log_call
-def analyze(iPathFiles, ioParsed = {}, iUndefInst = {}):
-  '''
-    Input: 
-      iPathFiles - list of paths;
-      iUndefInst - dictionary 
-        {key = instance name, value = path to file};
-    Inout: 
-      ioParsed - dictionary 
-        {key = module name, value = [path to file, instance1, instance2,...]};
-    Output:
-      undefInst - dictionary
-        {key = instance name, value = path to file};
-  '''
-  log.info('Analyzing dependences...')
-  parsed = parseFiles(iPathFiles=iPathFiles)
-  log.debug('PARSED: ' + str(parsed))
-  undefInst = {}
-  # first call
-  if not iUndefInst:
-    log.debug('first call')
-    undefInst = getUndefInst(parsed)
-    ioParsed.update(parsed)
-    return undefInst
-  
-  # next calls
-  for undef in iUndefInst:
-    log.debug('next calls')
-    try:
-      top = {undef: parsed[undef]}
-      parsedAll = {}
-      parsedAll.update(parsed)
-      parsedAll.update(ioParsed)
-      dep, undefNew = instTreeDep(top, parsedAll)
-      for d in dep: # update only with necessary instances
-        ioParsed.update(d)  
-      undefInst.update(undefNew)
-    except KeyError:
-      undefInst[undef] = iUndefInst[undef]
-  return undefInst
 
 
 
