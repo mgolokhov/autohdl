@@ -8,7 +8,7 @@ import ConfigParser
 import io
 import sqlite3
 
-import autohdl.lib.yaml as yaml
+import lib.yaml as yaml
 
 from hdlLogger import log_call
 import logging

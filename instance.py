@@ -91,12 +91,12 @@ def checkIfParsed(iContent, iPath):
   f.close()
   hashres = calcHash(iContent)
   if y['sha1'] == hashres:
-    log.error('OK '+ iPath)
+    log.info('Got from cache ' + iPath)
     return y['parsed']
   else:
-    log.error('NNNN '+iPath)
-    log.error(y['sha1'])
-    log.error(hashres)
+    log.info('Save in cache ' + iPath)
+    log.info(y['sha1'])
+    log.info(hashres)
   
 
 class ProcDirectives():
@@ -146,11 +146,6 @@ class ProcDirectives():
       else:
         log.warning('Error in preprocess parsing')
   
-  def _inDefines(self, iWords):
-    for i, word in enumerate(iWords):
-      if '`' == word[0]:
-        return self.defines.get(word[1:]) 
-
   
   def prepBranch(self):
     if '`ifdef' in self.line:
@@ -204,8 +199,11 @@ def parseFile(iPathFile):
   contentFull = readContent(iPathFile)
   res = checkIfParsed(contentFull, iPathFile)
   if res:
+    for k, v in res.iteritems():
+      v[0] = os.path.abspath(v[0])
     return res
   content = removeComments(contentFull)
+  content = ProcDirectives(content).getResult()
   content = removeFunc(content)
   try:
     parsed = getInstances(content)

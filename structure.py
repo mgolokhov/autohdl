@@ -254,7 +254,7 @@ def getDepSrc(iSrc, iIgnore = None, iOnly = None):
       parsed.update(new)
     else:
       break
-  allSrcFiles = [val[0] for val in parsed.values()]     
+  allSrcFiles = [val[0].replace('\\', '/') for val in parsed.values()]     
   depSrcFiles = set(allSrcFiles) - set(iSrc)
   return list(depSrcFiles)
   
