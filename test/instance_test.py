@@ -3,19 +3,14 @@ import os
 import shutil
 import unittest
 
-#from ..instance import *
-#try:
+
 sys.path.insert(0, '..')
 sys.path.insert(0, '.')
 from instance import *
+
 from hdlLogger import log_call, logging
 log = logging.getLogger(__name__)
-#print sys.path
-#from instance import *
-#  from hdlLogger import *
-#except ImportError:
-#  from autohdl.instance import *
-#  from autohdl.hdlLogger import *
+
 
 class Test(unittest.TestCase):
   def setUp(self):
@@ -562,13 +557,34 @@ class Test(unittest.TestCase):
     dfd
     `include "file.incl"
     ''')
+   
+   
+   
+   
+class Test2(unittest.TestCase):
+  def setUp(self):
+    if os.path.exists('tmp_test_dir'):
+      shutil.rmtree('tmp_test_dir')      
+    if not os.path.exists('tmp_test_dir'):
+      os.mkdir('tmp_test_dir')
+    shutil.copytree('data/prj4test', 'tmp_test_dir/prj4test/')
+    os.chdir('tmp_test_dir/prj4test/script')
+  
+  def tearDown(self):
+    if os.path.exists('tmp_test_dir'):
+      shutil.rmtree('tmp_test_dir')   
+      
+  def test_1(self):
+    print ParseFile('../src/top1.v').getResult()
+   
+   
     
 if __name__ == '__main__':
 #  unittest.main()
-  logging.disable(logging.ERROR)
-  tests = [
-           'test_prepoc',
-           'test_addIncludes'
+#  logging.disable(logging.ERROR)
+#  tests = [
+#           'test_prepoc',
+#           'test_addIncludes'
 #           'test_removeComments',
 #           'test_removeComments2',
 #           'test_removeComments3',
@@ -579,6 +595,7 @@ if __name__ == '__main__':
 #           'test_analyze',
 #           'test_parseFile',
 #           'test_parseFile2'
-           ]
-  suite = unittest.TestSuite(map(Test, tests))
+#           ]
+  tests = ['test_1',]
+  suite = unittest.TestSuite(map(Test2, tests))
   unittest.TextTestRunner(verbosity=2).run(suite)

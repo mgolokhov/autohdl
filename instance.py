@@ -8,12 +8,13 @@ import hashlib
 
 from lib.pyparsing import *
 from hdlLogger import log_call, logging
+from lib.yaml.error import YAMLError
 log = logging.getLogger(__name__)
 
 import lib.yaml as yaml
 import build
 
-
+import copy
 
 class InstanceException(Exception):
   def __init__(self, iString):
@@ -21,83 +22,249 @@ class InstanceException(Exception):
   def __str__(self):
     return self.string
 
-@log_call
-def removeComments(ioString):
-  ioString = ioString.replace('\t', '    ')
-  withoutQuotedStr = ioString
-  for tokens in QuotedString(quoteChar='"').searchString(withoutQuotedStr):
-    tok = tokens[0]
-    log.debug('quoted string= ' + tok)
-    withoutQuotedStr = withoutQuotedStr.replace(tok, '', 1)
-  for tokens in cppStyleComment.searchString(withoutQuotedStr):
-    tok = tokens[0]
-    log.debug('comment= ' + tok)
-    ioString = ioString.replace(tok, '', 1)
-  return ioString
+
+def getRegexp():
+  identifier = Word(alphas+"_", alphanums+"_$")
+  moduleInstance = identifier
+  instanceName = identifier
+  params = Literal('#') + nestedExpr("(", ")")
+  ports = nestedExpr("(", ")")
+  regexp = WordStart() + moduleInstance.setResultsName('moduleInst') +\
+        Optional(params.setResultsName('params')) +\
+        instanceName.setResultsName('instName') +\
+        Optional(params.setResultsName('params')) +\
+        ports.setResultsName('ports') + Literal(';')
+  return regexp
+
+regexp = getRegexp()    
+    
+    
+class ParseFile(object):
+  '''
+  '''
+  def __init__(self, iPath):
+    if os.path.splitext(iPath)[1] in ['.v']:
+      self.path      = os.path.abspath(iPath)
+      self.pathCache = self.getPathCache() 
+      self.content   = self.readContent()
+      self.parsed    = {}
+      self.cacheable = True
+      self.includes  = {'paths': [], 'sha': hashlib.sha1()} 
+      self.file_sha  = ''
+      
+      if not self.getInCache():
+        self.parseFile()
+        if self.cacheable:
+          self.saveInCache()
+      else:
+        log.info("Got from cache " + str(self.parsed))
+        
+    else:
+      self.parsed = {} # just a stub for getResult()
+      log.warning("Supports only verilog files (extensions: .v). Ignoring " + iPath)
+
+
+
+  def __str__(self):
+    return vars(self)
+#    return '\n'.join([str(i) for i in vars(self)])
+   
+
+#  @log_call 
+  def getResult(self):
+    for k in self.parsed:
+      self.parsed[k]['path'] = os.path.abspath(self.parsed[k]['path'])
+    return self.parsed
   
-
-def removeFunc(content):
-  return re.sub(r'\sfunction\s.*?\sendfunction\s', '', content, flags=re.M|re.S)
-
-
-def readContent(iPathFile):
-  f = open(iPathFile, 'r')
-  content = f.read()
-  f.close() 
-  return content 
-
-
-def getParsedPaths(iAbsPath):
-  dir = '../resource/parsed'
-  if not os.path.exists(dir):
-    os.mkdir(dir)
-  relPath = os.path.relpath(iAbsPath, '../script')
-  name = relPath.replace(os.sep, '_')
-  name = name.replace('.', '_')
-  pathToFile = dir+'/'+name
-  return relPath, pathToFile 
-
-
-def calcHash(iContent):
-  h = hashlib.sha1()
-  h.update(iContent)
-  return h.hexdigest()  
-
-@log_call
-def saveParsed(iContent, parsed):
-  if not parsed:
-    return
-  hashres = calcHash(iContent)
-  relPath, pathToFile = getParsedPaths(parsed.values()[0][0])
-  f = open(pathToFile, 'w')
-  d = {'sha1': hashres}
-  k = parsed.keys()[0]
-  v = parsed.values()[0]
-  tmp = {}
-  for k, v in parsed.iteritems():
-    tmp.update({k: [relPath] + v[1:]})
-  d.update({'parsed' : tmp})
-  yaml.dump(d, f, default_flow_style=False)
-  f.close()
-
-
-@log_call
-def checkIfParsed(iContent, iPath):
-  relPath, pathToFile = getParsedPaths(iPath)
-  if not os.path.exists(pathToFile):
-    return
-  f = open(pathToFile, 'r')
-  y = yaml.load(f)
-  f.close()
-  hashres = calcHash(iContent)
-  if y['sha1'] == hashres:
-    log.info('Got from cache ' + iPath)
-    return y['parsed']
-  else:
-    log.info('Save in cache ' + iPath)
-    log.info(y['sha1'])
-    log.info(hashres)
   
+#  @log_call 
+  def readContent(self):
+    try:
+      with open(self.path, 'r') as f:
+        return f.read()
+    except IOError:
+      raise InstanceException('Cannot open file: ' + self.path)
+
+  
+#  @log_call 
+  def getPathCache(self):
+    'Default storage in folder <dsnName>/resource/parsed'
+    # transform path to src file in fileName
+    relPath = os.path.relpath(self.path, '../script')
+    name = relPath.replace('\\', '/').replace('/', '_').replace('.', '_')
+    dir = '../resource/parsed/'
+    if not os.path.exists(dir):
+      os.mkdir(dir)
+    return '../resource/parsed/' + name
+
+
+#  @log_call 
+  def getInCache(self):
+    '''
+    Return true if got match in cache, assign result to self.parsed
+    '''
+    # calc hash for main src file
+    h = hashlib.sha1()
+    h.update(self.content)
+    self.file_sha = h.hexdigest()
+    
+    try:
+      with open(self.pathCache, 'r') as f:
+        y = yaml.load(f)
+    except (IOError, YAMLError) as exp:
+      log.debug(exp)
+      return False
+
+
+    if self.file_sha != y['file_sha']:
+      return False
+    
+    # calc hash for includes
+    if y.get('includes'):
+      h = hashlib.sha1()
+      for path in y['includes']['paths']:
+        try:
+          with open(path, 'r') as f:
+            h.update(f.read())
+        except IOError as exp:
+          log.error(exp)
+          return False
+      includes_sha = h.hexdigest()
+      if includes_sha != y['includes']['sha']:
+        return False
+    self.parsed = y['parsed']
+    return True
+
+
+#  @log_call 
+  def removeComments(self):
+    self.content = self.content.replace('\t', '    ')
+    withoutQuotedStr = self.content
+    for tokens in QuotedString(quoteChar='"').searchString(withoutQuotedStr):
+      tok = tokens[0]
+      log.debug('quoted string= ' + tok)
+      withoutQuotedStr = withoutQuotedStr.replace(tok, '', 1)
+    for tokens in cppStyleComment.searchString(withoutQuotedStr):
+      tok = tokens[0]
+      log.debug('comment= ' + tok)
+      self.content = self.content.replace(tok, '', 1)
+
+
+#  @log_call 
+  def addIncludes(self, _unresolved = []):
+    'BUGAGA: maximum recursion depth exceeded' 
+    'cache calculates *per each* include'
+    includeFiles = re.findall(r'`include\s+".*?"', self.content)
+    contineProc = set(includeFiles)-set(_unresolved)
+    if not contineProc:
+      self.includes['sha'] = self.includes['sha'].hexdigest()
+      return
+    searchPaths = build.getParam(iKey = 'include_path', iDefault = '.')
+    searchPaths = searchPaths.split(';')
+    searchPaths = [os.path.abspath(os.path.join('../resource', i)) for i in searchPaths]
+    searchPaths += ['../src']
+    incl = {}
+    for include in includeFiles:
+      if include in _unresolved:
+        continue
+      file = re.search(r'"(.*?)"', include).group(1)
+      for path in searchPaths:
+        fullPath = os.path.join(path, file)
+        if os.path.exists(fullPath):
+          incl.update({include:fullPath})
+          break
+      if not incl.get(include):
+        log.warning('Cannot resolve ' + include)
+        _unresolved.append(include)
+        self.cacheable = False
+
+    self.includes['paths'] += incl.values() 
+    for inclLine, inclFile in incl.iteritems():
+      try:
+        with open(inclFile, 'r') as f:
+          inclContent =  f.read()
+          self.includes['sha'].update(inclContent)
+          self.content = self.content.replace(inclLine, inclContent)
+      except:
+        # damaged should not be saved in cache
+        log.warning('Cannot resolve ' + inclLine)
+        _unresolved.append(inclLine)
+        self.cacheable = False
+    self.removeComments()
+    return self.addIncludes()
+
+
+#  @log_call 
+  def removeFunc(self):
+    self.content = re.sub(r'\sfunction\s.*?\sendfunction\s', '', self.content, flags=re.M|re.S)
+
+
+#  @log_call 
+  def parseFile(self):
+    '''
+
+    '''
+    self.removeComments()
+    self.addIncludes()
+    self.content = ProcDirectives(self.content).getResult()
+    self.removeFunc()
+    try:
+      self.getInstances()
+    except InstanceException as exp:
+      log.error(exp)
+
+
+#  @log_call 
+  def getInstances(self):
+    '''
+      Input: file content without comment and verilog2001 functions definition;
+      Output: instances as a dictionary {key = module name, value = list of instances}; 
+      {key = moduleName, value = {'path'      : 'fullPath',
+                                  'instances' : (set of instances)}
+    '''
+    statements = self.content.split(';')
+    # bugaga could be generator _splitBySemicolon()
+    for statement in [i+';' for i in statements]:
+      log.debug('Parsing statement=\n'+statement)
+      for tokens in regexp.searchString(statement):
+        log.debug('''\
+        moduleInst={0}
+        params={1}
+        instName={2}
+        ports={3}
+        '''.format(
+            tokens.get('moduleInst'),
+            tokens.get('params'),
+            tokens.get('instName'),
+            tokens.get('ports')))
+        
+        moduleInst = tokens.get('moduleInst')
+        if moduleInst == 'module':
+          moduleName = tokens.get('instName') 
+          self.parsed[moduleName] = {'path': os.path.relpath(self.path), 'instances': set()}
+        else:  
+          try:
+            self.parsed[moduleName]['instances'].add(moduleInst)
+          except NameError:
+            self.cacheable = False
+            InstanceException('Cannot find module body in file ' + self.path)
+
+
+#  @log_call 
+  def saveInCache(self):
+    with open(self.pathCache, 'w') as f:
+      cache = {
+               'parsed'   : self.parsed,
+               'file_sha' : self.file_sha,
+               'includes' : self.includes
+               }
+      yaml.dump(cache, f, default_flow_style = False)
+
+
+###############################################################################
+###############################################################################
+
+
 
 class ProcDirectives():
   def __init__(self, iContent):
@@ -187,66 +354,9 @@ class ProcDirectives():
       return origin
     
 
-@log_call
-def addIncludes(ioContent, _unresolved = []):
-  includeFiles = re.findall(r'`include\s+".*?"', ioContent)
-  contineProc = set(includeFiles)-set(_unresolved)
-  if not contineProc:
-    return ioContent
-  incl = {}
-  searchPaths = build.getParam(iKey = 'include_path', iDefault = '.')
-  searchPaths = searchPaths.split(';')
-  searchPaths = [os.path.abspath(os.path.join('../resource', i)) for i in searchPaths]
-  for include in includeFiles:
-    file = re.search(r'".*?"', include).group()
-    for path in searchPaths:
-      fullPath = os.path.join(path, file)
-      if os.path.exists(fullPath):
-        incl.update({include:fullPath})
-        break
-    if not incl.get(include):
-      log.warning('Cannot resolve ' + include)
-      _unresolved.append(include)
-      
-  for k, v in incl.iteritems():
-    f = open(v, 'r')
-    ioContent = ioContent.replace(k, f.read())
-    f.close()
-  ioContent = removeComments(ioContent)
-  return addIncludes(ioContent)
-  
-  
-  
-  
- 
-@log_call
-def parseFile(iPathFile):
-  '''
-    Input: path to file;
-    Output: dictionary {key = module name, value = [path to file, instance1, instance2,...]}
-  '''
-  if os.path.splitext(iPathFile)[1] not in ['.v']:
-    return 
-  contentFull = readContent(iPathFile)
-  res = checkIfParsed(contentFull, iPathFile)
-  if res:
-    for k, v in res.iteritems():
-      v[0] = os.path.abspath(v[0])
-    return res
-  content = removeComments(contentFull)
-  content = addIncludes(content)
-  content = ProcDirectives(content).getResult()
-  content = removeFunc(content)
-  try:
-    parsed = getInstances(content)
-  except InstanceException:
-    log.warning("Can't find module body in " + oneFile)
-    #continue
-  for i in parsed:
-     parsed[i].insert(0, iPathFile)
-  saveParsed(contentFull, parsed)
-  return parsed
-
+##################################################################################
+##################################################################################
+##################################################################################
 
 @log_call
 def parseFiles(iPathFiles):
@@ -260,64 +370,11 @@ def parseFiles(iPathFiles):
       if os.path.splitext(oneFile)[1] not in ['.v']:
         continue 
       try:
-        parsedNew = parseFile(oneFile)
+        parsedNew = ParseFile(oneFile).getResult()
         parsed.update(parsedNew)
       except IOError:
         log.warning("Can't open file: "+oneFile)
   return parsed
-
-
-@log_call
-def formRegexp():
-  identifier = Word(alphas+"_", alphanums+"_$")
-  moduleInstance = identifier
-  instanceName = identifier
-  params = Literal('#') + nestedExpr("(", ")")
-  ports = nestedExpr("(", ")")
-  regexp = WordStart() + moduleInstance.setResultsName('moduleInst') +\
-        Optional(params.setResultsName('params')) +\
-        instanceName.setResultsName('instName') +\
-        Optional(params.setResultsName('params')) +\
-        ports.setResultsName('ports') + Literal(';')
-  return regexp
-
-
-@log_call
-def getInstances(iString):
-  '''
-    Input: file content without comment and verilog2001 functions definition;
-    Output: instances as a dictionary {key = module name, value = list of instances}; 
-    {key = moduleName, value = {'path': '', 'instances': [list of instances], 'defines': [list of path to included defines]}}
-  '''
-  instances = {}
-
-  statements = iString.split(';')
-  regexp = formRegexp()
-  for statement in [i+';' for i in statements]:
-    log.debug('Parsing statement=\n'+statement)
-    for tokens in regexp.searchString(statement):
-      log.debug('''\
-      moduleInst={0}
-      params={1}
-      instName={2}
-      ports={3}
-      '''.format(tokens.get('moduleInst'),
-          tokens.get('params'),
-          tokens.get('instName'),
-          tokens.get('ports')))
-      
-      moduleInst = tokens.get('moduleInst')
-      if moduleInst == 'module':
-        moduleName = tokens.get('instName') 
-        instances[moduleName] = []
-      else:  
-        try:
-          if moduleInst not in instances[moduleName]:
-            instances[moduleName].append(moduleInst)
-        except NameError:
-          InstanceException('Can\'t find module body')
-      
-  return instances
 
     
 @log_call
@@ -413,7 +470,7 @@ def resolveUndef(iInstance, iInFile, _parsed = {}):
   
   afile = build.getFile(iInstance = iInstance, iInFile = iInFile)
   if afile:
-    parsedFile = parseFile(afile)
+    parsedFile = ParseFile(afile).getResult()
     _parsed.update(parsedFile)
     if parsedFile.get(iInstance):
       return parsedFile
@@ -428,12 +485,12 @@ def resolveUndef(iInstance, iInFile, _parsed = {}):
 
   
 @log_call
-def anal(iParsed, _undef = set()):
+def analyze(iParsed, _undef = set()):
   log.info('Analyzing...')
   for module in iParsed:
     val = iParsed[module]
-    inFile = val[0]
-    for instance in val[1:]:
+    inFile = val['path']
+    for instance in val['instances']:
       if instance in _undef:
         continue
       if not iParsed.get(instance):

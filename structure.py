@@ -249,13 +249,13 @@ def getDepSrc(iSrc, iIgnore = None, iOnly = None):
   log.info('Analyzing dependences...')
   parsed = instance.parseFilesMultiproc(iSrc)
   while(True):
-    new = instance.anal(iParsed = parsed)
+    new = instance.analyze(iParsed = parsed)
     if new:
       parsed.update(new)
     else:
       break
-  allSrcFiles = [val[0].replace('\\', '/') for val in parsed.values()]     
-  depSrcFiles = set(allSrcFiles) - set(iSrc)
+  allSrcFiles = {val['path'].replace('\\', '/') for val in parsed.values()}     
+  depSrcFiles = allSrcFiles - set(iSrc)
   return list(depSrcFiles)
   
   

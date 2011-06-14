@@ -2,4 +2,7 @@ import instance
 import sys
 
 
-print instance.parseFile(sys.argv[1])
+from hdlLogger import log_call, logging
+log = logging.getLogger(__name__)
+
+print instance.ParseFile(sys.argv[1]).getResult()
