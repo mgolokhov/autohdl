@@ -9,10 +9,10 @@ import toolchain
 import synthesis
 import structure
 import build
+import xilinx_env
 
 from hdlLogger import log_call, logging
 log = logging.getLogger(__name__)
-
 
 
 @log_call
@@ -46,8 +46,9 @@ def run(iTopModule = '', iFlashSize = ''):
   
   
   os.chdir('../implement')
-  subprocess.call('xflow -implement balanced.opt -config bitgen.opt '
-                  + iTopModule + '.edf')
+  subprocess.call('{xflow} -implement balanced.opt -config bitgen.opt {netlist}.edf'.format(
+                                                                                            xflow=toolchain.getPath('ise_xflow'),
+                                                                                            netlist=iTopModule))
   
   if iFlashSize:
     bit2mcs(iTopModule, iFlashSize)

@@ -91,6 +91,10 @@ def authenticate():
     ask = True
 
   while ask:
+    quit = raw_input('To upload firmware to Webdav need authentication. To quit hit Q')
+    if quit.lower() == 'q': 
+      print 'Exit...'
+      sys.exit(0) 
     username = raw_input('user:')
     password = raw_input('password:')
     request = urllib2.Request("http://cs.scircus.ru/test/distout/rtl")

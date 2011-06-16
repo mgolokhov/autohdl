@@ -133,13 +133,16 @@ def parseLog(iPrj, iSilent = False):
   return logFile 
 
 
+
+import xilinx_env
+
 @log_call
 def run_synplify_batch(iPrj):
   run = '"%s" %s %s %s %s' % (iPrj['pathTool'],
                 '-product synplify_premier',
                 '-licensetype synplifypremier',
                 '-batch', iPrj['pathScript'])
-  subprocess.Popen(run)
+  subprocess.Popen(run, env = xilinx_env.get())
 
   while True:
     time.sleep(3)
@@ -170,7 +173,7 @@ def run_synplify_batch(iPrj):
 
 @log_call
 def run_synplify_gui(iPrj):
-  subprocess.call([iPrj['pathTool'], iPrj['pathScript']])
+  subprocess.call([iPrj['pathTool'], iPrj['pathScript']], env = xilinx_env.get())
 
 
 @log_call
@@ -189,8 +192,20 @@ def runTool(iPrj, iSilent):
   os.chdir(iPrj['pathWas'])
 
 
+import glob
+import subprocess
+
 @log_call
 def run(iTopModule, iMode = 'synplify_batch', iSilent = True):
+  
+
+#  try:
+#    bat = glob.glob('c:\Xilinx\*\*\*settings32.bat')[0]
+#    subprocess.call(bat)
+#    log.info('Called '+ bat)
+#  except Exception as exp:
+#    log.error(exp)  
+    
   # changing current location to synthesis directory
   prj = getStructure(iTopModule = iTopModule, iMode = iMode)
   runTool(iPrj = prj, iSilent = iSilent)

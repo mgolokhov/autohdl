@@ -13,6 +13,9 @@ import aldec
 import putfw_dav 
 
 
+import xilinx_env
+
+
 import inspect
 import os
 # change dir to the root script location

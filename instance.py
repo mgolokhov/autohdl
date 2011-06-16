@@ -51,6 +51,7 @@ class ParseFile(object):
       self.cacheable = True
       self.includes  = {'paths': [], 'sha': hashlib.sha1()} 
       self.file_sha  = ''
+#      log.debug('ParseFile __init__:\n'+str(self))
       
       if not self.getInCache():
         self.parseFile()
