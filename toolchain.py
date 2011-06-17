@@ -34,6 +34,7 @@ class Tool(object):
                  'ise'      : {'gui'   : 'ise.exe',
                                'batch' : 'xtclsh.exe',
                                'xflow' : 'xflow.exe',
+                               'promgen': 'promgen.exe',
                                'path'  : ['/Xilinx/']},
                  'synplify' : {'gui'   : 'synplify_premier.exe',
                                'batch' : 'synplify_premier.exe',
@@ -128,8 +129,8 @@ class Tool(object):
           print '[*] {}'.format(v)
         else: 
           print '[{0}] {1}'.format(k, v)
-      num = raw_input('To change enter number. Quit hit Q:')
-      if 'Q' in num or 'q' in num:
+      num = raw_input('To change enter number. Leave as is and continue hit Enter:')
+      if not num:
         self.result = d[current]
         return
       try:
@@ -138,6 +139,11 @@ class Tool(object):
       except ValueError as exp:
         log.debug(exp)
         print 'Invalid input!'
+
+
+
+def getPath(iTag):
+  return Tool(iTag).result
         
 
 if __name__ == '__main__':

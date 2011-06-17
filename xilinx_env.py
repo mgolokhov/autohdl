@@ -6,12 +6,14 @@ import glob
 import subprocess
 import toolchain
 import os
+import string
 
   
 def get():
   try:
-    for logicDrive in toolchain.getDrivesList():
-      res = glob.glob('{0}Xilinx\*\*\*settings32.bat'.format(logicDrive))
+    for logicDrive in [i for i in string.ascii_uppercase if os.path.exists('{0}:/'.format(i))]:
+      res = glob.glob('{0}:/Xilinx/*/*/*settings32.bat'.format(logicDrive))
+      print res
       if res:
         break
     if not res:

@@ -91,7 +91,7 @@ def authenticate():
     ask = True
 
   while ask:
-    quit = raw_input('To upload firmware to Webdav need authentication. To quit hit Q')
+    quit = raw_input('This is the first upload firmware to Webdav need authentication. To cancel hit Q:')
     if quit.lower() == 'q': 
       print 'Exit...'
       sys.exit(0) 
@@ -108,7 +108,7 @@ def authenticate():
       yaml.dump(contentYaml, open(path, 'wb'), default_flow_style = False)
       break
     except urllib2.HTTPError as e:
-      quit = raw_input('Wrong user/password, try again hit Enter; To quit hit Q.')
+      quit = raw_input('Wrong user/password, try again hit Enter; To quit hit Q:')
       if quit.lower() == 'q':
         print 'Exit...'
         sys.exit(0)

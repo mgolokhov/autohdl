@@ -214,5 +214,5 @@ def export():
   filesToCompile = prj['mainSrc'] + prj['depSrc'] + prj['TestBenchSrc']
   gen_compile_cfg(iFiles = filesToCompile)
   build.dump(iStructure = prj)
-
+  toolchain.getPath('avhdl_gui')
   subprocess.Popen('pythonw ' + os.path.dirname(__file__) + '/aldec_run.py '+ os.getcwd())  

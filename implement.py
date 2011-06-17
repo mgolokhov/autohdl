@@ -17,7 +17,10 @@ log = logging.getLogger(__name__)
 
 @log_call
 def bit2mcs(iTopModule, iSize):
-  proc = 'promgen -u 0 '+ iTopModule + ' -s ' + str(iSize) + ' -w'
+  proc = '{tool} -u 0 {top} -s {size} -w'.format(tool = toolchain.getPath('ise_promgen'),
+                                                 top = iTopModule,
+                                                 size = iSize)
+#  proc = 'promgen -u 0 ' + iTopModule + ' -s ' + str(iSize) + ' -w'
   subprocess.call(proc)
 
 
