@@ -1,6 +1,5 @@
 import re
 import os
-import sys
 import time
 import subprocess
 import hashlib
@@ -14,13 +13,12 @@ log = logging.getLogger(__name__)
 import lib.yaml as yaml
 import build
 
-import copy
-
 class InstanceException(Exception):
   def __init__(self, iString):
-    self.string = iString
-  def __str__(self):
-    return self.string
+      Exception.__init__(self, iString)
+#      self.string = iString
+#  def __str__(self):
+#    return self.string
 
 
 def getRegexp():
@@ -58,7 +56,7 @@ class ParseFile(object):
         if self.cacheable:
           self.saveInCache()
       else:
-        log.info("Got from cache " + str(self.parsed))
+        log.debug("Got from cache " + str(self.parsed))
         
     else:
       self.parsed = {} # just a stub for getResult()
@@ -186,8 +184,9 @@ class ParseFile(object):
           inclContent =  f.read()
           self.includes['sha'].update(inclContent)
           self.content = self.content.replace(inclLine, inclContent)
-      except:
+      except Exception as exp:
         # damaged should not be saved in cache
+        log.error(exp)
         log.warning('Cannot resolve ' + inclLine)
         _unresolved.append(inclLine)
         self.cacheable = False
@@ -245,7 +244,7 @@ class ParseFile(object):
           self.parsed[moduleName] = {'path': os.path.relpath(self.path), 'instances': set()}
         else:  
           try:
-            self.parsed[moduleName]['instances'].add(moduleInst)
+            self.parsed[moduleName]['instances'].add(moduleInst) #TODO: bag
           except NameError:
             self.cacheable = False
             InstanceException('Cannot find module body in file ' + self.path)
@@ -421,7 +420,7 @@ def instTreeDep(iTop, iSrc):
 def _runMoreProc(proc, num):
   cnt = 0
   for i in proc:
-    if i.poll() == None:
+    if i.poll() is None:
       cnt += 1
   if cnt > num:
     return False
@@ -433,7 +432,7 @@ def _runMoreProc(proc, num):
 def parseFilesMultiproc(iFiles):
   proc = []
   for i, f in enumerate(iFiles):
-    while(True):
+    while True:
       if _runMoreProc(proc, 13):
         break
       else:
@@ -443,10 +442,10 @@ def parseFilesMultiproc(iFiles):
     proc.append(p)
     
   parsed = {}  
-  while(True):
+  while True:
     cnt = 0
     for i, e in enumerate(proc):
-      if e.poll() != None:
+      if e.poll() is not None:
         cnt += 1
       else:
         time.sleep(0.1)

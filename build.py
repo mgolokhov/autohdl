@@ -72,7 +72,7 @@ def defUCFandTop(iContent):
 #    topPath = structure.search(iPath = '../src', iIgnore = hdlGlobals.ignore, iOnly = [ucf.rstrip('.ucf')+'\.v'])
     pathTop = ucf.rstrip('.ucf')+'.v'
     if os.path.exists(pathTop):
-      topFile = os.path.split(topPath)[1]
+      topFile = os.path.split(pathTop)[1]
       top = os.path.splitext(topFile)[0]
   elif not ucf and not top:
     ucfList = structure.search(iPath = '../src', iIgnore = hdlGlobals.ignore, iOnly = ['\.ucf'])

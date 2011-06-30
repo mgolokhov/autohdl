@@ -1,20 +1,13 @@
-import sys
 import os
-import re
-import time
 import shutil
 import subprocess
 import ConfigParser
 import io
 import sqlite3
 
-import lib.yaml as yaml
-
 from hdlLogger import log_call
-import logging
 import structure
 import toolchain
-import synthesis
 import build
 import hdlGlobals
 
@@ -94,8 +87,8 @@ def preprFilesData():
 def preprLocalVerilogDirs(iArg):
   res = iArg.split(';')
   counter = 'Count={0}'.format(len(res))
-  inclDir = ['IncludeDir{0}={1}'.format(i, path) for i, path in enumatate(res)]
-  return counter + '\n'.join(inclDir)
+  inclDir = ['IncludeDir{0}={1}'.format(i, path) for i, path in enumerate(res)]
+  return '{0}\n{1}'.format(counter, '\n'.join(inclDir))
 
 
 @log_call

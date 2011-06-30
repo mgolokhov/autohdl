@@ -9,28 +9,6 @@ SYNTH_TOOL : MV_SYNPLIFY_PREMIER_C2009_06
 IMPL_TOOL  : MV_ISE111
 UCF        : 
 TOPLEVEL   : 
-
-dep:
-
-
-
-
-#ignore_regexp:
-
-#set empty param to turn off feature
-#ignore_regexp_default: 
-#- '\.svn'
-#- '\.git'
-
-#netlist_ext_default: sedif; edn; edf; edif; ngc;
-
-#RFU
-#parse_ext_default: v; vm; 
-
-
-#synthesis:
-
-#implement:
-#    ext: ucf; edf; ndf; ngc
+dep        :
 
 
