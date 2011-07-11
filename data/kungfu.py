@@ -1,13 +1,19 @@
-from autohdl import *
-#predicated
-#from autohdl.all import *
+from autohdl import hdlManager
 
 
-top = 'YOUR_TOP_MODULE_NAME'
+hdlManager.kungfu(
+	iTop = '',
+	iUcf = '',
+	iSize = ''
+)
 
-aldec.export()
-# test them ALL!
-#aldec.tb(iTopModule = top)
+
+# old style
+
+#from autohdl import *
+
+#top = 'YOUR_TOP_MODULE_NAME'
+#aldec.export()
 
 # default - batch mode
 #synthesis.run(iTopModule = top)

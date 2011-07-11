@@ -12,6 +12,10 @@ import build
 import hdlGlobals
 
 
+#TODO: order by name in project view
+#TODO: add Verilog Libs support (ovi_xilinxcorelib)
+
+
 gPrj = ''
 
 

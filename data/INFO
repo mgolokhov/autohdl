@@ -1,4 +1,9 @@
-﻿2.4
+﻿2.5.344
+- kungfu.py стал утилитой
+- новый формат управления циклами
+
+2.4
+- баг: database table for aldec default value for ucf changed to null.
 - баг: preprLocalVerilogDirs поправлен формат для адлека.
 - баг: опечатка enumerate в модуле aldec.
 - баг: исключение при заданном ucf и не указанным топовым модулем. 

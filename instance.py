@@ -316,8 +316,7 @@ class ProcDirectives():
   
   def prepBranch(self):
     if '`ifdef' in self.line:
-      origin = []
-      origin.append(self.line)
+      origin = [self.line]
       while True:
         try:
           line = self.iterContent.next()
@@ -331,8 +330,8 @@ class ProcDirectives():
       return
     
     branch = []
-    beginWords = set(['`ifdef', '`elif', '`else'])
-    endWords = set(['`elif', '`else', '`endif'])
+    beginWords = {'`ifdef', '`elif', '`else'}
+    endWords = {'`elif', '`else', '`endif'}
     matched = False
     for line in origin:
       words = set(line.split())
@@ -506,7 +505,7 @@ def analyze(iParsed, _undef = set()):
 
 
     
-
+#TODO: filter *.v input files (all list from xilinx), print only for that list, others silently ignore
 
 
 

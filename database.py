@@ -52,7 +52,7 @@ def createAldecTable():
     UNION SELECT 'Settings.FAMILY',           'family',          'Xilinx11x SPARTAN3E',          null
     UNION SELECT 'IMPLEMENTATION.FAMILY',     'family',          'Xilinx11x SPARTAN3E',          null
     UNION SELECT 'IMPLEMENTATION.DEVICE',     'device',          '3s1200efg320',                 null
-    UNION SELECT 'IMPLEMENTATION.UCF',        'ucf',             '3s1200efg320',                 null
+    UNION SELECT 'IMPLEMENTATION.UCF',        'ucf',             null,                           null
     UNION SELECT 'IMPLEMENTATION.OLD_FAMILY', 'family',          'Xilinx11x SPARTAN3E',          null
     UNION SELECT 'SYNTHESIS.TOPLEVEL',        'toplevel',        null,                           null
     UNION SELECT 'SYNTHESIS.FAMILY',          'family',          'Xilinx11x SPARTAN3E',          null

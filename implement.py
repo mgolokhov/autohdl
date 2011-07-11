@@ -25,7 +25,7 @@ def bit2mcs(iTopModule, iSize):
 
 
 @log_call
-def run(iTopModule = '', iFlashSize = ''):  
+def run(iTopModule = '', iFlashSize = '', iUCF = ''):
   try:
     if os.path.exists('../implement'):
       for root, dirs, files in os.walk('../implement'):
@@ -38,9 +38,10 @@ def run(iTopModule = '', iFlashSize = ''):
   if not os.path.exists('../implement'):
     os.makedirs('../implement')  
     
+  iTopModule = iTopModule or build.getParam('TOPLEVEL')
   top = structure.search(iPath = '../synthesis', iOnly = [iTopModule+'\.edf'])[0]
   netlists = structure.search(iPath = '../src', iOnly = ['\.edf', '\.ngc'])
-  ucf = build.getParam('UCF')
+  ucf = iUCF or build.getParam('UCF')
   
   shutil.copyfile(ucf, '../implement/'+iTopModule+'.ucf')
   shutil.copyfile(top, '../implement/'+iTopModule+'.edf')

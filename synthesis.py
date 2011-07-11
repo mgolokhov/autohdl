@@ -144,12 +144,12 @@ def run_synplify_batch(iPrj):
                 '-batch', iPrj['pathScript'])
   subprocess.Popen(run, env = xilinx_env.get())
 
-  while True:
+  for i in range(13):
     time.sleep(3)
     try:
       loge = open(iPrj['pathLog'], 'r')
     except IOError as e:
-      log.warning(e)
+      log.debug(e)
       continue
     if loge:
       break
@@ -196,7 +196,7 @@ import glob
 import subprocess
 
 @log_call
-def run(iTopModule, iMode = 'synplify_batch', iSilent = True):
+def run(iTopModule = '', iMode = 'synplify_batch', iSilent = True):
   
 
 #  try:
@@ -207,6 +207,7 @@ def run(iTopModule, iMode = 'synplify_batch', iSilent = True):
 #    log.error(exp)  
     
   # changing current location to synthesis directory
+  iTopModule = iTopModule or build.getParam('TOPLEVEL')
   prj = getStructure(iTopModule = iTopModule, iMode = iMode)
   runTool(iPrj = prj, iSilent = iSilent)
   log.info('Synthesis done!')  
