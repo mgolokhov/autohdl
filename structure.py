@@ -136,7 +136,6 @@ class Design(object):
       self._copyFile(iDestination = l)
 
   
-  @log_call
   def genPredef(self):
     '''
     Generates predefined structure

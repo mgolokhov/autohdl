@@ -61,12 +61,6 @@ def getValidTop(iTopFromArg, iTopFromScript):
     if not validateTop(top):
       logging.error('Top module name undefined!')
 
-#  top =  ( iTopFromArg     if validateTop(iTopFromArg)     else
-#           iTopFromScript  if validateTop(iTopFromScript)  else
-#           topAsScriptName if validateTop(topAsScriptName) else
-#           build.getParam(iKey='toplevel')
-#          )
-
   return top
 
 
@@ -90,24 +84,24 @@ def getValidUcf(iUcfFromArg, iUcfFromScript, iValidTop):
   if ucfFromBuild:
     return ucfFromBuild
 
-#  ucf = ( res.ucf         if validateUcf(res.ucf)         else
-#          iUcf            if validateUcf(iUcf)            else
-#          ucfAsScriptName if validateUcf(ucfAsScriptName) else
-#          build.getParam(iKey='ucf')
-#         )
-
   logging.warning('Ucf file undefined')
 
 
 def kungfu(iTop = '', iUcf = '', iSize = ''):
   logging.info('Processing...')
+
+  try: # for Active-hdl compatibility
+    os.chdir(os.path.dirname(sys.modules['__main__'].__file__))
+  except AttributeError as e:
+    log.debug(e)
+
   parser = argparse.ArgumentParser(description='hdl cycles manager')
   parser.add_argument('-tb', action = 'store_true', help = 'export project to active-hdl')
   parser.add_argument('-syn', choices = ['gui', 'batch'], help = 'synthesis step')
   parser.add_argument('-impl', action='store_true', help = 'implementation step')
   parser.add_argument('-top', help = 'top module name')
   parser.add_argument('-ucf', help = 'name of constraint file')
-  parser.add_argument('-size', type = 'int', help = 'flash size')
+  parser.add_argument('-size', type = int, help = 'flash size')
   parser.add_argument('-d', action = 'store_true', help = 'debug flag')
 
   res = parser.parse_args()

@@ -54,13 +54,13 @@ def toShortStr(obj, max=20):
 def log_call(fn, *args, **kw):
   """Log calls to fn, reporting caller, args, and return value"""
   try:
+    logger = logging.getLogger(fn.__module__)
     frame = sys._getframe(2)
     varnames = fn.func_code.co_varnames
     arglist = ', '.join([i[1]+'='+toShortStr(i[0]) for i in zip(args, varnames)])
     if kw:
       arglist += ', '.join(['{0}={1}'.format(k, v) for k, v in kw.viewitem()])
     
-    logger = logging.getLogger(fn.__module__)
     logger.debug("%(func)s IN (%(args)s)" % (
                             {'func': fn.__name__,
                              'args': arglist,

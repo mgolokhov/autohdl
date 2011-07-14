@@ -12,10 +12,6 @@ import build
 import hdlGlobals
 
 
-#TODO: order by name in project view
-#TODO: add Verilog Libs support (ovi_xilinxcorelib)
-
-
 gPrj = ''
 
 
@@ -60,13 +56,23 @@ def gen_aws(iStructure):
   f.write(content)
   f.close()
 
-
 @log_call
 def preprFiles():
-  dep  = ['dep/' + i + '=-1' for i in gPrj['depSrc']]
-  netlist = ['/'+ i + '=-1' for i in gPrj['netlistSrc']]
-  
+
+  dep = []
+  if gPrj.get('depSrc'):
+    gPrj['depSrc'].sort()
+    dep  = ['dep/' + i + '=-1' for i in gPrj['depSrc']]
+
+  netlist = []
+  if gPrj.get('netlistSrc'):
+    gPrj['netlistSrc'].sort()
+    netlist = ['/'+ i + '=-1' for i in gPrj['netlistSrc']]
+
+
   allOtherSrc = list(set(gPrj['allSrc']) - set(gPrj['depSrc']))
+  if allOtherSrc:
+    allOtherSrc.sort()
   rootPath = gPrj['rootPath']+'/'
   l = []
   for i in allOtherSrc:

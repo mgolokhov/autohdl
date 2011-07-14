@@ -11,13 +11,6 @@ __all__ = [
            'putfw_dav'] 
 
 
-
-#import inspect
-#import os
-## change dir to the root script location
-## now scrips can run from aldec
-#try:
-#  os.chdir(os.path.dirname(inspect.stack()[-1][1]))
-#except WindowsError:
-#  #
-#  pass
+# TODO: 1. add ignore list of undefined instances
+# TODO: 2. generate default scripts per development cycle
+# TODO: 3. add file logger for actions in script folder, (maybe all scripts should be unwindowed)
