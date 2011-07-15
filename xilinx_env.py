@@ -13,7 +13,7 @@ def get():
   try:
     for logicDrive in [i for i in string.ascii_uppercase if os.path.exists('{0}:/'.format(i))]:
       res = glob.glob('{0}:/Xilinx/*/*/*settings32.bat'.format(logicDrive))
-      print res
+#      print res
       if res:
         break
     if not res:

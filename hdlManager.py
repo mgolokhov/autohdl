@@ -8,11 +8,11 @@ import build
 import synthesis
 import aldec
 import implement
+import putfw_dav
 
 from hdlLogger import log_call, logging
 log = logging.getLogger(__name__)
 
-# TODO: convert ucf file name to full path
 
 def validateTop(iTop):
   if not iTop:
@@ -87,7 +87,7 @@ def getValidUcf(iUcfFromArg, iUcfFromScript, iValidTop):
   logging.warning('Ucf file undefined')
 
 
-def kungfu(iTop = '', iUcf = '', iSize = ''):
+def kungfu(iTop = '', iUcf = '', iSize = '', iUpload = ''):
   logging.info('Processing...')
 
   try: # for Active-hdl compatibility
@@ -98,7 +98,8 @@ def kungfu(iTop = '', iUcf = '', iSize = ''):
   parser = argparse.ArgumentParser(description='hdl cycles manager')
   parser.add_argument('-tb', action = 'store_true', help = 'export project to active-hdl')
   parser.add_argument('-syn', choices = ['gui', 'batch'], help = 'synthesis step')
-  parser.add_argument('-impl', action='store_true', help = 'implementation step')
+  parser.add_argument('-impl', action = 'store_true', help = 'implementation step')
+  parser.add_argument('-upload', action = 'store_true', help = 'upload firmware to WebDav server')
   parser.add_argument('-top', help = 'top module name')
   parser.add_argument('-ucf', help = 'name of constraint file')
   parser.add_argument('-size', type = int, help = 'flash size')
@@ -109,6 +110,8 @@ def kungfu(iTop = '', iUcf = '', iSize = ''):
   top = getValidTop(iTopFromArg=res.top, iTopFromScript=iTop)
   ucf = getValidUcf(iUcfFromArg=res.ucf, iUcfFromScript=iUcf, iValidTop = top)
   size = (res.size or iSize) #or build.getParam()))
+  upload = (not res.tb and not res.syn and not res.impl
+            and res.upload or iUpload or build.getParam('upload'))
 
 
   logging.info(('\n'
@@ -118,11 +121,13 @@ def kungfu(iTop = '', iUcf = '', iSize = ''):
                 'top module : {top}\n'
                 'ucf        : {ucf}\n'
                 'flash size : {size}\n'
+                'upload     : {upload}\n'
                  + '#'*80 + '#'*len(' Main design config ') +
                 '').format(device = build.getParam('device'),
                                     top = top,
                                     ucf = ucf,
-                                    size = size))
+                                    size = size,
+                                    upload = True if upload else False))
 
   if res.d:
     sys.exit()
@@ -136,10 +141,15 @@ def kungfu(iTop = '', iUcf = '', iSize = ''):
     synthesis.run(iTopModule=top)
   elif res.impl:
     implement.run(iTopModule=top, iUCF=ucf, iFlashSize=size)
+  elif res.upload:
+    pass
   else:
     synthesis.run(iTopModule=top)
     implement.run(iTopModule=top, iUCF=ucf, iFlashSize=size)
 
+  if upload:
+    putfw_dav.put_firmware('../implement/{0}.bit'.format(top))
+    putfw_dav.put_firmware('../implement/{0}.mcs'.format(top))
 
 
 if __name__ == '__main__':

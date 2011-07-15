@@ -246,8 +246,10 @@ def _getDepSrc(iSrc, iIgnore = None, iOnly = None):
 @log_call
 def getDepSrc(iSrc, iIgnore = None, iOnly = None):
   log.info('Analyzing dependences...')
-  parsed = instance.parseFilesMultiproc(iSrc)
-  while(True):
+  #TODO: filter *.v input files (all list from xilinx), print only for that list, others silently ignore
+  verilogSrc = [i for i in iSrc if os.path.splitext(i)[1] == '.v']
+  parsed = instance.parseFilesMultiproc(verilogSrc)
+  while True:
     new = instance.analyze(iParsed = parsed)
     if new:
       parsed.update(new)

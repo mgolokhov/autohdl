@@ -486,6 +486,7 @@ def resolveUndef(iInstance, iInFile, _parsed = {}):
 @log_call
 def analyze(iParsed, _undef = set()):
   log.info('Analyzing...')
+  _undef.update(set(build.getParam(iKey='ignore_undefined_instances', iDefault=[])))
   for module in iParsed:
     val = iParsed[module]
     inFile = val['path']
@@ -505,7 +506,6 @@ def analyze(iParsed, _undef = set()):
 
 
     
-#TODO: filter *.v input files (all list from xilinx), print only for that list, others silently ignore
 
 
 

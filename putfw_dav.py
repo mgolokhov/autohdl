@@ -7,6 +7,8 @@ import sys
 import base64
 
 import autohdl.lib.yaml as yaml
+from hdlLogger import log_call, logging
+log = logging.getLogger(__name__)
 
 
 
@@ -23,9 +25,13 @@ def make_req(method,uri,params,header):
 
 
 def put_firmware(fw_file):
-        fi=open(fw_file,"rb")
-        data = fi.read();
-        fi.close();
+        try:
+          with open(fw_file,"rb") as fi:
+            data = fi.read()
+        except IOError as e:
+          logging.warning(e)
+          sys.exit()
+
         data_len = len(data)
         
         username, password = authenticate()
@@ -58,7 +64,7 @@ def put_firmware(fw_file):
 
         n_tryes = 5
 
-        while n_tryes >0:
+        while n_tryes > 0:
             print "Checks if file exists on the server"
             resp = make_req("HEAD","/test/distout/rtl/" + fw_name,"",headers_head)
             if resp.status == 200:
@@ -68,7 +74,7 @@ def put_firmware(fw_file):
             print "Downloading it to server with name tmpfile (%d) ..." % n_tryes
             resp = make_req("PUT", "/test/distout/rtl/tmpfile" , data, headers)
             if resp.status >= 400:
-                n_tryes = n_tryes - 1
+                n_tryes -= 1
             else:
                 n_tryes = 0   
         if resp.status < 400:
@@ -91,7 +97,9 @@ def authenticate():
     ask = True
 
   while ask:
-    quit = raw_input('This is the first upload firmware to Webdav need authentication. To cancel hit Q:')
+    quit = raw_input('First upload to WebDAV server. '
+                     'You should be authenticated. '
+                     'To cancel hit Q, Enter to continue:')
     if quit.lower() == 'q': 
       print 'Exit...'
       sys.exit(0) 
@@ -101,7 +109,7 @@ def authenticate():
     base64string = base64.encodestring('%s:%s' % (username, password)).replace('\n', '')
     request.add_header("Authorization", "Basic %s" % base64string)   
     try:
-      result = urllib2.urlopen(request)
+      urllib2.urlopen(request)
       contentYaml = {
                      base64.encodestring('username'): base64.encodestring(username),
                      base64.encodestring('password'): base64.encodestring(password)} 
@@ -117,7 +125,7 @@ def authenticate():
 
 
 if __name__ == "__main__":
-	put_firmware("putfw_dav.py")
+  put_firmware("putfw_dav.py")
 
     
 

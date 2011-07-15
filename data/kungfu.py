@@ -4,7 +4,8 @@ from autohdl import hdlManager
 hdlManager.kungfu(
 	iTop = '',
 	iUcf = '',
-	iSize = ''
+	iSize = '',
+  iUpload = ''
 )
 
 
