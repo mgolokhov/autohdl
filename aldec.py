@@ -1,27 +1,22 @@
 import os
 import shutil
 import subprocess
-import ConfigParser
-import io
-import sqlite3
+
 
 from hdlLogger import log_call
 import structure
-import toolchain
 import build
 import hdlGlobals
+import template_avhdl_adf
 
-
-gPrj = ''
 
 
 @log_call
-def getStructure():
+def initPrj():
   '''
   Precondition: cwd= <dsn_name>/script
   Output: dictionary { keys=main, dep, tb, other values=list of path files}
   '''
-  preparation()
   dict = {}
   dict['rootPath'] = os.path.abspath('..').replace('\\', '/')
   dict['dsnName'] = os.path.split(dict['rootPath'])[1]
@@ -33,8 +28,8 @@ def getStructure():
   dict['allSrc'] = allSrc
 
   mainSrc = structure.search(iPath = '../src',
-                                     iOnly = ['\.v', '\.vm', '\.vhdl', '\.vhd'],
-                                     iIgnore = ignore)
+                             iOnly = ['\.v', '\.vm', '\.vhdl', '\.vhd'],
+                             iIgnore = ignore)
   dict['mainSrc'] = mainSrc
   dict['depSrc'] = structure.getDepSrc(iSrc = mainSrc, iIgnore = ignore)
   
@@ -42,119 +37,27 @@ def getStructure():
   
 
   dict['netlistSrc'] = structure.search(iPath = '../aldec/src',
-                                        iOnly = ['\.sedif', '\.edn', '\.edf', '\.edif', '\.ngc' ])     
-  global gPrj
-  gPrj = dict
-   
+                                        iOnly = ['\.sedif', '\.edn', '\.edf', '\.edif', '\.ngc' ])
+
+  dict['filesToCompile'] = dict['mainSrc'] + dict['depSrc'] + dict['TestBenchSrc']
+
+  dict['build'] = build.load()
+
   return dict
 
 
 @log_call
-def gen_aws(iStructure):
-  content = '[Designs]\n{dsn}=./{dsn}.adf'.format(dsn=iStructure['dsnName'])
-  f = open('../aldec/wsp.aws', 'w')
-  f.write(content)
-  f.close()
-
-@log_call
-def preprFiles():
-
-  dep = []
-  if gPrj.get('depSrc'):
-    gPrj['depSrc'].sort()
-    dep  = ['dep/' + i + '=-1' for i in gPrj['depSrc']]
-
-  netlist = []
-  if gPrj.get('netlistSrc'):
-    gPrj['netlistSrc'].sort()
-    netlist = ['/'+ i + '=-1' for i in gPrj['netlistSrc']]
-
-
-  allOtherSrc = list(set(gPrj['allSrc']) - set(gPrj['depSrc']))
-  if allOtherSrc:
-    allOtherSrc.sort()
-  rootPath = gPrj['rootPath']+'/'
-  l = []
-  for i in allOtherSrc:
-    virtFolder = os.path.dirname(i).replace('\\', '/').split(rootPath)[1]
-    virtFolder = virtFolder.replace('/', '\\')
-    l.append(virtFolder + '/' + i + '=-1')
-  allOtherSrc = l
-  files = '\n'.join(dep + netlist + allOtherSrc)
-  return files
-
-
-@log_call
-def preprFilesData():
-  srcTb = ['.\\' + os.path.relpath(i) + '=Verilog Test Bench'
-            for i in gPrj['TestBenchSrc']
-            if os.path.splitext(i)[1] in ['.v']]
-  filesData = '\n'.join(srcTb)
-  return filesData
-
-
-@log_call
-def preprLocalVerilogDirs(iArg):
-  res = iArg.split(';')
-  counter = 'Count={0}'.format(len(res))
-  inclDir = ['IncludeDir{0}={1}'.format(i, path) for i, path in enumerate(res)]
-  return '{0}\n{1}'.format(counter, '\n'.join(inclDir))
-
-
-@log_call
-def getFromDB(iKey, _cache = []):
-  if not _cache:
-    aconnect = sqlite3.connect(os.path.join(os.path.dirname(__file__),'data', 'autohdl.db'))
-    acursor = aconnect.cursor()
-    _cache.append(acursor)
-  else:
-    acursor = _cache[0]
-  ex = 'SELECT * FROM aldec WHERE adf = "{0}"'.format(iKey)
-  acursor.execute(ex)
-  adf, ayaml, bydefault, preprocess = acursor.fetchone()
-  if ayaml:
-    yamlVal = build.getParam(ayaml.upper())
-    if yamlVal:
-      if preprocess:
-        res = eval(preprocess)(yamlVal)
-      else:
-        res = yamlVal
-    else:
-      res = bydefault
-  elif bydefault:
-    res = bydefault
-  else:
-    res = eval(preprocess)()
-
-  return res
-
-
+def gen_aws(iPrj):
+  content = '[Designs]\n{dsn}=./{dsn}.adf'.format(dsn=iPrj['dsnName'])
+  with open('../aldec/wsp.aws', 'w') as f:
+    f.write(content)
 
 
 @log_call
 def gen_adf(iPrj):
-  templateAdf = os.path.join(os.path.dirname(__file__), 'data', 'template_aldec_adf')
-  contentAdf = open(templateAdf, 'r').read()
-  config = ConfigParser.RawConfigParser(allow_no_value=True)
-  config.optionxform = str
-  config.readfp(io.BytesIO(contentAdf))
-  
-  for section in config.sections():
-    for option in config.options(section):
-      
-      if option.startswith('{') and option.endswith('}'):
-        config.remove_option(section, option)
-        config.set(section, getFromDB(iKey = option[1:-1]))
-        continue
-      
-      val = config.get(section, option)
-      if val and val.startswith('{') and val.endswith('}'):
-        config.set(section, option, getFromDB(iKey = val[1:-1]))  
-  
-  f = open('../aldec/{dsn}.adf'.format(dsn=iPrj['dsnName']), 'w')
-  config.write(f)
-  f.close()
-
+  adf = template_avhdl_adf.generate(iPrj = iPrj)
+  with open('../aldec/{dsn}.adf'.format(dsn=iPrj['dsnName']), 'w') as f:
+    f.write(adf)
 
 
 @log_call
@@ -164,9 +67,9 @@ def gen_compile_cfg(iFiles):
   for i in iFiles:
     path = os.path.abspath(i)
     try:
-      res = '[file:.\\' + os.path.relpath(path = path, start = start) + ']\nEnabled=1'
+      res = '[file:.\\{0}]\nEnabled=1'.format(os.path.relpath(path = path, start = start))
     except ValueError:
-      res = '[file:' + i + ']\nEnabled=1'
+      res = '[file:{0}]\nEnabled=1'.format(i)
     src.append(res)
       
   content = '\n'.join(src)
@@ -201,21 +104,20 @@ def genPredefined():
     if not os.path.exists(folder):
       os.makedirs(folder)
 
+
 @log_call
 def preparation():  
   cleanAldec()
   genPredefined()
   copyNetlists()
 
+
+
 @log_call
 def export():
   preparation()
-  getStructure() # same as gPrj
-  prj = gPrj
-  gen_aws(iStructure = prj)
+  prj = initPrj()
+  gen_aws(iPrj = prj)
   gen_adf(iPrj = prj)
-  filesToCompile = prj['mainSrc'] + prj['depSrc'] + prj['TestBenchSrc']
-  gen_compile_cfg(iFiles = filesToCompile)
-  build.dump(iStructure = prj)
-  toolchain.getPath('avhdl_gui')
-  subprocess.Popen('pythonw ' + os.path.dirname(__file__) + '/aldec_run.py '+ os.getcwd())  
+  gen_compile_cfg(iFiles = prj['filesToCompile'])
+  subprocess.Popen('pythonw {0}/aldec_run.py {1}'.format(os.path.dirname(__file__), os.getcwd()))

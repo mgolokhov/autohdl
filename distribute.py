@@ -1,15 +1,15 @@
 import zipfile
 import os
-import database
+import pkg_info
 
 os.chdir('..')
-zipFileName = 'autohdl-' + database.incBuildVersion()+ '.zip'
+zipFileName = 'autohdl-' + pkg_info.incBuild()+ '.zip'
 
 myZipFile = zipfile.ZipFile(zipFileName, "w" )
 for root, dirs, files in os.walk('autohdl'):
   for f in files:
     path = os.path.join(root,f)
-    #BUGAGA win specific
+    #TODO: win specific, add nix style
     if '\.' in path or os.path.splitext(f)[1] in ['.pyc', '.pyo']:
       continue
     print path

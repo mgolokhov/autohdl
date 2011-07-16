@@ -110,8 +110,8 @@ def kungfu(iTop = '', iUcf = '', iSize = '', iUpload = ''):
   top = getValidTop(iTopFromArg=res.top, iTopFromScript=iTop)
   ucf = getValidUcf(iUcfFromArg=res.ucf, iUcfFromScript=iUcf, iValidTop = top)
   size = (res.size or iSize) #or build.getParam()))
-  upload = (not res.tb and not res.syn and not res.impl
-            and res.upload or iUpload or build.getParam('upload'))
+  upload = True if (not res.tb and not res.syn and not res.impl
+                    and (res.upload or iUpload or build.getParam('upload'))) else False
 
 
   logging.info(('\n'

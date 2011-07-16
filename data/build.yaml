@@ -1,14 +1,36 @@
 # All comments will be deleted after first start
 
-FAMILY     : Xilinx11x SPARTAN3E
-DEVICE     : 3s250etq144  # DCS2
-#DEVICE     : 3s250epq208  # ctrl_v3
-#DEVICE     : 3s250evq100  # ctrl_v4
-#DEVICE     : 3s1200efg320 # nexys2
-SYNTH_TOOL : MV_SYNPLIFY_PREMIER_C2009_06
-IMPL_TOOL  : MV_ISE111
-UCF        : 
-TOPLEVEL   : 
+family     : Xilinx11x SPARTAN3E
+device     : 3s250etq144  # DCS2
+#device     : 3s250epq208  # ctrl_v3
+#device     : 3s250evq100  # ctrl_v4
+#device     : 3s1200efg320 # nexys2
+
+# Path to constraint file, could be absolute path,
+# after first run will be converted to relative.
+ucf        :
+# Top module name
+toplevel   :
+
+# Include path searching
+include_path:
+#- ../include1;../../include2
+
+# Dependency search path list
 dep        :
+# add list like that
+#- path/to/inst_file1
+#- 'path\to\inst_file2'
+#- path/to/inst_dir
+
+# Uploading on server.
+# Type True to enable.
+upload     :
+
+
+ignore_undefined_instances:
+# add list like that
+#- name_instance_1
+#- name_instance_2
 
 

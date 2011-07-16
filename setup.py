@@ -1,32 +1,17 @@
-import logging
-import logging.handlers
-from distutils.core import setup, Command
 import os
 import shutil
 import sys
+from distutils.core import setup, Command
+
 from log_server import shutdownLogServer
+import pkg_info
 
 
 
 
 shutdownLogServer()
-# pre-install
-# copy preinstall.py (to shutdown log_server in .exe distribution, clean previous version)    
-# post-install?
-
-if len(sys.argv) >= 2 and 'bdist_wininst' in sys.argv[1]:
-  shutil.copyfile('preinstall.py', '../preinstall.py')
-
 
 os.chdir('..')
-
-
-import database
-def getVersion():
-  if 'bdist_wininst' in sys.argv[1]: 
-    return database.incBuildVersion()
-  else:
-    return database.getBuildVersion()
 
 
 class Uninstall(Command):
@@ -44,7 +29,7 @@ class Uninstall(Command):
 
 
 setup(name         = 'autohdl',
-      version      = getVersion(),
+      version      = pkg_info.getVersion(),
       description  = 'Automatization Utilities',
       author       = 'Max Golohov',
       author_email = 'hex_wer@mail.ru',

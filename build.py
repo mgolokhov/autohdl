@@ -106,14 +106,9 @@ def load(iBuildFile = '../resource/build.yaml', cacheBuild = {}):
 
 
 @log_call    
-def dump(iStructure = '', iContent = '', iBuildFile = '../resource/build.yaml'):
+def dump(iContent = '', iBuildFile = '../resource/build.yaml'):
   content  = iContent or load(iBuildFile = iBuildFile)
-#  if iStructure:
-#    content['main'] = iStructure['main']
-#    content['dep']  = [str(i) for i in iStructure['dep']]
-#    content['TestBench']   = iStructure['TestBench']
-  
-  convertToRelpath(content, iBuildFile)  
+  convertToRelpath(content, iBuildFile)
   yaml.dump(content, open(iBuildFile, 'w'), default_flow_style=False)
     
     
