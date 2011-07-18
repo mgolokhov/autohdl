@@ -114,15 +114,15 @@ def kungfu(iTop = '', iUcf = '', iSize = '', iUpload = ''):
                     and (res.upload or iUpload or build.getParam('upload'))) else False
 
 
-  logging.info(('\n'
-                 + '#'*40 + ' Main design config ' + '#'*40 +
+  logging.info(('Main design settings:\n'
+                 + '#'*40 +
                 '\n'
                 'device     : {device}\n'
                 'top module : {top}\n'
                 'ucf        : {ucf}\n'
                 'flash size : {size}\n'
                 'upload     : {upload}\n'
-                 + '#'*80 + '#'*len(' Main design config ') +
+                 + '#'*40 +
                 '').format(device = build.getParam('device'),
                                     top = top,
                                     ucf = ucf,

@@ -24,19 +24,28 @@ def make_req(method,uri,params,header):
     return response
 
 
-def put_firmware(fw_file):
-        try:
-          with open(fw_file,"rb") as fi:
-            data = fi.read()
-        except IOError as e:
-          logging.warning(e)
-          sys.exit()
 
+def getContent(iFile):
+  try:
+    with open(iFile, "rb") as fi:
+      data = fi.read()
+  except IOError as e:
+    logging.warning(e)
+    sys.exit()
+  return data
+
+def getName(iPath):
+  'Return string as dsnName_topModuleName'
+  dsnName = iPath.replace('\\', '/').split('/')[-2]
+  return dsnName + '_' + os.path.basename(iPath)
+
+def put_firmware(fw_file):
+        data = getContent(fw_file)
         data_len = len(data)
         
         username, password = authenticate()
 
-        fw_name = os.path.basename(fw_file)
+        fw_name = getName(fw_file)
 
         base64string = base64.encodestring(
                 '%s:%s' % (username, password))[:-1]
@@ -125,7 +134,7 @@ def authenticate():
 
 
 if __name__ == "__main__":
-  put_firmware("putfw_dav.py")
+  put_firmware("data/build.yaml")
 
-    
+
 

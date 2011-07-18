@@ -53,9 +53,9 @@ def files(iPrj):
     dep  = ['dep/' + i + '=-1' for i in iPrj['depSrc']]
 
   netlist = []
-  if iPrj.get('netlistSrc'):
-    iPrj['netlistSrc'].sort()
-    netlist = ['/'+ i + '=-1' for i in iPrj['netlistSrc']]
+#  if iPrj.get('netlistSrc'):
+#    iPrj['netlistSrc'].sort()
+#    netlist = ['/'+ i + '=-1' for i in iPrj['netlistSrc']]
 
 
   allOtherSrc = list(set(iPrj['allSrc']) - set(iPrj['depSrc']))
