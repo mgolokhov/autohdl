@@ -1,7 +1,7 @@
 import base64
 import os
 import sys
-from lib.tinydav import HTTPClient, exception, WebDAVClient
+import lib.tinydav as tinydav
 from lib.pyparsing import makeHTMLTags, SkipTo
 
 import lib.yaml as yaml
@@ -21,7 +21,7 @@ def loadAuth(iPath):
 
 
 def checkAuth(iUsername, iPassword):
-  client = HTTPClient('cs.scircus.ru')
+  client = tinydav.HTTPClient('cs.scircus.ru')
   client.setbasicauth(iUsername, iPassword)
   try:
     print client.head('/test/')
@@ -71,18 +71,40 @@ def authenticate():
       return username, password
 
 
-def formBuildName(iUsername, iPassword, iFile):
-  client = WebDAVClient('cs.scircus.ru')
+def formBuildName(iUsername, iPassword, iFile, _cache = []):
+  dsnName = os.path.abspath(iFile).replace('\\', '/').split('/')[-3]
+  root, ext = os.path.splitext(os.path.basename(iFile))
+  root_build = root + '_build_'
+  if _cache:
+    return '{dsn}_{root_build}{num}{ext}'.format(dsn=dsnName,
+                                                root_build=root_build,
+                                                num=_cache[0],
+                                                ext=ext)
+
+  client = tinydav.WebDAVClient('cs.scircus.ru')
   client.setbasicauth(iUsername, iPassword)
   response = client.propfind('/test/distout/rtl/', depth=1, properties=['href'])
   anchorStart, anchorEnd = makeHTMLTags('D:href')
   anchor = anchorStart + SkipTo(anchorEnd).setResultsName('body') + anchorEnd
   fwList = {os.path.basename(tokens.body) for tokens in anchor.searchString(response.content)}
-  root, ext = os.path.splitext(iFile)
-  for buildNum in xrange(10000):
-    name = '{0}_build_{1}{2}'.format(root, buildNum, ext)
-    if name not in fwList:
-      return name
+
+  try:
+    fwList = [os.path.splitext(i)[0] for i in fwList if root_build in i]
+    allBuilds = []
+    for i in fwList:
+      try:
+        allBuilds.append(int(i.split(root_build)[1]))
+      except Exception:
+        continue
+    incBuildNum = max(allBuilds) + 1
+  except Exception as e:
+    incBuildNum = 0
+  _cache.append(incBuildNum)
+  name = '{dsn}_{root_build}{num}{ext}'.format(dsn=dsnName,
+                                               root_build=root_build,
+                                               num=incBuildNum,
+                                               ext=ext)
+  return name
 
 
 def getContent(iFile):
@@ -101,7 +123,7 @@ def upload(iFile):
   username, password = authenticate()
   name = formBuildName(username, password, iFile)
 
-  client = WebDAVClient('cs.scircus.ru')
+  client = tinydav.WebDAVClient('cs.scircus.ru')
   client.setbasicauth(username, password)
   print 'Uploading file: ', name
   response = client.put('/test/distout/rtl/' + name, content, "application/binary")

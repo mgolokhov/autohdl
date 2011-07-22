@@ -8,7 +8,8 @@ import build
 import synthesis
 import aldec
 import implement
-import putfw_dav
+import webdav
+
 
 from hdlLogger import log_call, logging
 log = logging.getLogger(__name__)
@@ -148,8 +149,8 @@ def kungfu(iTop = '', iUcf = '', iSize = '', iUpload = ''):
     implement.run(iTopModule=top, iUCF=ucf, iFlashSize=size)
 
   if upload:
-    putfw_dav.put_firmware('../implement/{0}.bit'.format(top))
-    putfw_dav.put_firmware('../implement/{0}.mcs'.format(top))
+    webdav.upload('../implement/{0}.bit'.format(top))
+    webdav.upload('../implement/{0}.mcs'.format(top))
 
 
 if __name__ == '__main__':
