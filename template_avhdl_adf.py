@@ -40,7 +40,10 @@ def ucf(iPrj):
 
 def include_path(iPrj):
   #TODO: consistancy, rid of ';' -> just list
-  res = iPrj['build'].get('include_path').split(';')
+  incl_path = iPrj['build'].get('include_path')
+  if not incl_path:
+    return ''
+  res = incl_path.split(';')
   counter = 'Count={0}'.format(len(res))
   inclDir = ['IncludeDir{0}={1}'.format(i, path) for i, path in enumerate(res)]
   return '{0}\n{1}'.format(counter, '\n'.join(inclDir))
@@ -57,6 +60,10 @@ def files(iPrj):
 #    iPrj['netlistSrc'].sort()
 #    netlist = ['/'+ i + '=-1' for i in iPrj['netlistSrc']]
 
+  uncopied = []
+  if iPrj.get('srcUncopied'):
+    iPrj['srcUncopied'].sort()
+    uncopied = ['/'+ i + '=-1' for i in iPrj['srcUncopied']]
 
   allOtherSrc = list(set(iPrj['allSrc']) - set(iPrj['depSrc']))
   if allOtherSrc:
@@ -68,7 +75,7 @@ def files(iPrj):
     virtFolder = virtFolder.replace('/', '\\')
     l.append(virtFolder + '/' + i + '=-1')
   allOtherSrc = l
-  files = '\n'.join(dep + netlist + allOtherSrc)
+  files = '\n'.join(dep + netlist + allOtherSrc + uncopied)
   return files
 
 

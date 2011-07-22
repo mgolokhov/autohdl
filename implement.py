@@ -43,7 +43,7 @@ def run(iTopModule, iUCF, iFlashSize = ''):
   
   os.chdir('../implement')
   subprocess.call(('{xflow} -implement balanced.opt'
-                   '-config bitgen.opt {netlist}.edf').format(xflow=toolchain.getPath('ise_xflow'),
+                   ' -config bitgen.opt {netlist}.edf').format(xflow=toolchain.getPath('ise_xflow'),
                                                               netlist=iTopModule))
   
   if iFlashSize:

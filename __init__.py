@@ -6,7 +6,6 @@ __all__ = [
            'toolchain',
            'build',
            'structure',
-           'database',
            'aldec',
            'putfw_dav'] 
 

@@ -1,10 +1,11 @@
 import httplib, urllib
 import urllib2
-#import lxml
-#from lxml.etree import Element, ElementTree, HTML
 import os
 import sys
 import base64
+import datetime
+
+
 
 import autohdl.lib.yaml as yaml
 from hdlLogger import log_call, logging
@@ -36,8 +37,10 @@ def getContent(iFile):
 
 def getName(iPath):
   'Return string as dsnName_topModuleName'
-  dsnName = iPath.replace('\\', '/').split('/')[-2]
-  return dsnName + '_' + os.path.basename(iPath)
+  dsnName = os.path.abspath(iPath).replace('\\', '/').split('/')[-3]
+  return '{0}_{2}_{1}'.format(dsnName,
+                              os.path.basename(iPath),
+                              datetime.datetime.now().strftime('%Y%m%d%H%M%S'))
 
 def put_firmware(fw_file):
         data = getContent(fw_file)

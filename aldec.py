@@ -30,6 +30,11 @@ def initPrj():
   mainSrc = structure.search(iPath = '../src',
                              iOnly = ['\.v', '\.vm', '\.vhdl', '\.vhd'],
                              iIgnore = ignore)
+
+  mainSrcUncopied = structure.search(iPath = '../aldec/src',
+                           iOnly = ['\.v', '\.vm', '\.vhdl', '\.vhd'],
+                           iIgnore = ignore)
+  dict['srcUncopied'] = mainSrcUncopied
   dict['mainSrc'] = mainSrc
   dict['depSrc'] = structure.getDepSrc(iSrc = mainSrc, iIgnore = ignore)
   
@@ -39,7 +44,7 @@ def initPrj():
   dict['netlistSrc'] = structure.search(iPath = '../aldec/src',
                                         iOnly = ['\.sedif', '\.edn', '\.edf', '\.edif', '\.ngc' ])
 
-  dict['filesToCompile'] = dict['mainSrc'] + dict['depSrc'] + dict['TestBenchSrc']
+  dict['filesToCompile'] = dict['mainSrc'] + dict['depSrc'] + dict['TestBenchSrc'] + mainSrcUncopied
 
   dict['build'] = build.load()
 

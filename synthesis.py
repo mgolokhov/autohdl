@@ -143,7 +143,7 @@ def run_synplify_batch(iPrj):
                 '-licensetype synplifypremier',
                 '-batch', iPrj['pathScript'])
   subprocess.Popen(run, env = xilinx_env.get())
-
+  #TODO: stop waiting
   for i in range(13):
     time.sleep(3)
     try:
