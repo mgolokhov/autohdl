@@ -35,7 +35,8 @@ def _getIncludePath(iPrj):
   
 @log_call
 def getIncludePath(iPrj):
-  return build.getParam('include_path')
+  incl = build.getParam('include_path', iDefault='"."')
+  return ';'.join(incl)
   
 
 @log_call

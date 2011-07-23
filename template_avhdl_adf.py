@@ -43,9 +43,8 @@ def include_path(iPrj):
   incl_path = iPrj['build'].get('include_path')
   if not incl_path:
     return ''
-  res = incl_path.split(';')
-  counter = 'Count={0}'.format(len(res))
-  inclDir = ['IncludeDir{0}={1}'.format(i, path) for i, path in enumerate(res)]
+  counter = 'Count={0}'.format(len(incl_path))
+  inclDir = ['IncludeDir{0}={1}'.format(i, path) for i, path in enumerate(incl_path)]
   return '{0}\n{1}'.format(counter, '\n'.join(inclDir))
 
 def files(iPrj):

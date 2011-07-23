@@ -117,7 +117,7 @@ def preparation():
   copyNetlists()
 
 
-
+#TODO: add arguments top, ucf, test
 @log_call
 def export():
   preparation()
@@ -125,4 +125,6 @@ def export():
   gen_aws(iPrj = prj)
   gen_adf(iPrj = prj)
   gen_compile_cfg(iFiles = prj['filesToCompile'])
+  if build.getParam(iKey = 'test'):
+    return
   subprocess.Popen('pythonw {0}/aldec_run.py {1}'.format(os.path.dirname(__file__), os.getcwd()))

@@ -1,5 +1,3 @@
-from xml.dom import minidom
-from collections import OrderedDict
 import os
 
 import structure
@@ -23,42 +21,68 @@ class BuildException(Exception):
 
 
 @log_call    
-def convertToRelpath(iContent, iBuildFile):
+def convertToRelpath(iContent):
   os.chdir('../resource')
-  pathUCF = iContent['UCF']
-#  pathBuild = os.path.abspath(iBuildFile)
+
+  pathUCF = iContent.get('UCF') or iContent.get('ucf')
   if pathUCF:
-    pathUCF = os.path.relpath(pathUCF)
-    iContent['UCF'] = pathUCF
-  
-  depSrc = iContent['dep']
+    iContent['ucf'] = os.path.relpath(pathUCF)
+
+  depSrc = iContent.get('dep') or iContent.get('DEP')
   if depSrc:
-    dep = [os.path.relpath(i) for i in depSrc]
-    iContent['dep'] = dep
+    iContent['dep'] = [os.path.relpath(i) for i in depSrc]
+
+  include_path = iContent.get('include_path')
+  if include_path:
+    iContent['include_path'] = [os.path.relpath(i) for i in include_path]
+
   os.chdir('../script')
 
 
 
 @log_call    
-def convertToAbspath(iContent, iBuildFile):
+def convertToAbspath(iContent):
   os.chdir('../resource')
-  pathUCF = iContent['UCF']
+
+  pathUCF = iContent.get('UCF') or iContent.get('ucf')
   if pathUCF and os.path.exists(pathUCF):
     path = os.path.abspath(pathUCF)
-    iContent['UCF'] = path
+    iContent['ucf'] = path
     
-  depSrc = iContent['dep']
-
+  depSrc = iContent.get('dep')
   if depSrc:
-    dep = [os.path.abspath(i) for i in depSrc if os.path.exists(i)]
+    dep = []
+    dep_wrong = []
+    for i in depSrc:
+      if os.path.exists(i):
+        dep.append(os.path.abspath(i))
+      else:
+        dep_wrong.append(i)
     iContent['dep'] = dep
+    if dep_wrong:
+      iContent['dep_wrong'] = dep_wrong
+
+  include_path = iContent.get('include_path')
+  if include_path:
+    incl = []
+    incl_wrong = []
+    for i in include_path:
+      if os.path.exists(i):
+        incl.append(os.path.abspath(i))
+      else:
+        incl_wrong.append(i)
+    iContent['include_path'] = incl
+    if incl_wrong:
+      iContent['include_path_wrong'] = incl_wrong
+
   os.chdir('../script')
 
 
 @log_call    
 def defUCFandTop(iContent):
-  ucf = iContent['UCF']
-  top = iContent['TOPLEVEL']
+  #TODO: it's hdlManager work
+  ucf = iContent.get('UCF') or iContent.get('ucf')
+  top = iContent.get('TOPLEVEL') or iContent.get('toplevel')
   if ucf and top:
     return
   elif not ucf and top:
@@ -92,24 +116,30 @@ def defUCFandTop(iContent):
 
 
 @log_call    
-def load(iBuildFile = '../resource/build.yaml', cacheBuild = {}):
-  if cacheBuild:
-    content = cacheBuild     
+def load(iBuildFile = '../resource/build.yaml', _cacheBuild = {}):
+  if _cacheBuild:
+    content = _cacheBuild
   else:
-    content = yaml.load(open(iBuildFile, 'r'))
-    convertToAbspath(content, iBuildFile)
-    defUCFandTop(iContent = content)
-    cacheBuild.update(content) 
-    #dump(iContent = content, iBuildFile = iBuildFile)
+    with open(iBuildFile) as f:
+      content = yaml.load(f.read())
+      convertToAbspath(content)
+      _cacheBuild.update(content)
+      dump(iContent = content, iBuildFile = iBuildFile)
   
   return content
+
+
+def loadUncached(iBuildFile = '../resource/build.yaml'):
+  return yaml.load(open(iBuildFile, 'r'))
 
 
 @log_call    
 def dump(iContent = '', iBuildFile = '../resource/build.yaml'):
   content  = iContent or load(iBuildFile = iBuildFile)
-  convertToRelpath(content, iBuildFile)
-  yaml.dump(content, open(iBuildFile, 'w'), default_flow_style=False)
+  oldContent = loadUncached(iBuildFile = iBuildFile)
+  convertToRelpath(content)
+  if content != oldContent:
+    yaml.dump(content, open(iBuildFile, 'w'), default_flow_style=False)
     
     
 @log_call

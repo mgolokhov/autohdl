@@ -158,9 +158,7 @@ class ParseFile(object):
     if not contineProc:
       self.includes['sha'] = self.includes['sha'].hexdigest()
       return
-    searchPaths = build.getParam(iKey = 'include_path', iDefault = '.')
-    searchPaths = searchPaths.split(';')
-    searchPaths = [os.path.abspath(os.path.join('../resource', i)) for i in searchPaths]
+    searchPaths = build.getParam(iKey = 'include_path')
     searchPaths += ['../src']
     incl = {}
     for include in includeFiles:
@@ -177,7 +175,7 @@ class ParseFile(object):
         _unresolved.append(include)
         self.cacheable = False
 
-    self.includes['paths'] += incl.values() 
+    self.includes['paths'] += [os.path.relpath(i) for i in incl.values()]
     for inclLine, inclFile in incl.iteritems():
       try:
         with open(inclFile, 'r') as f:
@@ -330,8 +328,8 @@ class ProcDirectives():
       return
     
     branch = []
-    beginWords = {'`ifdef', '`elif', '`else'}
-    endWords = {'`elif', '`else', '`endif'}
+    beginWords = {'`ifdef', '`elsif', '`else'}
+    endWords = {'`elsif', '`else', '`endif'}
     matched = False
     for line in origin:
       words = set(line.split())
