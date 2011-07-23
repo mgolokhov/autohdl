@@ -7,7 +7,8 @@ __all__ = [
            'build',
            'structure',
            'aldec',
-           'putfw_dav'] 
+           'pkg_info',
+           'putfw_dav']
 
 
 # TODO: Add file logger for actions in script folder, (maybe all scripts should be unwindowed)

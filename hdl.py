@@ -7,6 +7,7 @@ import os
 from autohdl import *
 
 
+
 if __name__ == '__main__':
   parser = optparse.OptionParser()
   parser.add_option('-t', '--test', action="store_true", dest='test', help = 'run unit tests')
@@ -24,7 +25,7 @@ if __name__ == '__main__':
     #import autohdl.test.all_test
     pass
   elif options.version:
-    print 'autohdl version: ' + database.getBuildVersion()
+    print 'autohdl version: ' + pkg_info.getVersion()
   else:
     dsn = structure.Design(iName = options.name)
     print dsn
