@@ -79,7 +79,7 @@ class ParseFile(object):
 #  @log_call 
   def readContent(self):
     try:
-      with open(self.path, 'r') as f:
+      with open(self.path) as f:
         return f.read()
     except IOError:
       raise InstanceException('Cannot open file: ' + self.path)
@@ -88,7 +88,7 @@ class ParseFile(object):
 #  @log_call 
   def getPathCache(self):
     'Default storage in folder <dsnName>/resource/parsed'
-    # transform path to src file in fileName
+    # transform from src path to cache filename
     relPath = os.path.relpath(self.path, '../script')
     name = relPath.replace('\\', '/').replace('/', '_').replace('.', '_')
     dir = '../resource/parsed/'
@@ -103,12 +103,15 @@ class ParseFile(object):
     Return true if got match in cache, assign result to self.parsed
     '''
     # calc hash for main src file
+    # if it wasn't changed read cache
+    # calc hash for all includes, paths got from cache
+    # if nothing changed result in self.parsed
     h = hashlib.sha1()
     h.update(self.content)
     self.file_sha = h.hexdigest()
     
     try:
-      with open(self.pathCache, 'r') as f:
+      with open(self.pathCache) as f:
         y = yaml.load(f)
     except (IOError, YAMLError) as exp:
       log.debug(exp)
@@ -151,7 +154,6 @@ class ParseFile(object):
 
 #  @log_call 
   def addIncludes(self, _unresolved = []):
-    'BUGAGA: maximum recursion depth exceeded' 
     'cache calculates *per each* include'
     includeFiles = re.findall(r'`include\s+".*?"', self.content)
     contineProc = set(includeFiles)-set(_unresolved)
@@ -200,7 +202,7 @@ class ParseFile(object):
 #  @log_call 
   def parseFile(self):
     '''
-
+    Lost of stuff.
     '''
     self.removeComments()
     self.addIncludes()
@@ -304,12 +306,12 @@ class ProcDirectives():
     if '`define' in self.line:
       words = self.line.split()
       qty = len(words)
-      if qty == 3:
-        self.defines.update({words[1]:words[2]})
+      if qty >= 3:
+        self.defines.update({words[1]: ' '.join(words[2:])})
       elif qty == 2:
         self.defines.update({words[1]: ''})
       else:
-        log.warning('Error in preprocess parsing')
+        log.warning('Error in preprocess parsing. Line: ' + self.line)
   
   
   def prepBranch(self):
@@ -365,7 +367,7 @@ def parseFiles(iPathFiles):
   if iPathFiles:
     for oneFile in iPathFiles:
       if os.path.splitext(oneFile)[1] not in ['.v']:
-        continue 
+        continue
       try:
         parsedNew = ParseFile(oneFile).getResult()
         parsed.update(parsedNew)
@@ -473,7 +475,8 @@ def resolveUndef(iInstance, iInFile, _parsed = {}):
       return parsedFile
      
   files = build.getFile() #return all cache
-  parsedFiles = parseFilesMultiproc(files)
+#  parsedFiles = parseFilesMultiproc(files)
+  parsedFiles = parseFiles(files)
   _parsed.update(parsedFiles)
   val = parsedFiles.get(iInstance)
   if val:

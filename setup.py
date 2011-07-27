@@ -9,8 +9,6 @@ import pkg_info
 
 
 
-shutdownLogServer()
-
 os.chdir('..')
 
 
@@ -27,6 +25,23 @@ class Uninstall(Command):
       shutil.rmtree(path)
 
 
+class ShutdownLogServer(Command):
+  description = 'Shutdown log server'
+  user_options = []
+  def initialize_options(self):
+    self.cwd = None
+  def finalize_options(self):
+    self.cwd = os.getcwd()
+  def run(self):
+    shutdownLogServer()
+
+def getDataTree(iPath):
+  res = []
+  for root, dirs, files in os.walk(iPath):
+    for f in files:
+      res.append(os.path.join(root,f).replace('autohdl/', ''))
+  return res
+
 
 setup(name         = 'autohdl',
       version      = pkg_info.getVersion(),
@@ -35,7 +50,7 @@ setup(name         = 'autohdl',
       author_email = 'hex_wer@mail.ru',
       platforms    = ['win32'],
       packages     = ['autohdl', 'autohdl.test', 'autohdl.lib', 'autohdl.lib.yaml', 'autohdl.lib.tinydav'],
-      package_data = {'autohdl': ['data/*']},
+      package_data = {'autohdl': ['data/*'] + getDataTree('autohdl/test/fake_repo_gold') + getDataTree('autohdl/test/fake_repo')},
       data_files   = [('', ['autohdl/hdl.py'])],
-      cmdclass     = {'uninstall': Uninstall},
+      cmdclass     = {'uninstall': Uninstall, 'shutdownlog': ShutdownLogServer},
      )

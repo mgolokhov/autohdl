@@ -11,11 +11,10 @@ import os
 
 
 def shutdownLogServer():
-  attempt = 10
   # 0 - connect ok
   # 10061 no socket
   # 10056 already binded
-  while True:
+  for i in range(10):
     print 'shutting down log server...'
     s = socket.socket()
     if not s.connect_ex(('localhost', logging.handlers.DEFAULT_TCP_LOGGING_PORT)):
@@ -25,14 +24,11 @@ def shutdownLogServer():
                                                      logging.handlers.DEFAULT_TCP_LOGGING_PORT)
       rootLogger.addHandler(socketHandler)
       logging.warning('shutdown_log_server')
-      attempt += 1
       time.sleep(1)
     else:
       print 'log server were shut down'
-      break
-    if attempt == 5:
-      break
-
+      return
+  print 'FAILED to shutdown log server'
 
 
 class LogRecordStreamHandler(SocketServer.StreamRequestHandler):

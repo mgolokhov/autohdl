@@ -19,7 +19,8 @@ def validateTop(iTop):
   if not iTop:
     return False
   srcFiles = structure.search(iPath='../src', iOnly=['\.v$'], iIgnore=['\.svn', '\.git'])
-  parsed = instance.parseFilesMultiproc(srcFiles)
+#  parsed = instance.parseFilesMultiproc(srcFiles)
+  parsed = instance.parseFiles(srcFiles)
   if parsed.get(iTop):
     return True
 
@@ -94,6 +95,8 @@ def kungfu(iTop = '', iUcf = '', iSize = '', iUpload = ''):
   try: # for Active-hdl compatibility
     os.chdir(os.path.dirname(sys.modules['__main__'].__file__))
   except AttributeError as e:
+    log.debug(e)
+  except WindowsError as e:
     log.debug(e)
 
   parser = argparse.ArgumentParser(description='hdl cycles manager')

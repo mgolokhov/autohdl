@@ -83,11 +83,13 @@ def formBuildName(iUsername, iPassword, iFile, _cache = []):
 
   client = tinydav.WebDAVClient('cs.scircus.ru')
   client.setbasicauth(iUsername, iPassword)
-  response = client.propfind('/test/distout/rtl/', depth=1, properties=['href'])
+  response = client.propfind('/test/distout/rtl/{dsnName}/'.format(dsnName=dsnName),
+                             depth=1,
+                             properties=['href'])
   anchorStart, anchorEnd = makeHTMLTags('D:href')
   anchor = anchorStart + SkipTo(anchorEnd).setResultsName('body') + anchorEnd
   fwList = {os.path.basename(tokens.body) for tokens in anchor.searchString(response.content)}
-
+  print fwList
   try:
     fwList = [os.path.splitext(i)[0] for i in fwList if root_build in i]
     allBuilds = []
@@ -121,12 +123,18 @@ def getContent(iFile):
 def upload(iFile):
   content = getContent(iFile)
   username, password = authenticate()
-  name = formBuildName(username, password, iFile)
 
   client = tinydav.WebDAVClient('cs.scircus.ru')
   client.setbasicauth(username, password)
+
+  dsnName = os.path.abspath(iFile).replace('\\', '/').split('/')[-3]
+  print client.mkcol('/test/distout/rtl/' + dsnName)
+
+  name = formBuildName(username, password, iFile)
   print 'Uploading file: ', name
-  response = client.put('/test/distout/rtl/' + name, content, "application/binary")
+  response = client.put('/test/distout/rtl/{dsnName}/{name}'.format(dsnName=dsnName, name=name),
+                        content,
+                        "application/binary")
   print response.statusline
 
 
