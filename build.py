@@ -33,7 +33,11 @@ def convertToRelpath(iContent):
     iContent['dep'] = [os.path.relpath(i) for i in depSrc]
 
   include_path = iContent.get('include_path')
+  # TODO: bugaga
+#  print include_path
   if include_path:
+    if type(include_path) != type(list()):
+      include_path = [include_path]
     iContent['include_path'] = [os.path.relpath(i) for i in include_path]
 
   os.chdir('../script')
@@ -64,6 +68,8 @@ def convertToAbspath(iContent):
 
   include_path = iContent.get('include_path')
   if include_path:
+    if type(include_path) != type(list()):
+      include_path = [include_path]
     incl = []
     incl_wrong = []
     for i in include_path:
