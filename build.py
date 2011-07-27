@@ -74,7 +74,7 @@ def convertToAbspath(iContent):
     incl_wrong = []
     for i in include_path:
       if os.path.exists(i):
-        incl.append(os.path.abspath(i))
+        incl.append(os.path.abspath(i).replace('\\', '/'))
       else:
         incl_wrong.append(i)
     iContent['include_path'] = incl
