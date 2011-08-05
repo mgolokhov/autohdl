@@ -1,5 +1,6 @@
 import argparse
 import os
+import pprint
 import sys
 
 import instance
@@ -14,17 +15,19 @@ import webdav
 from hdlLogger import log_call, logging
 log = logging.getLogger(__name__)
 
-
+@log_call
 def validateTop(iTop):
   if not iTop:
     return False
   srcFiles = structure.search(iPath='../src', iOnly=['\.v$'], iIgnore=['\.svn', '\.git'])
 #  parsed = instance.parseFilesMultiproc(srcFiles)
   parsed = instance.parseFiles(srcFiles)
+#  pprint.pprint(parsed)
   if parsed.get(iTop):
     return True
 
 
+@log_call
 def getFullPathToUcf(iUcf):
   # could be
   # empty
@@ -42,6 +45,7 @@ def getFullPathToUcf(iUcf):
    return ucfFiles[0].replace('\\', '/')
 
 
+@log_call
 def getValidTop(iTopFromArg, iTopFromScript):
   try:
     topAsScriptName = os.path.splitext(os.path.basename(sys.modules['__main__'].__file__))[0]
@@ -66,6 +70,7 @@ def getValidTop(iTopFromArg, iTopFromScript):
   return top
 
 
+@log_call
 def getValidUcf(iUcfFromArg, iUcfFromScript, iValidTop):
   ucfFromArg = getFullPathToUcf(iUcfFromArg)
   if ucfFromArg:
@@ -89,6 +94,7 @@ def getValidUcf(iUcfFromArg, iUcfFromScript, iValidTop):
   logging.warning('Ucf file undefined')
 
 
+@log_call
 def kungfu(iTop = '', iUcf = '', iSize = '', iUpload = ''):
   logging.info('Processing...')
 

@@ -1,3 +1,4 @@
+import ctypes
 from xml.dom import minidom
 import xml
 import os
@@ -20,6 +21,7 @@ class ToolchainException(Exception):
   
   
 class Tool(object):
+  @log_call
   def __init__(self, iTag):
     
     try:
@@ -50,6 +52,7 @@ class Tool(object):
     if not self.getFromCfg():
       self.searchLight()
     
+  @log_call
   def getFromCfg(self):
     try:
       with open(self.pathCfg, 'r') as f:
@@ -73,6 +76,7 @@ class Tool(object):
 
     return False  
 
+  @log_call
   def searchBrutal(self):
     for root, dirs, files in os.walk(path): #@UnusedVariable
       for i in files:
@@ -80,10 +84,24 @@ class Tool(object):
         if i == self.utilName:
           path = '/'.join([root.replace('\\','/'), i])
           return path    
-    
 
+
+  @log_call
+  def getWin32Drivers(self):
+    drivers = []
+    LOCALDISK = 3
+    bitmask = ctypes.windll.kernel32.GetLogicalDrives()
+    for i in range(26):
+      if (bitmask >> i) & 0x01:
+        driver = chr(i+65) + ':/'
+        if ctypes.windll.kernel32.GetDriveTypeA(driver ) == LOCALDISK:
+          drivers.append(driver)
+    return drivers
+
+
+  @log_call
   def searchLight(self):
-    logicDrives = [i for i in string.ascii_uppercase if os.path.exists('{0}:/'.format(i))]
+    logicDrives = self.getWin32Drivers()
     try:
       paths = self.data[self.tool]['path']
     except KeyError as exp:
@@ -92,8 +110,9 @@ class Tool(object):
     for logicDrive in logicDrives:
       for path in paths:
         for nested in ['', '/*/', '/*/'*2, '/*/'*3]: 
-          log.info('Searching {}...'.format(self.tag)) 
-          rootDirs += glob.glob('{drive}:{nested}{path}'.format(drive=logicDrive, nested=nested, path=path))
+          log.info('Searching {}...'.format(self.tag))
+          log.info('{drive}{nested}{path}'.format(drive=logicDrive, nested=nested, path=path))
+          rootDirs += glob.glob('{drive}{nested}{path}'.format(drive=logicDrive, nested=nested, path=path))
     self.fullPaths = []
     for i in rootDirs:
       for nested in ['', '/*/', '/*/'*2, '/*/'*3, '/*/'*4, '/*/'*5, '/*/'*6]:
@@ -107,6 +126,7 @@ class Tool(object):
       self.saveSearchResult()
            
 
+  @log_call
   def saveSearchResult(self):
     try:
       if not self.cfg:
@@ -119,6 +139,7 @@ class Tool(object):
       return
 
 
+  @log_call
   def askConfirm(self):
     d = dict([(index, path) for index, path in enumerate(self.fullPaths)])
     current = 0
@@ -142,17 +163,18 @@ class Tool(object):
 
 
 
+@log_call
 def getPath(iTag):
   return Tool(iTag).result
         
 
 if __name__ == '__main__':
-  print Tool('avhdl_gui').result
+#  print Tool('avhdl_gui').result
   print Tool('synplify_batch').result
-  print Tool('synplify_gui').result
-  print Tool('ise_gui').result
-  print Tool('ise_batch').result
-  print Tool('ise_xflow').result
+#  print Tool('synplify_gui').result
+#  print Tool('ise_gui').result
+#  print Tool('ise_batch').result
+#  print Tool('ise_xflow').result
 #  getPath('avhdl_gui')
 #  getPath('synplify_batch')
 #  getPath('synplify_gui')

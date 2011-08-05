@@ -1,3 +1,4 @@
+import ctypes
 import logging
 from hdlLogger import log_call
 log = logging.getLogger(__name__)
@@ -6,13 +7,24 @@ import glob
 import subprocess
 import toolchain
 import os
-import string
+import ctypes
 
+# TODO: duplication in toolchain
+def getWin32Drivers():
+  drivers = []
+  LOCALDISK = 3
+  bitmask = ctypes.windll.kernel32.GetLogicalDrives()
+  for i in range(26):
+    if (bitmask >> i) & 0x01:
+      driver = chr(i+65) + ':/'
+      if ctypes.windll.kernel32.GetDriveTypeA(driver ) == LOCALDISK:
+        drivers.append(driver)
+  return drivers
   
 def get():
   try:
-    for logicDrive in [i for i in string.ascii_uppercase if os.path.exists('{0}:/'.format(i))]:
-      res = glob.glob('{0}:/Xilinx/*/*/*settings32.bat'.format(logicDrive))
+    for logicDrive in getWin32Drivers():
+      res = glob.glob('{0}Xilinx/*/*/*settings32.bat'.format(logicDrive))
 #      print res
       if res:
         break

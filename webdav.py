@@ -1,11 +1,14 @@
 import base64
 import os
 import sys
+import getpass
 import lib.tinydav as tinydav
 from lib.pyparsing import makeHTMLTags, SkipTo
 
 import lib.yaml as yaml
 
+from hdlLogger import log_call, logging
+log = logging.getLogger(__name__)
 
 def loadAuth(iPath):
   username, password = '', ''
@@ -16,7 +19,7 @@ def loadAuth(iPath):
       password = base64.decodestring(content[base64.encodestring('password')])
   except Exception as e:
     # logging e
-    print e
+    logging.debug(e)
   return username, password
 
 
@@ -25,9 +28,10 @@ def checkAuth(iUsername, iPassword):
   client.setbasicauth(iUsername, iPassword)
   try:
     print client.head('/test/')
-  except exception.HTTPUserError as e:
+  except tinydav.exception.HTTPUserError as e:
     #logging
     print e
+    logging.debug(e)
     return False
   return True
 
@@ -48,7 +52,7 @@ def askAuth():
     print 'Exit...'
     sys.exit(0)
   username = raw_input('user: ')
-  password = raw_input('password: ')
+  password = getpass.getpass('password: ')
   return username, password
 
 
@@ -89,7 +93,6 @@ def formBuildName(iUsername, iPassword, iFile, _cache = []):
   anchorStart, anchorEnd = makeHTMLTags('D:href')
   anchor = anchorStart + SkipTo(anchorEnd).setResultsName('body') + anchorEnd
   fwList = {os.path.basename(tokens.body) for tokens in anchor.searchString(response.content)}
-  print fwList
   try:
     fwList = [os.path.splitext(i)[0] for i in fwList if root_build in i]
     allBuilds = []
@@ -119,7 +122,7 @@ def getContent(iFile):
   return data
 
 
-
+@log_call
 def upload(iFile):
   content = getContent(iFile)
   username, password = authenticate()

@@ -27,7 +27,8 @@ def action(iMode = 'copy', _logOnce = []):
       for afile in files:
         src = os.path.join(root, afile)
         dst = os.path.join(rootPathDsn, virtDir, afile)
-      
+        log.info(src)
+        log.info(dst)
         try:
           if iMode == 'copy':
             if not _logOnce:
@@ -42,12 +43,11 @@ def action(iMode = 'copy', _logOnce = []):
             log.info('dst= ' + os.path.abspath(dst))
             shutil.move(src, dst)  
         except IOError, e:
-          print os.getcwd()
-          print e
+          log.exception(e)
         
 
 def copyInRepo():
-  while(1):
+  while True:
     action(iMode = 'copy')
     time.sleep(1)
 

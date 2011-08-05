@@ -32,7 +32,7 @@ if PYTHON2:
 else:
     from urllib.parse import urlunsplit
 
-from tinydav.exception import HTTPError
+from exception import HTTPError
 
 __all__ = (
     "FakeHTTPRequest", "make_absolute", "make_multipart",

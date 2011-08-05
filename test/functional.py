@@ -3,6 +3,9 @@ import shutil
 import subprocess
 import filecmp
 import pprint
+import time
+# TODO: some relative path
+import autohdl.structure as structure
 
 def run():
   src = os.path.dirname(__file__)
@@ -11,12 +14,25 @@ def run():
   if os.path.exists(dst_fake_repo):
     shutil.rmtree(dst_fake_repo)
   shutil.copytree(fake_repo, 'fake_repo')
-
-  os.chdir('fake_repo/dsn1/script')
-  subprocess.call('python kungfu.py -tb')
   fake_repo_gold = os.path.join(src, 'fake_repo_gold')
-  res = diff(fake_repo_gold, dst_fake_repo)
-  pprint.pprint(res)
+
+  scripts = structure.search(dst_fake_repo, iOnly=['kungfu.py'])
+  for s in scripts:
+    startTest = time.clock()
+    # path / fake_repo / dsn / script / kungfu.py
+    pathAsList = s.replace('\\', '/').split('/')
+    scriptFolder = '/'.join(pathAsList[:-1])
+    os.chdir(scriptFolder)
+    subprocess.call('python kungfu.py -tb')
+    dsnName = pathAsList[-3]
+    res = diff(fake_repo_gold+'/'+dsnName,
+               dst_fake_repo+'/'+dsnName)
+    pprint.pprint(res)
+    print 'TEST____________', 'FAILED' if any(res.values()) else 'PASSED'
+    print 'Run time ', time.clock()-startTest
+
+
+
 
 def _getTree(iPath, iIgnoreExt = []):
   res = set()

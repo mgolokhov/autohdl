@@ -35,7 +35,7 @@ def _getIncludePath(iPrj):
   
 @log_call
 def getIncludePath(iPrj):
-  incl = build.getParam('include_path', iDefault='"."')
+  incl = build.getParam('include_path', iDefault=".")
   return ';'.join(incl)
   
 
@@ -144,6 +144,7 @@ def run_synplify_batch(iPrj):
                 '-licensetype synplifypremier',
                 '-batch', iPrj['pathScript'])
   subprocess.Popen(run, env = xilinx_env.get())
+  loge = ''
   #TODO: stop waiting
   for i in range(13):
     time.sleep(3)
@@ -154,7 +155,11 @@ def run_synplify_batch(iPrj):
       continue
     if loge:
       break
-    
+
+  if not loge:
+    log.error('Cant start synthesis see ../synthesis/stdout.log')
+    return
+
   done = False
   while True:
     where = loge.tell()
@@ -198,15 +203,7 @@ import subprocess
 
 @log_call
 def run(iTopModule = '', iMode = 'synplify_batch', iSilent = True):
-  
-
-#  try:
-#    bat = glob.glob('c:\Xilinx\*\*\*settings32.bat')[0]
-#    subprocess.call(bat)
-#    log.info('Called '+ bat)
-#  except Exception as exp:
-#    log.error(exp)  
-    
+  logging.info('Synthesis stage')
   # changing current location to synthesis directory
   iTopModule = iTopModule or build.getParam('TOPLEVEL')
   prj = getStructure(iTopModule = iTopModule, iMode = iMode)

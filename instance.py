@@ -139,6 +139,15 @@ class ParseFile(object):
 
 
 #  @log_call 
+  def _removeComments(self):
+    pattern = cppStyleComment
+    pattern.ignore(QuotedString(quoteChar='"'))
+
+    for i in pattern.searchString(self.content):
+      comment = str(i.pop())
+      log.debug('comment= ' + comment)
+      self.content = self.content.replace(comment, '', 1)
+
   def removeComments(self):
     self.content = self.content.replace('\t', '    ')
     withoutQuotedStr = self.content
@@ -150,8 +159,7 @@ class ParseFile(object):
       tok = tokens[0]
       log.debug('comment= ' + tok)
       self.content = self.content.replace(tok, '', 1)
-
-
+      
 #  @log_call 
   def addIncludes(self, _unresolved = []):
     'cache calculates *per each* include'

@@ -53,8 +53,8 @@ else:
 
 import hashlib
 
-from tinydav import creator, util
-from tinydav.exception import HTTPError, HTTPUserError, HTTPServerError
+import creator, util
+from exception import HTTPError, HTTPUserError, HTTPServerError
 
 __author__ = "Manuel Hermann <manuel-hermann@gmx.net>"
 __license__ = "LGPL"

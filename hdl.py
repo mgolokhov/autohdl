@@ -1,6 +1,7 @@
 import argparse
 from autohdl import *
 import autohdl.test.functional as atests
+import cProfile
 
 
 
@@ -13,7 +14,6 @@ if __name__ == '__main__':
 
   if args.test:
     atests.run()
-    print 'not yet'
   elif args.version:
     print 'autohdl version: ' + pkg_info.getVersion()
   else:
