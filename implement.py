@@ -1,6 +1,7 @@
 import os
 import shutil
 import subprocess
+import hdlGlobals
 
 import toolchain
 import structure
@@ -33,7 +34,7 @@ def run(iTopModule, iUCF, iFlashSize = ''):
     os.makedirs('../implement')  
     
   top = structure.search(iPath = '../synthesis', iOnly = [iTopModule+'\.edf'])[0]
-  netlists = structure.search(iPath = '../src', iOnly = ['\.edf', '\.ngc'])
+  netlists = structure.search(iPath = '../src', iOnly = ['\.edf', '\.ngc'], iIgnore = hdlGlobals.ignore )
 
   shutil.copyfile(iUCF, '../implement/'+iTopModule+'.ucf')
   shutil.copyfile(top, '../implement/'+iTopModule+'.edf')
