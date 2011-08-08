@@ -13,8 +13,10 @@ from hdlLogger import log_call
 import logging
 log = logging.getLogger(__name__)
 
+logging.debug(str(sys.argv))
 
 os.chdir(sys.argv[1])
+
 
 def action(iMode = 'copy', _logOnce = []):
     # cwd = <dsnName>/script
@@ -56,7 +58,7 @@ def moveInRepo():
   action(iMode = 'move')
   
 
-aldec = toolchain.getPath(iTag = 'avhdl_gui')
+aldec = sys.argv[2] #toolchain.getPath(iTag = 'avhdl_gui')
 
 b = threading.Thread(target=copyInRepo)
 b.setDaemon(1)

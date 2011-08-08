@@ -8,7 +8,7 @@ import structure
 import build
 import hdlGlobals
 import template_avhdl_adf
-
+import toolchain
 
 
 @log_call
@@ -127,4 +127,9 @@ def export():
   gen_compile_cfg(iFiles = prj['filesToCompile'])
   if build.getParam(iKey = 'test'):
     return
-  subprocess.Popen('pythonw {0}/aldec_run.py {1}'.format(os.path.dirname(__file__), os.getcwd()))
+  aldec = toolchain.getPath(iTag = 'avhdl_gui')
+  subprocess.Popen('pythonw {0}/aldec_run.py {1} "{2}"'.format(
+                                                            os.path.dirname(__file__),
+                                                            os.getcwd(),
+                                                            aldec
+                                                            ))

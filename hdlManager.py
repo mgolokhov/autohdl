@@ -97,7 +97,7 @@ def getValidUcf(iUcfFromArg, iUcfFromScript, iValidTop):
 @log_call
 def kungfu(iTop = '', iUcf = '', iSize = '', iUpload = ''):
   logging.info('Processing...')
-
+  #TODO: logging argv
   try: # for Active-hdl compatibility
     os.chdir(os.path.dirname(sys.modules['__main__'].__file__))
   except AttributeError as e:
