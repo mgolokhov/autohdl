@@ -146,15 +146,15 @@ def kungfu(iTop = '', iUcf = '', iSize = '', iUpload = ''):
   if res.tb:
     aldec.export()
   elif res.syn == 'gui':
-    synthesis.run(iTopModule=top, iMode='synplify_gui')
+    synthesis.run(iTopModule=top, iMode='synplify_gui', iUcf = ucf)
   elif res.syn:
-    synthesis.run(iTopModule=top)
+    synthesis.run(iTopModule=top, iUcf = ucf)
   elif res.impl:
     implement.run(iTopModule=top, iUCF=ucf, iFlashSize=size)
   elif res.upload:
     pass
   else:
-    synthesis.run(iTopModule=top)
+    synthesis.run(iTopModule=top, iUcf = ucf)
     implement.run(iTopModule=top, iUCF=ucf, iFlashSize=size)
 
   if upload:

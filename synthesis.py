@@ -64,18 +64,19 @@ def setParams(iPrj):
 def setSrc(iPrj):
   ignore = hdlGlobals.ignore
   only = []
-  filesMain = structure.search(iPath = '../src', iIgnore = ignore, iOnly = only)
+  filesMain = structure.search(iPath = '../src', iIgnore = ignore+['\.ucf'], iOnly = only)
   filesDep = structure.getDepSrc(iSrc = filesMain, iIgnore =ignore, iOnly = only)
-  srcFiles = filesMain + list(filesDep)
+  srcFiles = filesMain + list(filesDep)+ [iPrj['ucf']]
   iPrj['srcFiles'] = '\n'.join(['add_file "{0}"'.format(i) for i in srcFiles])
 
   
 @log_call  
-def getStructure(iTopModule, iMode):
+def getStructure(iTopModule, iMode, iUcf):
   prj = {}
   prj['pathTool']      = toolchain.getPath(iMode)
   prj['mode']          = iMode
   prj['topModule']     = iTopModule
+  prj['ucf']           = iUcf
   prj['pathSynthesis'] = '../synthesis'
   prj['pathScript']    = prj['pathSynthesis']+ '/synthesis.prj'
   prj['pathLog']       = prj['pathSynthesis'] + '/' + iTopModule + '.srr'
@@ -202,11 +203,10 @@ import glob
 import subprocess
 
 @log_call
-def run(iTopModule = '', iMode = 'synplify_batch', iSilent = True):
+def run(iTopModule, iUcf, iMode = 'synplify_batch', iSilent = True):
   logging.info('Synthesis stage')
   # changing current location to synthesis directory
-  iTopModule = iTopModule or build.getParam('TOPLEVEL')
-  prj = getStructure(iTopModule = iTopModule, iMode = iMode)
+  prj = getStructure(iTopModule = iTopModule, iMode = iMode, iUcf = iUcf)
   runTool(iPrj = prj, iSilent = iSilent)
   log.info('Synthesis done!')  
 

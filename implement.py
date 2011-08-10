@@ -35,8 +35,10 @@ def run(iTopModule, iUCF, iFlashSize = ''):
     
   top = structure.search(iPath = '../synthesis', iOnly = [iTopModule+'\.edf'])[0]
   netlists = structure.search(iPath = '../src', iOnly = ['\.edf', '\.ngc'], iIgnore = hdlGlobals.ignore )
+  ucfSymplicity = structure.search(iPath='../synthesis', iOnly=['\.ucf'], iIgnore=hdlGlobals.ignore)
+  ucf = ucfSymplicity[0] or iUCF
 
-  shutil.copyfile(iUCF, '../implement/'+iTopModule+'.ucf')
+  shutil.copyfile(ucf, '../implement/'+iTopModule+'.ucf')
   shutil.copyfile(top, '../implement/'+iTopModule+'.edf')
   for i in netlists:
     shutil.copyfile(i, '../implement/'+os.path.split(i)[1])
