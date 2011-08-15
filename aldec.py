@@ -37,7 +37,7 @@ def initPrj():
   dict['srcUncopied'] = mainSrcUncopied
   dict['mainSrc'] = mainSrc
   dict['depSrc'] = structure.getDepSrc(iSrc = mainSrc, iIgnore = ignore)
-  
+
   dict['TestBenchSrc'] = structure.search(iPath='../TestBench', iIgnore = ignore)
   
 

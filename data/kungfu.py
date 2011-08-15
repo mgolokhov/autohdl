@@ -3,16 +3,16 @@ from autohdl import hdlManager
 # Priority: 1 - argument list, 2 - this script, 3 - build.yaml
 
 hdlManager.kungfu(
-	# Set top module name.
-	# iTop = '',
+  # Set top module name.
+  # iTop = '',
 
   # Set constraint file.
   # Could be a valid relative path (keep in mind repo)
   # or just a name, if it locates in the current design folder.
-	# iUcf = '',
+  # iUcf = '',
 
   # Set flash size (*examples*)
-	# iSize = '',
+  # iSize = '',
 
   # Uncomment to upload firmware on WebDAV server.
   # iUpload = 'True'

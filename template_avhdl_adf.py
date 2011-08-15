@@ -51,7 +51,7 @@ def files(iPrj):
 
   dep = []
   if iPrj.get('depSrc'):
-    iPrj['depSrc'].sort()
+    iPrj['depSrc'].sort(key=str.lower)
     dep  = ['dep/' + i + '=-1' for i in iPrj['depSrc']]
 
   netlist = []

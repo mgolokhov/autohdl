@@ -169,7 +169,7 @@ class ParseFile(object):
       self.includes['sha'] = self.includes['sha'].hexdigest()
       return
     searchPaths = build.getParam(iKey = 'include_path')
-    searchPaths += ['../src']
+    searchPaths += [os.path.dirname(self.path)]
     incl = {}
     for include in includeFiles:
       if include in _unresolved:
@@ -195,7 +195,7 @@ class ParseFile(object):
       except Exception as exp:
         # damaged should not be saved in cache
         log.error(exp)
-        log.warning('Cannot resolve ' + inclLine)
+        log.warning('Cannot resolve ' + inclLine + ' in file: ' + self.path)
         _unresolved.append(inclLine)
         self.cacheable = False
     self.removeComments()
