@@ -66,7 +66,7 @@ def files(iPrj):
 
   allOtherSrc = list(set(iPrj['allSrc']) - set(iPrj['depSrc']))
   if allOtherSrc:
-    allOtherSrc.sort()
+    allOtherSrc.sort(key=str.lower)
   rootPath = iPrj['rootPath']+'/'
   l = []
   for i in allOtherSrc:

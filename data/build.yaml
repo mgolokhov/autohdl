@@ -1,4 +1,4 @@
-# All comments will be deleted after first start
+# All comments will be deleted after first edit
 
 family     : Xilinx11x SPARTAN3E
 device     : 3s250etq144  # DCS2
@@ -8,16 +8,16 @@ device     : 3s250etq144  # DCS2
 
 # Path to constraint file, could be absolute path,
 # after first run will be converted to relative.
-ucf        :
+ucf:
 # Top module name
-toplevel   :
+toplevel:
 
 # Include path searching
 include_path:
 #- ../include1;../../include2
 
 # Dependency search path list
-dep        :
+dep:
 # add list like that
 #- path/to/inst_file1
 #- 'path\to\inst_file2'
@@ -25,7 +25,7 @@ dep        :
 
 # Uploading on server.
 # Type True to enable.
-upload     :
+upload:
 
 
 ignore_undefined_instances:
