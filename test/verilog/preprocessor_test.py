@@ -1,6 +1,7 @@
 import unittest
 
 from hdlLogger import *
+logging.disable(logging.CRITICAL)
 
 
 
@@ -71,6 +72,12 @@ class Atest(unittest.TestCase):
       expected = f.read()
     self.compare(expected, actual)
 
+  def test_include1(self):
+    actual = Preprocessor('in/incl0').preprocessed
+    with open('gold/incl0') as f:
+      expected = f.read()
+    self.compare(expected, actual)
+
   def test_removeComments(self):
     actual = Preprocessor('in/comments.v').preprocessed
     with open('gold/comments.v') as f:
@@ -79,7 +86,6 @@ class Atest(unittest.TestCase):
 
 
 if __name__ == '__main__':
-  logging.disable(logging.CRITICAL)
 #  tests = [
 #           'test_nested_ifdef',
 #           'test_nested_ifdef2',

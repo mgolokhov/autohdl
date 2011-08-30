@@ -223,4 +223,4 @@ class Preprocessor(object):
 
 if __name__ == '__main__':
   print \
-  Preprocessor(iFile='../test/verilog/in/incl_top.v').preprocessed
+  Preprocessor(iFile='../test/verilog/in/incl_top.v').result
