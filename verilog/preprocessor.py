@@ -5,6 +5,25 @@ import build
 from collections import OrderedDict
 
 
+#    `define                  no macro func
+#    `else                    +
+#    `elsif                   +
+#    `endif                   +
+#    `ifdef                   +
+#    `ifndef                  +
+#    `include                 +
+#    `undef                   +
+# ignored:
+#    `celldefine              -
+#    `default_nettype         -
+#    `endcelldefine           -
+#    `line                    -
+#    `nounconnected_drive     -
+#    `resetall                -
+#    `timescale               -
+#    `unconnected_drive       -
+
+
 from lib.pyparsing import quotedString, cppStyleComment
 from hdlLogger import log_call, logging
 log = logging.getLogger(__name__)
@@ -24,6 +43,17 @@ class Preprocessor(object):
                  sha    : num
   """
   def __init__(self, iFile):
+    self.ignore = {
+    '`celldefine',
+    '`default_nettype',
+    '`endcelldefine',
+    '`line',
+    '`nounconnected_drive',
+    '`resetall',
+    '`timescale',
+    '`unconnected_drive'
+    }
+
     self.path = os.path.abspath(iFile)
     self.content = self.readContent(self.path)
     self.file_sha = hashlib.sha1()
@@ -32,24 +62,38 @@ class Preprocessor(object):
     self.defines = {}
     self.includes  = {'paths': [], 'sha': hashlib.sha1()}
 
+    self.content = re.sub(r'\\\n', '', self.content)
     self.content = self.removeComments(self.content)
-    self.result = self.doit(self.content.splitlines())
+    self.preprocessed = self.doit(self.content.splitlines())
+
+    self.result = {
+      'file_path'    : self.path,
+      'file_sha'     : self.file_sha,
+      'preprocessed' : self.preprocessed,
+      'inludes'      : self.includes
+    }
+
+#  def dict
 
   def doit(self, iContentIter):
     contentIter = iter(iContentIter)
     result = []
-    line = None
     for line in contentIter:
       if '`' not in line:
         result.append(line)
+      elif self.ignore & set(line.split()):
+        continue
       elif '`include' in line:
         incl = self.doit(self.prepInclude(line))
 #        incl - string
         result.append(incl)
+      elif '`undef' in line:
+        self.prepUndef(line)
       elif '`define' in line:
         self.prepDefine(line)
-      elif '`ifdef' in line:
+      elif '`ifdef' in line or '`ifndef' in line:
         res = self.prepBranch(line, contentIter)
+#        print 'res ', res
         branch = self.doit(res)
         result.append(branch)
       else:
@@ -62,21 +106,16 @@ class Preprocessor(object):
     res = []
     for w in words:
       if '`' in w:
-        toResolve = self.defines.get(w[1:])
+        macro = re.search(r'`(\w+)', w).group()
+        toResolve = self.defines.get(macro[1:])
         if toResolve:
-          res.append(toResolve)
+          w = w.replace(macro, toResolve)
+          res.append(w)
         else:
-          # fuck!
-          log.error('cant resolve ' + w + ' in file ' + self.path)
+          log.warning('cant resolve ' + w + ' in file ' + self.path)
       else:
         res.append(w)
     return ' '.join(res)
-
-
-
-
-
-
 
   def prepBranch(self, iLine, iContentIter):
     blocks = OrderedDict()
@@ -85,7 +124,7 @@ class Preprocessor(object):
     nested = 0
     while True:
       line = iContentIter.next()
-      if '`ifdef' in line:
+      if '`ifdef' in line or '`ifndef' in line:
         nested += 1
       elif nested and '`endif' in line:
         nested -= 1
@@ -102,20 +141,27 @@ class Preprocessor(object):
       else:
         blocks[branch].append(line)
 
-
+#    print blocks
 
     for k, v in blocks.iteritems():
-      if '`else' in k:
-        return v
+#      print k, v
+#      print self.defines
       words = k.split()
-      if len(words)==2 and self.defines.get(words[1]):
+      if len(words) >= 2:
+        if '`ifndef' in k:
+          if words[1] not in  self.defines:
+            return v
+        elif words[1] in self.defines:
+          return v
+      elif '`else' in k:
         return v
+      else:
+        logging.warning('Error in macro ' + k)
 
-
-
-        
-
-        
+  def prepUndef(self, iLine):
+    words = iLine.split()
+    if len(words) >= 3 and self.defines.get(words[1]):
+      del self.defines[words[1]]
 
   def prepDefine(self, iLine):
     words = iLine.split()
@@ -148,8 +194,8 @@ class Preprocessor(object):
           inclContent = self.readContent(fullPath)
           self.includes['sha'].update(inclContent)
           self.includes['paths'].append(fullPath)
-          return iter(inclContent.splitlines())
-#    raise PreprocessorException('Cannot resolve ' + inclLine + ' in file: ' + self.path)
+          return inclContent.splitlines()
+    logging.warning('Cannot resolve ' + inclLine + ' in file: ' + self.path)
 
 
   def readContent(self, iFile):
@@ -164,7 +210,7 @@ class Preprocessor(object):
     for i in pattern.searchString(iContent):
       if i:
         comment = str(i.pop())
-        print 'comment= ' + comment
+#        print 'comment= ' + comment
         iContent = iContent.replace(comment, '', 1)
     return  iContent
 
@@ -176,4 +222,5 @@ class Preprocessor(object):
 
 
 if __name__ == '__main__':
-  print Preprocessor(iFile='nested_ifdef').result
+  print \
+  Preprocessor(iFile='../test/verilog/in/incl_top.v').preprocessed

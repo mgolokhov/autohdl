@@ -126,12 +126,16 @@ def load(iBuildFile = '../resource/build.yaml', _cacheBuild = {}):
   if _cacheBuild:
     content = _cacheBuild
   else:
-    with open(iBuildFile) as f:
-      content = yaml.load(f.read())
-      convertToAbspath(content)
-      _cacheBuild.update(content)
-      dump(iContent = content, iBuildFile = iBuildFile)
-  
+    try:
+      with open(iBuildFile) as f:
+        content = yaml.load(f.read())
+        convertToAbspath(content)
+        _cacheBuild.update(content)
+        dump(iContent = content, iBuildFile = iBuildFile)
+    except IOError:
+      logging.warning('Cant open file ' + os.path.abspath(iBuildFile))
+      return {}
+
   return content
 
 
