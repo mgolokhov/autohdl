@@ -301,20 +301,3 @@ def getDepTree(iFile):
 
 
 
-@log_call    
-def getSrcExtensions(iTag, iBuildFile='../resource/build.yaml'):
-  
-  if os.path.splitext(iBuildFile)[1] != '.yaml':
-    iBuildFile = os.path.join(iBuildFile, 'resource', 'build.yaml')
-  if not os.path.exists(iBuildFile):
-    log.warning("No such path or file: " + iBuildFile)
-    return []
-  
-  content = load(iBuildFile)
-  ext = content.get(iTag)
-  if not ext:
-    log.warning("Can't get file extensions in file: " + iBuildFile)
-    return []
-  extensions = ['\.'+i.strip() for i in ext.split(';')]
-  return extensions
-

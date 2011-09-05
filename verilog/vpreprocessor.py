@@ -37,10 +37,8 @@ class Preprocessor(object):
   """
   Form dictionary
   file_path    : path,
-  file_sha     : num,
   preprocessed : content,
   includes     : paths  : []
-                 sha    : num
   """
   def __init__(self, iFile):
     self.ignore = {
@@ -54,38 +52,35 @@ class Preprocessor(object):
     '`unconnected_drive'
     }
 
-    self.path = os.path.abspath(iFile)
+    self.path = os.path.relpath(iFile)
     self.content = self.readContent(self.path)
-    self.file_sha = hashlib.sha1()
-    self.file_sha.update(self.content)
-    self.file_sha.hexdigest()
     self.defines = {}
-    self.includes  = {'paths': [], 'sha': hashlib.sha1()}
+    self.includes  = {'paths': []}
 
     self.content = re.sub(r'\\\n', '', self.content)
     self.content = self.removeComments(self.content)
-    self.preprocessed = self.doit(self.content.splitlines())
+    if '`' in self.content:
+      self.preprocessed = self.doit(self.content.splitlines())
+    else:
+      self.preprocessed = self.content
 
     self.result = {
       'file_path'    : self.path,
-      'file_sha'     : self.file_sha,
       'preprocessed' : self.preprocessed,
-      'inludes'      : self.includes
+      'includes'     : self.includes,
+      'cachable'     : True
     }
-
-#  def dict
 
   def doit(self, iContentIter):
     contentIter = iter(iContentIter)
     result = []
     for line in contentIter:
-      if '`' not in line:
+      if line and '`' not in line:
         result.append(line)
-      elif self.ignore & set(line.split()):
+      elif any((i for i in self.ignore if i in line)):
         continue
       elif '`include' in line:
         incl = self.doit(self.prepInclude(line))
-#        incl - string
         result.append(incl)
       elif '`undef' in line:
         self.prepUndef(line)
@@ -93,15 +88,15 @@ class Preprocessor(object):
         self.prepDefine(line)
       elif '`ifdef' in line or '`ifndef' in line:
         res = self.prepBranch(line, contentIter)
-#        print 'res ', res
         branch = self.doit(res)
         result.append(branch)
-      else:
-        result.append(self.resolveDefines(line))
-
+      elif line:
+        res = self.doit([self.resolveDefines(line)])
+#        res = self.doit([res])
+        result.append(res)
     return '\n'.join(result)
 
-  def resolveDefines(self, line):
+  def _resolveDefines(self, line):
     words = line.split()
     res = []
     for w in words:
@@ -116,6 +111,15 @@ class Preprocessor(object):
       else:
         res.append(w)
     return ' '.join(res)
+
+  def resolveDefines(self, line):
+    match = re.search(r'`\w+', line)
+    macro = match.group()
+    resolve = self.defines.get(macro[1:])
+    if not resolve:
+      resolve = '' # just delete TODO: store in _undef
+      log.warning('cant resolve '+line+' in file '+self.path)
+    return line.replace(macro, resolve)
 
   def prepBranch(self, iLine, iContentIter):
     blocks = OrderedDict()
@@ -141,11 +145,8 @@ class Preprocessor(object):
       else:
         blocks[branch].append(line)
 
-#    print blocks
 
     for k, v in blocks.iteritems():
-#      print k, v
-#      print self.defines
       words = k.split()
       if len(words) >= 2:
         if '`ifndef' in k:
@@ -157,6 +158,8 @@ class Preprocessor(object):
         return v
       else:
         logging.warning('Error in macro ' + k)
+
+    return []
 
   def prepUndef(self, iLine):
     words = iLine.split()
@@ -191,12 +194,12 @@ class Preprocessor(object):
       for path in searchPaths:
         fullPath = os.path.join(path, inclFile)
         if os.path.exists(fullPath):
+          self.includes['paths'].append(os.path.relpath(fullPath))
           inclContent = self.readContent(fullPath)
-          self.includes['sha'].update(inclContent)
-          self.includes['paths'].append(fullPath)
           return inclContent.splitlines()
-    logging.warning('Cannot resolve ' + inclLine + ' in file: ' + self.path)
-
+    logging.warning('Cannot resolve {} in file: {}'.format(iLine,
+                                                           os.path.abspath(self.path)))
+    return []
 
   def readContent(self, iFile):
     try:
@@ -206,21 +209,15 @@ class Preprocessor(object):
       raise PreprocessorException('Cannot open file: ' + self.path)
 
   def removeComments(self, iContent):
-    pattern = quotedString.suppress() | cppStyleComment
+    iContent = iContent.replace('\t', '    ')
+    pattern = quotedString.suppress() | cppStyleComment #
     for i in pattern.searchString(iContent):
       if i:
         comment = str(i.pop())
-#        print 'comment= ' + comment
         iContent = iContent.replace(comment, '', 1)
     return  iContent
-
-  def calcSHA(self):
-    h = hashlib.sha1()
-    h.update(self.content)
-    self.file_sha = h.hexdigest()
-
 
 
 if __name__ == '__main__':
   print \
-  Preprocessor(iFile='../test/verilog/in/incl_top.v').result
+  Preprocessor(r'D:\repo\github\autohdl\test\fake_repo_gold\dsn2\src/dspuva16.v').result
