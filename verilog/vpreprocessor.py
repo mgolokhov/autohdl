@@ -1,8 +1,18 @@
-import hashlib
 import os
 import re
-import build
 from collections import OrderedDict
+
+try:
+  from lib.pyparsing import quotedString, cppStyleComment
+  import build
+  from hdlLogger import log_call, logging
+except ImportError:
+  from ..lib.pyparsing import quotedString, cppStyleComment
+  from .. import build
+  from ..hdlLogger import log_call, logging
+
+
+log = logging.getLogger(__name__)
 
 
 #    `define                  no macro func
@@ -24,9 +34,6 @@ from collections import OrderedDict
 #    `unconnected_drive       -
 
 
-from lib.pyparsing import quotedString, cppStyleComment
-from hdlLogger import log_call, logging
-log = logging.getLogger(__name__)
 
 class PreprocessorException(Exception):
   def __init__(self, iString):
@@ -52,7 +59,7 @@ class Preprocessor(object):
     '`unconnected_drive'
     }
 
-    self.path = os.path.relpath(iFile)
+    self.path = iFile
     self.content = self.readContent(self.path)
     self.defines = {}
     self.includes  = {'paths': []}
@@ -65,7 +72,7 @@ class Preprocessor(object):
       self.preprocessed = self.content
 
     self.result = {
-      'file_path'    : self.path,
+      'file_path'    : os.path.relpath(self.path),
       'preprocessed' : self.preprocessed,
       'includes'     : self.includes,
       'cachable'     : True
@@ -206,7 +213,7 @@ class Preprocessor(object):
       with open(iFile) as f:
         return f.read()
     except IOError:
-      raise PreprocessorException('Cannot open file: ' + self.path)
+      raise PreprocessorException('Cannot open file: ' + os.path.abspath(self.path))
 
   def removeComments(self, iContent):
     iContent = iContent.replace('\t', '    ')

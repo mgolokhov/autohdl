@@ -9,8 +9,15 @@ sys.path.insert(0, '../..')
 from verilog.vpreprocessor import *
 
 class PreprocessorTest(unittest.TestCase):
-  def setUp(self):
+  @classmethod
+  def setUpClass(self):
     self.maxDiff = None
+    self.cwd_was = os.getcwd()
+    os.chdir(os.path.dirname(os.path.abspath(__file__)))
+
+  @classmethod
+  def tearDownClass(self):
+    os.chdir(self.cwd_was)
 
   def compare(self, expected, actual):
     actual = [i.strip() for i in actual.splitlines() if i]

@@ -1,3 +1,4 @@
+import os
 import unittest
 import sys
 
@@ -6,6 +7,15 @@ from verilog.vparser import Parser
 
 
 class ParserTest(unittest.TestCase):
+  @classmethod
+  def setUpClass(self):
+    self.cwd_was = os.getcwd()
+    os.chdir(os.path.dirname(os.path.abspath(__file__)))
+
+  @classmethod
+  def tearDown(self):
+    os.chdir(self.cwd_was)
+
   def test_parser(self):
     with open('in/parser/serial_neuron_core.v') as f:
       actual = Parser({'file_path': 'fake_path',

@@ -1,5 +1,7 @@
-from lib.pyparsing import Keyword, Literal, nestedExpr, Optional, Word, alphas, alphanums, SkipTo
-
+try:
+  from lib.pyparsing import Keyword, Literal, nestedExpr, Optional, Word, alphas, alphanums, SkipTo
+except ImportError:
+  from ..lib.pyparsing import Keyword, Literal, nestedExpr, Optional, Word, alphas, alphanums, SkipTo
 
 class Parser(object):
   """

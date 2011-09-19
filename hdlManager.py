@@ -21,7 +21,7 @@ def validateTop(iTop):
     return False
   srcFiles = structure.search(iPath='../src', iOnly=['\.v$'], iIgnore=['\.svn', '\.git'])
 #  parsed = instance.parseFilesMultiproc(srcFiles)
-  parsed = instance.parseFiles(srcFiles)
+  parsed = instance.get_instances(srcFiles)
 #  pprint.pprint(parsed)
   if parsed.get(iTop):
     return True

@@ -22,13 +22,15 @@ def get_instances(file):
 
 if __name__ == '__main__':
   start = datetime.now()
-#  print getInctances(r'D:\repo\github\autohdl\test\fake_repo_gold\dsn2\src/top_dcs2.v')
+  cache.CACHE_PATH = '.'
+  cache.CACHE = False
   try:
-    for root, dirs, files in os.walk(r'D:\repo\github\autohdl\test\fake_repo_gold\dsn2\src'):
+    for root, dirs, files in os.walk(r'D:\repo\github\autohdl\test\verilog\in\func'):
       for f in files:
-        print get_instances(root+'/'+f)
+        path = root+'/'+f
+        print get_instances(path)
   except Exception as e:
     print e
-    print root+'/'+f
+    print path
     raise
   print datetime.now() - start

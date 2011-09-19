@@ -22,7 +22,7 @@ def get_instances(files):
   """
   parsed = {}
   if files:
-    if type(files) != list():
+    if not isinstance(files, list):
       files = [files]
     for afile in files:
       if os.path.splitext(afile)[1] not in ['.v']:

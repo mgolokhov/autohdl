@@ -1,16 +1,23 @@
 import os
 import hashlib
-import lib.yaml as yaml
-from hdlLogger import logging
+
+try:
+  from lib import yaml
+  from hdlLogger import logging
+except ImportError:
+  from ..lib import yaml
+  from ..hdlLogger import logging
 
 
-CACHE_PATH = '../resource/'
-
+CACHE_PATH = '../resource/parsed'
+CACHE_LOAD = True
+CACHE_DUMP = True
 
 def cache_path(file):
   file = os.path.relpath(file)
-  return CACHE_PATH + file.replace('//', '_').replace('\\', '_').replace('.','_')
-
+  name = os.path.basename(file)+'cache'
+#  return CACHE_PATH + file.replace('//', '_').replace('\\', '_').replace('.','_')
+  return CACHE_PATH + '/' + name
 
 def shaOK(data):
   if data:
@@ -26,6 +33,8 @@ def shaOK(data):
 
 
 def load(file):
+  if not CACHE_LOAD:
+    return
   file = cache_path(file)
   y = None
   try:
@@ -39,6 +48,10 @@ def load(file):
 
 
 def dump(data):
+  if not CACHE_DUMP:
+    return
+  if not os.path.exists(CACHE_PATH):
+    os.mkdir(CACHE_PATH)
   if data['cachable']:
     h = hashlib.sha1()
     with open(data['file_path']) as f:

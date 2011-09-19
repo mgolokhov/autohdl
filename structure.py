@@ -212,46 +212,14 @@ def search(iPath = '.', iIgnore = None, iOnly = None):
 
 
 @log_call
-def _getDepSrc(iSrc, iIgnore = None, iOnly = None):
-  iIgnore = iIgnore or []
-  iOnly = iOnly or []
-  only = ['\.v']#build.getSrcExtensions(iTag = 'dep_parse_ext')
-  only += iOnly
-  
-  filesIn = set(iSrc)
-  files = filesIn
-  parsed = {}
-  undef = {}
-  while(True):
-    undefNew = instance.analyze(iPathFiles = files,
-                                ioParsed = parsed,
-                                iUndefInst = undef)
-    if not (undefNew.viewkeys() ^ undef.viewkeys()): 
-      for inst in undefNew:
-        log.warning('Undefined instance: '+inst+'; in file: '+undefNew[inst])
-      break
-    if undefNew:
-#      files = getFilesFromXml(iUndefInst = undefNew, iIgnore = iIgnore, iOnly = only)
-      depTree = build.getDepTree(undefNew.values())
-      files = filter(depTree, iIgnore = iIgnore, iOnly = only)
-    else:
-      break
-    undef = undefNew
-    
-  allSrcFiles = set([parsed[module][0] for module in parsed])     
-  depSrcFiles = list(allSrcFiles - filesIn)
-  return depSrcFiles 
-
-
-@log_call
 def getDepSrc(iSrc, iIgnore = None, iOnly = None):
   log.info('Analyzing dependences...')
   #TODO: filter *.v input files (all list from xilinx), print only for that list, others silently ignore
   verilogSrc = [i for i in iSrc if os.path.splitext(i)[1] == '.v']
 #  parsed = instance.parseFilesMultiproc(verilogSrc)
-  parsed = instance.parseFiles(verilogSrc)
+  parsed = instance.get_instances(verilogSrc)
   while True:
-    new = instance.analyze(iParsed = parsed)
+    new = instance.analyze(parsed)
     if new:
       parsed.update(new)
     else:
