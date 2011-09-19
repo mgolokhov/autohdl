@@ -32,8 +32,9 @@ class FuncTest(unittest.TestCase):
         actual = yaml.load(af)
       self.assertEqual(actual, expected)
 
-  def test(self):
-    self.assertFalse(True)
+      
+#  def test(self):
+#    self.assertFalse(True)
 
     
 if __name__ == '__main__':
