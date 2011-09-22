@@ -1,0 +1,14 @@
+file_sha: 8499b168947a765aad4bf854efdcd35f366e9f8a
+includes:
+  paths: []
+  sha: da39a3ee5e6b4b0d3255bfef95601890afd80709
+parsed:
+  dfoc_pwm_core_2ph:
+    instances: !!set
+      PI_Regulator: null
+      cordic_core_v3: null
+      dead_interval_core: null
+      mult16: null
+      mult19: null
+      pwm_core_hl: null
+    path: ..\src\dfoc_pwm_core_2ph.v

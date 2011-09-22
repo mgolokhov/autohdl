@@ -1,0 +1,8 @@
+file_path: in\func\ctrlv3_sovr.v
+includes:
+  paths: []
+parsed:
+  ctrlv3_sovr:
+    instances: !!set {f100_generator: null}
+    path: in\func\ctrlv3_sovr.v
+sha: 9f3228371172678a6eccab6213d3e605380160d8

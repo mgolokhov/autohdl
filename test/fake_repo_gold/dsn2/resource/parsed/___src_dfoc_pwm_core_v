@@ -1,0 +1,15 @@
+file_sha: fd64ee2824e669782c5eac9b4d0a416d643bee06
+includes:
+  paths: []
+  sha: da39a3ee5e6b4b0d3255bfef95601890afd80709
+parsed:
+  dfoc_pwm_core:
+    instances: !!set
+      ClarkParkTransform: null
+      InverseParkTransform: null
+      PI_Regulator: null
+      cordic_core_v2: null
+      mult19: null
+      mult_sens_32_v2: null
+      sin_pwm: null
+    path: ..\src\dfoc_pwm_core.v

@@ -1,0 +1,9 @@
+file_sha: 9f3228371172678a6eccab6213d3e605380160d8
+includes:
+  paths: []
+  sha: da39a3ee5e6b4b0d3255bfef95601890afd80709
+parsed:
+  ctrlv3_sovr:
+    instances: !!set
+      f100_generator: null
+    path: ..\src\ctrlv3_sovr.v

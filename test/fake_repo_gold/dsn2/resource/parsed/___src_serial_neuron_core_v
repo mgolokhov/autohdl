@@ -1,0 +1,12 @@
+file_sha: fb2ca171ed6490d5db99294198fb71ebc1a711ba
+includes:
+  paths: []
+  sha: da39a3ee5e6b4b0d3255bfef95601890afd80709
+parsed:
+  serial_neuron_core:
+    instances: !!set
+      serial_mult: null
+      serial_subs: null
+      serial_summ: null
+      serial_summ_n: null
+    path: ..\src\serial_neuron_core.v

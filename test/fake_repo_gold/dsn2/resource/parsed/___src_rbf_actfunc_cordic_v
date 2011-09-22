@@ -1,0 +1,9 @@
+file_sha: 35a2e722670b6ae7b2166ce7cb6a43d13f03fef6
+includes:
+  paths: []
+  sha: da39a3ee5e6b4b0d3255bfef95601890afd80709
+parsed:
+  rbf_actfunc_cordic:
+    instances: !!set
+      cordic_mult: null
+    path: ..\src\rbf_actfunc_cordic.v

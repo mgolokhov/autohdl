@@ -21,6 +21,7 @@ def get_instances(files):
       instances: set(instance1, instance2,..)
   """
   parsed = {}
+#  print files
   if files:
     if not isinstance(files, list):
       files = [files]
@@ -42,16 +43,18 @@ def resolve_undef(instance, in_file, _parsed = {}):
 
   dep_file = build.getFile(iInstance = instance, iInFile = in_file)
   if dep_file:
+    print dep_file
     parsed = verilog.get_instances(dep_file)
     _parsed.update(parsed)
     if instance in parsed:
       return parsed
      
   dep_files = build.getFile() #return all cache
-  parsed = verilog.get_instances(dep_files)
-  _parsed.update(parsed)
-  if instance in parsed:
-    return {instance: parsed[instance]}
+  if dep_files:
+    parsed = verilog.get_instances(dep_files)
+    _parsed.update(parsed)
+    if instance in parsed:
+      return {instance: parsed[instance]}
 
 
 @log_call
@@ -69,7 +72,7 @@ def analyze(parsed, _ignore = set()):
       if instance not in _ignore and instance not in parsed:
         parsed_new = resolve_undef(instance, in_file)
         if not parsed_new:
-          log.warning("Undefined instance="+instance+' in file='+inFile)
+          log.warning("Undefined instance="+instance+' in file='+in_file)
           _ignore.add(instance)
         else:
           return parsed_new

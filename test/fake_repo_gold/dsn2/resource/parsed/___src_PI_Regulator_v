@@ -1,0 +1,8 @@
+file_sha: eccd80d957970674e31e740618477fb67031ec58
+includes:
+  paths: []
+  sha: da39a3ee5e6b4b0d3255bfef95601890afd80709
+parsed:
+  PI_Regulator:
+    instances: !!set {}
+    path: ..\src\PI_Regulator.v

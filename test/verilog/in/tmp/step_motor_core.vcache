@@ -1,0 +1,8 @@
+file_path: in\func\step_motor_core.v
+includes:
+  paths: []
+parsed:
+  step_motor_core:
+    instances: !!set {aperiodic_core: null, dfoc_pwm_core_2ph: null, mult19: null}
+    path: in\func\step_motor_core.v
+sha: 105b3753b9675dffa3cce1d83ff7ca44c8ca8001

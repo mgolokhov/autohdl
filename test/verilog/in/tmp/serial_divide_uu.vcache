@@ -1,0 +1,8 @@
+file_path: in\func\serial_divide_uu.v
+includes:
+  paths: []
+parsed:
+  serial_divide_uu:
+    instances: !!set {}
+    path: in\func\serial_divide_uu.v
+sha: e90bfd2c1dbab873a61aed79aee3812e3134cae4

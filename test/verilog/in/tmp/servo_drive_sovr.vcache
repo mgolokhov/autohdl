@@ -1,0 +1,9 @@
+file_path: in\func\servo_drive_sovr.v
+includes:
+  paths: []
+parsed:
+  servo_drive_sovr:
+    instances: !!set {cmi_coder: null, ctrl_drv_servo: null, lutch_ust_decoder: null,
+      lutch_ust_former: null, packet_decoder: null, rs232_rx: null, rs232_tx: null}
+    path: in\func\servo_drive_sovr.v
+sha: 7e461bee6c7d28876a0aaf156aa3c70f62ab900a

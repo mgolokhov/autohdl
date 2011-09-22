@@ -1,0 +1,8 @@
+file_path: in\func\quad_sensor_core.v
+includes:
+  paths: []
+parsed:
+  quad_sensor_core:
+    instances: !!set {cordic_inv_t_core: null}
+    path: in\func\quad_sensor_core.v
+sha: 02ef233d1ee9195a066a6b04675a3097e5a7f6d0

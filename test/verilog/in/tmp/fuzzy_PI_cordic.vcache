@@ -1,0 +1,8 @@
+file_path: in\func\fuzzy_PI_cordic.v
+includes:
+  paths: []
+parsed:
+  fuzzy_PI_cordic:
+    instances: !!set {cordic_mult: null, rbf_actfunc_cordic: null}
+    path: in\func\fuzzy_PI_cordic.v
+sha: f60db7e76a409ca4c9f1d3d813747c1c38f2e114

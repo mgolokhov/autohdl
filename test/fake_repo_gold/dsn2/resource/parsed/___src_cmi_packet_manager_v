@@ -1,0 +1,13 @@
+file_sha: 11a116999ba14839fc4efc6e8edef0e8726732ce
+includes:
+  paths: []
+  sha: da39a3ee5e6b4b0d3255bfef95601890afd80709
+parsed:
+  cmi_packet_manager:
+    instances: !!set
+      cmi_recv_packet: null
+      cmi_send_packet: null
+      cmi_timeslot_generator: null
+      rs232_rx: null
+      rs232_tx: null
+    path: ..\src\cmi_packet_manager.v

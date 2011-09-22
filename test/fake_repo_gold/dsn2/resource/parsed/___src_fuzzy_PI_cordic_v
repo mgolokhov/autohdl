@@ -1,0 +1,10 @@
+file_sha: f60db7e76a409ca4c9f1d3d813747c1c38f2e114
+includes:
+  paths: []
+  sha: da39a3ee5e6b4b0d3255bfef95601890afd80709
+parsed:
+  fuzzy_PI_cordic:
+    instances: !!set
+      cordic_mult: null
+      rbf_actfunc_cordic: null
+    path: ..\src\fuzzy_PI_cordic.v

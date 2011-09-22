@@ -1,0 +1,8 @@
+file_path: in\func\rbf_actfunc_serial.v
+includes:
+  paths: []
+parsed:
+  rbf_actfunc_serial:
+    instances: !!set {serial_mult: null, serial_streamer: null, serial_subs: null}
+    path: in\func\rbf_actfunc_serial.v
+sha: 7fe0e70602b3ff4d33dfcd97321d2f5f50d7b603

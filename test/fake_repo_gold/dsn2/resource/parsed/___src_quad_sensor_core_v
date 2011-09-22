@@ -1,0 +1,9 @@
+file_sha: 02ef233d1ee9195a066a6b04675a3097e5a7f6d0
+includes:
+  paths: []
+  sha: da39a3ee5e6b4b0d3255bfef95601890afd80709
+parsed:
+  quad_sensor_core:
+    instances: !!set
+      cordic_inv_t_core: null
+    path: ..\src\quad_sensor_core.v

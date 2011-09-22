@@ -1,0 +1,8 @@
+file_path: in\func\epson_lcd.v
+includes:
+  paths: []
+parsed:
+  epson_lcd:
+    instances: !!set {spi_master: null}
+    path: in\func\epson_lcd.v
+sha: d12742a137eae9c0f393005d914f64473fa9932e

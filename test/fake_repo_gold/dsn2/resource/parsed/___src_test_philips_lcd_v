@@ -1,0 +1,12 @@
+file_sha: 93c0eb10c05c98ba229d216d11942ae6e8fb9193
+includes:
+  paths: []
+  sha: da39a3ee5e6b4b0d3255bfef95601890afd80709
+parsed:
+  test_philips_lcd:
+    instances: !!set
+      spi_master: null
+      strobe: null
+      uart_rx_v2: null
+      uart_tx_v2: null
+    path: ..\src\test_philips_lcd.v

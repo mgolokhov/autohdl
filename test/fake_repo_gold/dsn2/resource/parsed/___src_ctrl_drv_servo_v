@@ -1,0 +1,21 @@
+file_sha: 26d3513117329813991219a05e41a92d74b9ba9a
+includes:
+  paths: []
+  sha: da39a3ee5e6b4b0d3255bfef95601890afd80709
+parsed:
+  ctrl_drv_servo:
+    instances: !!set
+      DCM: null
+      adc_spi_conv: null
+      adc_spi_conv_dual: null
+      antibounce: null
+      cordic_core_v2: null
+      dfoc_pwm_nc_core: null
+      endat_pos_packet: null
+      filter2nd: null
+      mult19: null
+      power_on_seq_core: null
+      pwm_core_hl: null
+      quad_sensor_core: null
+      resolver_kalman: null
+    path: ..\src\ctrl_drv_servo.v

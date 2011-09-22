@@ -1,0 +1,10 @@
+file_sha: c7aa64be376d93fda24298cf64488b2e4de7e228
+includes:
+  paths: []
+  sha: da39a3ee5e6b4b0d3255bfef95601890afd80709
+parsed:
+  fuzzy_PI_cm:
+    instances: !!set
+      cordic_mult: null
+      rbf_actfunc_custom_mult: null
+    path: ..\src\fuzzy_PI_cm.v

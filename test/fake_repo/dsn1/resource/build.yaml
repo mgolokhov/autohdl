@@ -1,0 +1,13 @@
+dep:
+- ..\..\core
+dep_wrong:
+- sds
+device: 3s250etq144
+family: Xilinx11x SPARTAN3E
+ignore_undefined_instances: null
+include_path:
+- ..\..\includes
+test: true
+toplevel: top
+ucf: null
+upload: null

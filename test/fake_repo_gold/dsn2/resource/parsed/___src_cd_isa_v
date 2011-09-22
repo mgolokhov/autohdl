@@ -1,0 +1,16 @@
+file_sha: 61a7c1b561717811bf413ee5497e53788ec4cc49
+includes:
+  paths: []
+  sha: da39a3ee5e6b4b0d3255bfef95601890afd80709
+parsed:
+  cd_isa:
+    instances: !!set
+      f100_generator: null
+      if_ctrl2pdu_rx: null
+      if_hi2pdu_rx: null
+      if_isa: null
+      if_pdu2ctrl_tx: null
+      if_pdu2hi_tx: null
+      isa_vs_manual_selector: null
+      manual_ctrl: null
+    path: ..\src\cd_isa.v

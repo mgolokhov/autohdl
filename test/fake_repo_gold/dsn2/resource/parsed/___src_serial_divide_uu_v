@@ -1,0 +1,8 @@
+file_sha: e90bfd2c1dbab873a61aed79aee3812e3134cae4
+includes:
+  paths: []
+  sha: da39a3ee5e6b4b0d3255bfef95601890afd80709
+parsed:
+  serial_divide_uu:
+    instances: !!set {}
+    path: ..\src\serial_divide_uu.v

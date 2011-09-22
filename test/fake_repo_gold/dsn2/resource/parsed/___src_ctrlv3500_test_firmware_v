@@ -1,0 +1,11 @@
+file_sha: 686cade750c03e0954153115c29af047b9240291
+includes:
+  paths: []
+  sha: da39a3ee5e6b4b0d3255bfef95601890afd80709
+parsed:
+  ctrlv3500_test_firmware:
+    instances: !!set
+      adc_spi_conv: null
+      spi_master: null
+      switchbox_reader: null
+    path: ..\src\ctrlv3500_test_firmware.v

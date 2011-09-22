@@ -1,0 +1,12 @@
+file_sha: 96ec883539189c21ebab771ce667d80cf1cd69c0
+includes:
+  paths: []
+  sha: da39a3ee5e6b4b0d3255bfef95601890afd80709
+parsed:
+  fuzzy_PI:
+    instances: !!set
+      rbf_actfunc_serial: null
+      serial_mult: null
+      serial_pool: null
+      serial_subs: null
+    path: ..\src\fuzzy_PI.v

@@ -1,0 +1,10 @@
+file_sha: 6067eec1565a35dab4eb18c3655e3bfe5d78d5d3
+includes:
+  paths: []
+  sha: da39a3ee5e6b4b0d3255bfef95601890afd80709
+parsed:
+  servo_drive_core:
+    instances: !!set
+      cmi_packet_manager: null
+      ctrl_drv_servo: null
+    path: ..\src\servo_drive_core.v

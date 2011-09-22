@@ -1,0 +1,12 @@
+file_path: in\func\top_dcs2.v
+includes:
+  paths: []
+parsed:
+  top_dcs2_philips:
+    instances: !!set {Imlight_BusController: null, achtung: null, bin_addr2ascii: null,
+      blk_mem_gen_v3_1: null, break_handler: null, ctrl_units_switch: null, if_ctrl_addr: null,
+      if_ctrl_units: null, if_drive: null, io_synch: null, magnetic_starter_achtung: null,
+      painter: null, philips_lcd: null, restart_lcd: null, signalGen: null, speed_level_up: null,
+      telemetry2dcs: null, write_symbol: null}
+    path: in\func\top_dcs2.v
+sha: 0042c3c161ff308781c222ff7b3cde1755691af5

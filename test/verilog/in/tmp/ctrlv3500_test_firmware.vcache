@@ -1,0 +1,8 @@
+file_path: in\func\ctrlv3500_test_firmware.v
+includes:
+  paths: []
+parsed:
+  ctrlv3500_test_firmware:
+    instances: !!set {adc_spi_conv: null, spi_master: null, switchbox_reader: null}
+    path: in\func\ctrlv3500_test_firmware.v
+sha: 686cade750c03e0954153115c29af047b9240291

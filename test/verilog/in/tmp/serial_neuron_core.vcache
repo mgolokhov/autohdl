@@ -1,0 +1,11 @@
+file_path: in\func\serial_neuron_core.v
+includes:
+  paths: []
+parsed:
+  second_in_one_file:
+    instances: !!set {as: null}
+    path: in\func\serial_neuron_core.v
+  serial_neuron_core:
+    instances: !!set {serial_mult: null, serial_subs: null, serial_summ: null, serial_summ_n: null}
+    path: in\func\serial_neuron_core.v
+sha: b60893746104194bd57024ecf3f64bb2b016428a

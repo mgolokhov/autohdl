@@ -1,0 +1,8 @@
+file_path: in\func\philips_lcd.v
+includes:
+  paths: []
+parsed:
+  philips_lcd:
+    instances: !!set {spi_master: null}
+    path: in\func\philips_lcd.v
+sha: 22174fb626f472c173e17367486c2b147376d965
