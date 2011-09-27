@@ -40,7 +40,9 @@ class Tool(object):
                                'path'  : ['/Xilinx/']},
                  'synplify' : {'gui'   : 'synplify_premier.exe',
                                'batch' : 'synplify_premier.exe',
-                               'path'  : ['/Synopsys/', '/Synplicity/']}
+                               'path'  : ['/Synopsys/', '/Synplicity/']},
+                 'git'      : {'batch' : 'git.exe',
+                               'path'  : ['/Git/']}
                  }
     try:
       self.utilName = self.data[self.tool][self.mode]
@@ -170,7 +172,8 @@ def getPath(iTag):
 
 if __name__ == '__main__':
 #  print Tool('avhdl_gui').result
-  print Tool('synplify_batch').result
+#  print Tool('synplify_batch').result
+  print Tool('git_batch').result
 #  print Tool('synplify_gui').result
 #  print Tool('ise_gui').result
 #  print Tool('ise_batch').result

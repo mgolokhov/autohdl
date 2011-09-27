@@ -12,6 +12,8 @@ from lib.tinydav.exception import HTTPUserError
 import lib.yaml as yaml
 
 from hdlLogger import log_call, logging
+import toolchain
+
 log = logging.getLogger(__name__)
 
 def loadAuth(iPath):
@@ -60,6 +62,13 @@ def askAuth():
   return username, password
 
 
+def dump_netrc(host, username, password):
+  path = os.environ['USERPROFILE']+'/_netrc'
+  data = 'machine {0}\nlogin {1}\npassword {2}\n'.format(host, username, password)
+  with open(path, 'w') as f:
+    f.write(data)
+
+
 def authenticate(host):
   print 'Authentication',
   path = sys.prefix + '/Lib/site-packages/autohdl_cfg/open_sesame'
@@ -75,7 +84,9 @@ def authenticate(host):
       username, password = askAuth()
       state = 'check'
     elif state == 'dump':
+      #TODO: contant rewriting
       dumpAuth(path, username, password)
+      dump_netrc(host, username, password)
       return username, password
 
 
@@ -198,10 +209,10 @@ def upload(src, dst, host = 'cs.scircus.ru'):
 def git_init(src = '.', addr = 'http://cs.scircus.ru/git'):
   src = os.path.abspath(src)
   if os.path.exists(src+'/.git'):
-    print 'Repo already exists: ', src
+    print 'Local repo already exists: ', src
     return
   dirname, name = os.path.split(src)
-  path_git = r'C:\Program Files\Git\bin\git.exe'
+  path_git = toolchain.Tool('git_batch').result
   subprocess.call('{0} init {1}'.format(path_git,name))
   os.chdir(name+'/.git')
   subprocess.call(path_git+' update-server-info')
@@ -214,16 +225,4 @@ def git_init(src = '.', addr = 'http://cs.scircus.ru/git'):
 
 
 if __name__ == '__main__':
-#  upload('webdav.py', '/test/aaa')
-#  upload_fw('webdav.py')
-  git_init('pyk13')
-  f = open('zzz', 'w')
-  f.write('first commit')
-  f.close()
-
-  git = r'C:\Program Files\Git\bin\git.exe'
-  subprocess.call(git+' add .')
-  subprocess.call(git+' commit -m "done"')
-  subprocess.call(git+' push webdav master')
-
-  print 'done'
+  git_init('aaa2')
