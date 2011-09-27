@@ -158,8 +158,8 @@ def kungfu(iTop = '', iUcf = '', iSize = '', iUpload = ''):
     implement.run(iTopModule=top, iUCF=ucf, iFlashSize=size)
 
   if upload:
-    webdav.upload('../implement/{0}.bit'.format(top))
-    webdav.upload('../implement/{0}.mcs'.format(top))
+    webdav.upload_fw('../implement/{0}.bit'.format(top))
+    webdav.upload_fw('../implement/{0}.mcs'.format(top))
 
 
 if __name__ == '__main__':

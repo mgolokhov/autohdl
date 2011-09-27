@@ -1,9 +1,13 @@
 import base64
 import os
+import socket
+import subprocess
 import sys
 import getpass
+import urlparse
 import lib.tinydav as tinydav
 from lib.pyparsing import makeHTMLTags, SkipTo
+from lib.tinydav.exception import HTTPUserError
 
 import lib.yaml as yaml
 
@@ -23,12 +27,12 @@ def loadAuth(iPath):
   return username, password
 
 
-def checkAuth(iUsername, iPassword):
-  client = tinydav.HTTPClient('cs.scircus.ru')
+def checkAuth(host, iUsername, iPassword):
+  client = tinydav.HTTPClient(host)
   client.setbasicauth(iUsername, iPassword)
   try:
-    print client.head('/test/')
-  except tinydav.exception.HTTPUserError as e:
+    print client.head('/')
+  except HTTPUserError as e:
     #logging
     print e
     logging.debug(e)
@@ -56,14 +60,14 @@ def askAuth():
   return username, password
 
 
-def authenticate():
-  print 'Authentication'
+def authenticate(host):
+  print 'Authentication',
   path = sys.prefix + '/Lib/site-packages/autohdl_cfg/open_sesame'
   username, password = loadAuth(path)
   state = 'check'
   while True:
     if state == 'check':
-      if checkAuth(username, password):
+      if checkAuth(host, username, password):
         state = 'dump'
       else:
         state = 'ask'
@@ -75,21 +79,32 @@ def authenticate():
       return username, password
 
 
-def formBuildName(iUsername, iPassword, iFile, _cache = []):
-  dsnName = os.path.abspath(iFile).replace('\\', '/').split('/')[-3]
-  root, ext = os.path.splitext(os.path.basename(iFile))
-  root_build = root + '_build_'
-  if _cache:
-    return '{dsn}_{root_build}{num}{ext}'.format(dsn=dsnName,
-                                                root_build=root_build,
-                                                num=_cache[0],
-                                                ext=ext)
+def exists(path, client):
+  try:
+    client.get(path)
+  except HTTPUserError:
+    sys.exit()
 
-  client = tinydav.WebDAVClient('cs.scircus.ru')
-  client.setbasicauth(iUsername, iPassword)
-  response = client.propfind('/test/distout/rtl/{dsnName}/'.format(dsnName=dsnName),
-                             depth=1,
-                             properties=['href'])
+
+def upload_fw(file, host = 'cs.scircus.ru', path = '/test/distout/rtl', _cache = []):
+  # dsn_name/implement/file
+  dsn_name = os.path.abspath(file).replace('\\', '/').split('/')[-3]
+  client = connect(host)
+  print 'Uploading folder: ', path+'/'+dsn_name,
+  print client.mkcol(path+'/'+dsn_name)
+  root, ext = os.path.splitext(os.path.basename(file))
+  root_build = root + '_build_'
+  content = getContent(file)
+  if _cache:
+    dst = path+'/'+dsn_name+'/'+'{dsn}_{root_build}{num}{ext}'.format(dsn=dsn_name,
+                                                                      root_build=root_build,
+                                                                      num=_cache[0],
+                                                                      ext=ext)
+    print 'Uploading file: ', dst
+    print client.put(dst, content)
+  response = client.propfind('/{root}/{dsn_name}/'.format(root = path,
+                                                          dsn_name = dsn_name),
+                             depth=1)
   anchorStart, anchorEnd = makeHTMLTags('D:href')
   anchor = anchorStart + SkipTo(anchorEnd).setResultsName('body') + anchorEnd
   fwList = {os.path.basename(tokens.body) for tokens in anchor.searchString(response.content)}
@@ -105,11 +120,13 @@ def formBuildName(iUsername, iPassword, iFile, _cache = []):
   except Exception as e:
     incBuildNum = 0
   _cache.append(incBuildNum)
-  name = '{dsn}_{root_build}{num}{ext}'.format(dsn=dsnName,
+  name = '{dsn}_{root_build}{num}{ext}'.format(dsn=dsn_name,
                                                root_build=root_build,
                                                num=incBuildNum,
                                                ext=ext)
-  return name
+  dst = path+'/'+dsn_name+'/'+name
+  print 'Uploading file: ', dst,
+  print client.put(dst, content)
 
 
 def getContent(iFile):
@@ -122,27 +139,91 @@ def getContent(iFile):
   return data
 
 
+def connect(host='cs.scircus.ru'):
+  try:
+    username, password = authenticate(host)
+    client = tinydav.WebDAVClient(host)
+    client.setbasicauth(username, password)
+    return client
+  except socket.gaierror as e:
+    print e
+    print 'Cant connect to server'
+    sys.exit()
+
 @log_call
-def upload(iFile):
-  content = getContent(iFile)
-  username, password = authenticate()
+def upload(src, dst, host = 'cs.scircus.ru'):
+  client = connect(host)
+  try:
+    d = dst if dst[-1] != '/' else dst[:-1]
+    client.get(os.path.dirname(d))
+  except HTTPUserError as e:
+    print 'Wrong destination:', dst, e
+    sys.exit()
 
-  client = tinydav.WebDAVClient('cs.scircus.ru')
-  client.setbasicauth(username, password)
+  try:
+    if 'HTTP/1.1 200 OK' in client.propfind(dst+'//').content:
+      print 'Already exists: ', dst
+      sys.exit()
+  except HTTPUserError:
+    pass
 
-  dsnName = os.path.abspath(iFile).replace('\\', '/').split('/')[-3]
-  print client.mkcol('/test/distout/rtl/' + dsnName)
+  if os.path.isfile(src):
+    content = getContent(src)
+    print 'Uploading file: ', dst,
+    print client.put(dst, content)
+  else:
+    path_was = os.getcwd()
+    print dst, client.mkcol(dst)
+    try:
+      os.chdir(src)
+      for root, dirs, files in os.walk('.'):
+        for d in dirs:
+          ad = os.path.join(root,d).replace('\\', '/')
+          web_dst = '{0}{1}'.format(dst,ad.replace('./', '/'))
+          print web_dst,
+          print client.mkcol(web_dst)
+        for f in files:
+          af = os.path.join(root,f).replace('\\','/')
+          web_dst = '{0}{1}'.format(dst,af.replace('./', '/'))
+          print web_dst,
+          content = open(af).read()
 
-  name = formBuildName(username, password, iFile)
-  print 'Uploading file: ', name
-  response = client.put('/test/distout/rtl/{dsnName}/{name}'.format(dsnName=dsnName, name=name),
-                        content,
-                        "application/binary")
-  print response.statusline
+          headers = None if content else {'Content-Length': 0}
+          print client.put(web_dst,
+                           content,
+                           headers = headers)
+    finally:
+      os.chdir(path_was)
 
-
-
+def git_init(src = '.', addr = 'http://cs.scircus.ru/git'):
+  src = os.path.abspath(src)
+  if os.path.exists(src+'/.git'):
+    print 'Repo already exists: ', src
+    return
+  dirname, name = os.path.split(src)
+  path_git = r'C:\Program Files\Git\bin\git.exe'
+  subprocess.call('{0} init {1}'.format(path_git,name))
+  os.chdir(name+'/.git')
+  subprocess.call(path_git+' update-server-info')
+  os.chdir('..')
+  #_netrc
+  res = urlparse.urlparse(addr)
+  upload(src=src+'/.git', dst='{0}/{1}.git'.format(res.path,name), host=res.hostname)
+  subprocess.call('{0} remote add webdav {1}/{2}.git'.format(path_git, addr, name))
+  
 
 
 if __name__ == '__main__':
-  upload('webdav.py')
+#  upload('webdav.py', '/test/aaa')
+#  upload_fw('webdav.py')
+  git_init('pyk13')
+  f = open('zzz', 'w')
+  f.write('first commit')
+  f.close()
+
+  git = r'C:\Program Files\Git\bin\git.exe'
+  subprocess.call(git+' add .')
+  subprocess.call(git+' commit -m "done"')
+  subprocess.call(git+' push webdav master')
+
+  print 'done'
