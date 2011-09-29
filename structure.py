@@ -225,7 +225,7 @@ def getDepSrc(iSrc, iIgnore = None, iOnly = None):
     else:
       break
   allSrcFiles = {val['path'].replace('\\', '/') for val in parsed.values()}     
-  depSrcFiles = allSrcFiles - set(iSrc)
+  depSrcFiles = allSrcFiles - {os.path.relpath(i).replace('\\','/') for i in iSrc}
   return list(depSrcFiles)
   
   

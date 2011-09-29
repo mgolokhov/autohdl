@@ -84,7 +84,7 @@ def authenticate(host):
       username, password = askAuth()
       state = 'check'
     elif state == 'dump':
-      #TODO: contant rewriting
+      #TODO: constant rewriting
       dumpAuth(path, username, password)
       dump_netrc(host, username, password)
       return username, password
@@ -206,7 +206,7 @@ def upload(src, dst, host = 'cs.scircus.ru'):
     finally:
       os.chdir(path_was)
 
-def git_init(src = '.', addr = 'http://cs.scircus.ru/git'):
+def git_init(src = '.', addr = 'http://cs.scircus.ru/git/hdl'):
   src = os.path.abspath(src)
   if os.path.exists(src+'/.git'):
     print 'Local repo already exists: ', src
