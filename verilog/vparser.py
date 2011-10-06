@@ -24,7 +24,7 @@ class Parser(object):
 #      id.ignore(Keyword(i))
     params = '#' + nestedExpr()
     ports = nestedExpr()
-    patternModule = Keyword('module') + id('moduleName') + Optional(params) + ports + ';'
+    patternModule = Keyword('module') + id('moduleName') + Optional(params) + Optional(ports) + ';'
     patternInst = id('moduleInstance') + Optional(params) + id + ports + ';'
     self.pattern = patternModule | patternInst
 #    self.pattern.setDebug()
@@ -52,16 +52,61 @@ class Parser(object):
 
 if __name__ == '__main__':
   t = '''
-  module ass();
-function reg parity (input integer arg);
-    begin
-    if (arg = 0)
-    ;
-        if (arg)
-            parity = (^buffer[lpBufferWidth-2:0] == buffer[lpBufferWidth-1]);
-        else
-            parity = 1;
-    end
-endfunction
+`timescale 1ps / 1ps
+module dcs_packet_v2_tb;
+    parameter pDataWidth = 20;
+    parameter pBaud = 115200;
+
+    reg iClk;
+    reg iRst;
+    reg [pDataWidth-1:0]iData;
+    reg iEnStr;
+    wire oDoneStr;
+    wire oTxD;
+
+    dcs_packet_tx_v2 #(
+        .pDataWidth(pDataWidth),
+        .pBaud(pBaud),
+        .pStopBits(2))
+        tx (.iClk(iClk),
+        .iRst(iRst),
+        .iData(iData),
+        .iEnStr(iEnStr),
+        .oDoneStr(oDoneStr),
+        .oTxD(oTxD)
+        );
+
+
+    wire [pDataWidth-1:0] res;
+    wire doneRes;
+    dcs_packet_rx_v2 #(
+        .pDataWidth(pDataWidth),
+        .pBaud(pBaud),
+        .pStopBits(1)
+        ) rx (
+        .iClk(iClk),
+        .iRst(iRst),
+        .iRxD(oTxD),
+        .oData(res),
+        .oDoneStr(doneRes),
+        .oMaskErrStr(),
+        .oCrcErrStr()
+        );
+
+    initial begin
+            iClk <= 0;
+            forever #10ns iClk <= ~iClk;
+        end
+
+    initial begin
+            iRst <= 1;
+            #100ns iRst <= 0;
+            iData <= 20'haaaaa;
+            @(posedge iClk) iEnStr <= 1;
+            @(posedge iClk) iEnStr <= 0;
+        end
+
+endmodule
+
 '''
   print Parser({'preprocessed':t, 'file_path': 'aaaa'}).parsed

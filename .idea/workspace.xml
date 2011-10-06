@@ -6,14 +6,12 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="18530743-ba01-4729-8762-b37fb1becd5f" name="Default" comment="">
-      <change type="DELETED" beforePath="D:\repo\github\autohdl\pyk11\zzz" afterPath="" />
-      <change type="DELETED" beforePath="D:\repo\github\autohdl\pyk12" afterPath="" />
-      <change type="DELETED" beforePath="D:\repo\github\autohdl\pyk13" afterPath="" />
-      <change type="DELETED" beforePath="D:\repo\github\autohdl\zzz" afterPath="" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/test/verilog/in/parser/dcs_packet_v2_TB.v" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/aaadraft2.py" afterPath="$PROJECT_DIR$/aaadraft2.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/aldec_run.py" afterPath="$PROJECT_DIR$/aldec_run.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/webdav.py" afterPath="$PROJECT_DIR$/webdav.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/instance.py" afterPath="$PROJECT_DIR$/instance.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/test/verilog/vparser_test.py" afterPath="$PROJECT_DIR$/test/verilog/vparser_test.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/verilog/vparser.py" afterPath="$PROJECT_DIR$/verilog/vparser.py" />
     </list>
     <ignored path="autohdl.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -36,46 +34,37 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="webdav.py" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/webdav.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="113" column="34" selection-start="3251" selection-end="3251" vertical-scroll-proportion="0.0">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="aldec_run.py" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/aldec_run.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="18" column="24" selection-start="460" selection-end="460" vertical-scroll-proportion="0.0">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="structure.py" pinned="false" current="true" current-in-tab="true">
+      <file leaf-file-name="structure.py" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/structure.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="227" column="27" selection-start="6077" selection-end="6077" vertical-scroll-proportion="0.5686275">
+            <state line="221" column="22" selection-start="5897" selection-end="5897" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="aldec.py" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/aldec.py">
+      <file leaf-file-name="vparser_test.py" pinned="false" current="true" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/test/verilog/vparser_test.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="5" column="0" selection-start="44" selection-end="65" vertical-scroll-proportion="0.0">
+            <state line="44" column="10" selection-start="1487" selection-end="1487" vertical-scroll-proportion="1.1597633">
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="hdlManager.py" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/hdlManager.py">
+      <file leaf-file-name="vpreprocessor_test.py" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/test/verilog/vpreprocessor_test.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="14" column="0" selection-start="161" selection-end="234" vertical-scroll-proportion="0.0">
+            <state line="2" column="0" selection-start="17" selection-end="151" vertical-scroll-proportion="0.0">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="all_test.py" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/test/all_test.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="19" column="38" selection-start="526" selection-end="526" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
@@ -100,10 +89,6 @@
   <component name="IdeDocumentHistory">
     <option name="changedFiles">
       <list>
-        <option value="C:/Python27/Lib/site-packages/autohdl/__init__.py" />
-        <option value="$PROJECT_DIR$/__init__.py" />
-        <option value="$PROJECT_DIR$/hdl.py" />
-        <option value="$PROJECT_DIR$/instance.py" />
         <option value="$PROJECT_DIR$/template_avhdl_adf.py" />
         <option value="$PROJECT_DIR$/structure.py" />
         <option value="$PROJECT_DIR$/../../cs_git/hdl/cores/mk_repo.py" />
@@ -116,6 +101,10 @@
         <option value="$PROJECT_DIR$/webdav.py" />
         <option value="$PROJECT_DIR$/aaadraft2.py" />
         <option value="$PROJECT_DIR$/aldec_run.py" />
+        <option value="$PROJECT_DIR$/instance.py" />
+        <option value="$PROJECT_DIR$/verilog/vparser.py" />
+        <option value="$PROJECT_DIR$/test/verilog/in/parser/dcs_packet_v2_TB.v" />
+        <option value="$PROJECT_DIR$/test/verilog/vparser_test.py" />
       </list>
     </option>
   </component>
@@ -214,89 +203,98 @@
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="D:\repo\github\autohdl\test\verilog\in\parser" />
       <recent name="D:\repo\github\autohdl\test\verilog\in\func" />
       <recent name="D:\repo\github\autohdl\test\verilog\gold\func" />
       <recent name="D:\repo\github\autohdl\test\verilog\in\preprocessor" />
       <recent name="D:\repo\github\autohdl\test\verilog\gold\preprocessor" />
-      <recent name="D:\repo\github\autohdl\test\verilog\gold" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.deploy">
-    <configuration default="false" name="deploy" type="PythonConfigurationType" factoryName="Python" temporary="true">
+  <component name="RunManager" selected="Python.all_test">
+    <configuration default="false" name="Unittests in ParserTest.test_parser2" type="PythonUnitTestConfigurationType" factoryName="Python's unittest" temporary="true">
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/test/verilog" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <module name="autohdl" />
+      <option name="SCRIPT_NAME" value="vparser_test.py" />
+      <option name="CLASS_NAME" value="ParserTest" />
+      <option name="METHOD_NAME" value="test_parser2" />
+      <option name="FOLDER_NAME" value="" />
+      <option name="TEST_TYPE" value="TEST_METHOD" />
+      <option name="PATTERN" value="" />
+      <option name="PUREUNITTEST" value="true" />
+      <RunnerSettings RunnerId="PythonRunner" />
+      <ConfigurationWrapper RunnerId="PythonRunner" />
+      <method />
+    </configuration>
+    <configuration default="false" name="Unittests in vparser_test.py" type="PythonUnitTestConfigurationType" factoryName="Python's unittest" temporary="true">
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/test/verilog" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <module name="autohdl" />
+      <option name="SCRIPT_NAME" value="vparser_test.py" />
+      <option name="CLASS_NAME" value="" />
+      <option name="METHOD_NAME" value="" />
+      <option name="FOLDER_NAME" value="" />
+      <option name="TEST_TYPE" value="TEST_SCRIPT" />
+      <option name="PATTERN" value="" />
+      <option name="PUREUNITTEST" value="true" />
+      <RunnerSettings RunnerId="PythonRunner" />
+      <ConfigurationWrapper RunnerId="PythonRunner" />
+      <method />
+    </configuration>
+    <configuration default="false" name="vparser_test" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <envs>
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/test/verilog" />
       <option name="IS_MODULE_SDK" value="true" />
       <module name="autohdl" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/deploy.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/test/verilog/vparser_test.py" />
       <option name="PARAMETERS" value="" />
       <RunnerSettings RunnerId="PythonRunner" />
       <ConfigurationWrapper RunnerId="PythonRunner" />
       <method />
     </configuration>
-    <configuration default="false" name="mk_repo" type="PythonConfigurationType" factoryName="Python" temporary="true">
+    <configuration default="false" name="Unittests in ParserTest.test_parser" type="PythonUnitTestConfigurationType" factoryName="Python's unittest" temporary="true">
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
+      <envs />
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/../../cs_git/hdl/cores" />
-      <option name="IS_MODULE_SDK" value="false" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/test/verilog" />
+      <option name="IS_MODULE_SDK" value="true" />
       <module name="autohdl" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/../../cs_git/hdl/cores/mk_repo.py" />
-      <option name="PARAMETERS" value="" />
+      <option name="SCRIPT_NAME" value="vparser_test.py" />
+      <option name="CLASS_NAME" value="ParserTest" />
+      <option name="METHOD_NAME" value="test_parser" />
+      <option name="FOLDER_NAME" value="" />
+      <option name="TEST_TYPE" value="TEST_METHOD" />
+      <option name="PATTERN" value="" />
+      <option name="PUREUNITTEST" value="true" />
       <RunnerSettings RunnerId="PythonRunner" />
       <ConfigurationWrapper RunnerId="PythonRunner" />
       <method />
     </configuration>
-    <configuration default="false" name="distribute" type="PythonConfigurationType" factoryName="Python" temporary="true">
+    <configuration default="false" name="all_test" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <envs>
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/test" />
       <option name="IS_MODULE_SDK" value="true" />
       <module name="autohdl" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/distribute.py" />
-      <option name="PARAMETERS" value="" />
-      <RunnerSettings RunnerId="PythonRunner" />
-      <ConfigurationWrapper RunnerId="PythonRunner" />
-      <method />
-    </configuration>
-    <configuration default="false" name="webdav" type="PythonConfigurationType" factoryName="Python" temporary="true">
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <module name="autohdl" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/webdav.py" />
-      <option name="PARAMETERS" value="" />
-      <RunnerSettings RunnerId="PythonRunner" />
-      <ConfigurationWrapper RunnerId="PythonRunner" />
-      <method />
-    </configuration>
-    <configuration default="false" name="aaadraft2" type="PythonConfigurationType" factoryName="Python" temporary="true">
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <module name="autohdl" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/aaadraft2.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/test/all_test.py" />
       <option name="PARAMETERS" value="" />
       <RunnerSettings RunnerId="PythonRunner" />
       <ConfigurationWrapper RunnerId="PythonRunner" />
@@ -350,11 +348,11 @@
       <method />
     </configuration>
     <list size="5">
-      <item index="0" class="java.lang.String" itemvalue="Python.deploy" />
-      <item index="1" class="java.lang.String" itemvalue="Python.mk_repo" />
-      <item index="2" class="java.lang.String" itemvalue="Python.distribute" />
-      <item index="3" class="java.lang.String" itemvalue="Python.webdav" />
-      <item index="4" class="java.lang.String" itemvalue="Python.aaadraft2" />
+      <item index="0" class="java.lang.String" itemvalue="Python's unittest.Unittests in ParserTest.test_parser2" />
+      <item index="1" class="java.lang.String" itemvalue="Python's unittest.Unittests in vparser_test.py" />
+      <item index="2" class="java.lang.String" itemvalue="Python.vparser_test" />
+      <item index="3" class="java.lang.String" itemvalue="Python's unittest.Unittests in ParserTest.test_parser" />
+      <item index="4" class="java.lang.String" itemvalue="Python.all_test" />
     </list>
   </component>
   <component name="ShelveChangesManager" show_recycled="false" />
@@ -411,19 +409,19 @@
     <frame x="-4" y="-4" width="1288" height="762" extended-state="6" />
     <editor active="false" />
     <layout>
+      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.329582" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3306189" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="true" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.16720258" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="right" auto_hide="true" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.1492659" sideWeight="0.7058824" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Dependency Viewer" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.2880259" sideWeight="0.8022508" order="0" side_tool="false" content_ui="tabs" />
+      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.2880259" sideWeight="0.5868167" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.5530547" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.1977492" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" x="23" y="125" width="1236" height="389" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.41318327" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" x="23" y="125" width="1236" height="389" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.26205787" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.21895425" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.329582" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.6414791" order="2" side_tool="false" content_ui="combo" />
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.39871383" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
@@ -454,7 +452,7 @@
     <option name="CHECK_COMMIT_MESSAGE_SPELLING" value="true" />
     <option name="DEFAULT_PATCH_EXTENSION" value="patch" />
     <option name="FORCE_NON_EMPTY_COMMENT" value="false" />
-    <option name="LAST_COMMIT_MESSAGE" value="fixed bug: generation aldec data.files" />
+    <option name="LAST_COMMIT_MESSAGE" value="rewrote sync between aldec and  repo" />
     <option name="MAKE_NEW_CHANGELIST_ACTIVE" value="true" />
     <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="CHECK_FILES_UP_TO_DATE_BEFORE_COMMIT" value="false" />
@@ -491,55 +489,12 @@
     <MESSAGE value="fixed bug with cache" />
     <MESSAGE value="new webdav api; integration with git" />
     <MESSAGE value="fixed bug: generation aldec data.files" />
+    <MESSAGE value="rewrote sync between aldec and  repo" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$USER_HOME$/Desktop/cppdep/depend/dependReport.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="21" column="20" selection-start="736" selection-end="736" vertical-scroll-proportion="0.0" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/install.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/instance.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="12" column="0" selection-start="223" selection-end="223" vertical-scroll-proportion="0.0" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/distribute.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="19" column="17" selection-start="583" selection-end="583" vertical-scroll-proportion="0.0" />
-      </provider>
-    </entry>
-    <entry file="file://D:/00/django_wsp/mysite/settings.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="142" column="30" selection-start="5036" selection-end="5036" vertical-scroll-proportion="0.0" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/data/build.yaml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="3" column="24" selection-start="95" selection-end="106" vertical-scroll-proportion="0.13075061">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://D:/00/django_wsp/mysite/urls.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="7" column="0" selection-start="197" selection-end="429" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://D:/00/django_wsp/mysite/polls/views.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="6" column="65" selection-start="201" selection-end="201" vertical-scroll-proportion="0.0" />
-      </provider>
-    </entry>
     <entry file="file://D:/00/django_wsp/mysite/polls/models.py">
       <provider selected="true" editor-type-id="text-editor">
         <state line="5" column="51" selection-start="137" selection-end="169" vertical-scroll-proportion="0.0">
@@ -589,9 +544,65 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/deploy.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="7" column="0" selection-start="234" selection-end="234" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/instance.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="48" column="19" selection-start="1089" selection-end="1089" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/build.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="268" column="35" selection-start="7054" selection-end="7054" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/verilog/vparser.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="12" column="5" selection-start="372" selection-end="372" vertical-scroll-proportion="0.19384615">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test/verilog/vpreprocessor_test.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="2" column="0" selection-start="17" selection-end="151" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test/verilog/in/parser/dcs_packet_v2_TB.v">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="0" column="23" selection-start="7" selection-end="23" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test/all_test.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="19" column="38" selection-start="526" selection-end="526" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/structure.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="227" column="27" selection-start="6077" selection-end="6077" vertical-scroll-proportion="0.5686275">
+        <state line="221" column="22" selection-start="5897" selection-end="5897" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test/verilog/vparser_test.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="44" column="10" selection-start="1487" selection-end="1487" vertical-scroll-proportion="1.1597633">
           <folding />
         </state>
       </provider>

@@ -50,7 +50,7 @@ def resolve_undef(instance, in_file, _parsed = {}):
      
   dep_files = build.getFile() #return all cache
   if dep_files:
-    parsed = get_instances(dep_files)
+    parsed = get_instances([d for d in dep_files if os.path.splitext(d)[1] in ['.v']])
     _parsed.update(parsed)
     if instance in parsed:
       return {instance: parsed[instance]}

@@ -1,10 +1,13 @@
 import os
 import unittest
+
+from hdlLogger import *
+logging.disable(logging.CRITICAL)
+
+
 import sys
-
-sys.path.append('../..')
-from verilog.vparser import Parser
-
+sys.path.insert(0, '../..')
+from verilog.vparser import *
 
 class ParserTest(unittest.TestCase):
   @classmethod
@@ -13,7 +16,7 @@ class ParserTest(unittest.TestCase):
     os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
   @classmethod
-  def tearDown(self):
+  def tearDownClass(self):
     os.chdir(self.cwd_was)
 
   def test_parser(self):
@@ -29,6 +32,13 @@ class ParserTest(unittest.TestCase):
                                        'path': 'fake_path'}}
     self.assertEqual(actual, expected)
 
+  def test_parser2(self):
+    with open('in/parser/dcs_packet_v2_TB.v') as f:
+      actual = Parser({'file_path': 'fake_path',
+                       'preprocessed': f.read()}).parsed
+    expected = {'dcs_packet_v2_tb': {'instances': {'dcs_packet_rx_v2', 'dcs_packet_tx_v2'},
+                                     'path': 'fake_path'}}
+    self.assertEqual(actual, expected)
 
 
 if __name__ == '__main__':
