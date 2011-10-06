@@ -33,7 +33,7 @@ def checkAuth(host, iUsername, iPassword):
   client = tinydav.HTTPClient(host)
   client.setbasicauth(iUsername, iPassword)
   try:
-    print client.head('/')
+    print client.head('/test')
   except HTTPUserError as e:
     #logging
     print e
@@ -111,8 +111,9 @@ def upload_fw(file, host = 'cs.scircus.ru', path = '/test/distout/rtl', _cache =
                                                                       root_build=root_build,
                                                                       num=_cache[0],
                                                                       ext=ext)
-    print 'Uploading file: ', dst
+    print 'Uploading file: ', dst,
     print client.put(dst, content)
+    return
   response = client.propfind('/{root}/{dsn_name}/'.format(root = path,
                                                           dsn_name = dsn_name),
                              depth=1)
@@ -225,4 +226,4 @@ def git_init(src = '.', addr = 'http://cs.scircus.ru/git/hdl'):
 
 
 if __name__ == '__main__':
-  git_init('aaa2')
+  print authenticate('cs.scircus.ru')

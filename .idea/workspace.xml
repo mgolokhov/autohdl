@@ -6,9 +6,13 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="18530743-ba01-4729-8762-b37fb1becd5f" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.gitignore" afterPath="$PROJECT_DIR$/.gitignore" />
+      <change type="DELETED" beforePath="D:\repo\github\autohdl\pyk11\zzz" afterPath="" />
+      <change type="DELETED" beforePath="D:\repo\github\autohdl\pyk12" afterPath="" />
+      <change type="DELETED" beforePath="D:\repo\github\autohdl\pyk13" afterPath="" />
+      <change type="DELETED" beforePath="D:\repo\github\autohdl\zzz" afterPath="" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/aaadraft2.py" afterPath="$PROJECT_DIR$/aaadraft2.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/hdlManager.py" afterPath="$PROJECT_DIR$/hdlManager.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/aldec_run.py" afterPath="$PROJECT_DIR$/aldec_run.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/webdav.py" afterPath="$PROJECT_DIR$/webdav.py" />
     </list>
     <ignored path="autohdl.iws" />
@@ -32,19 +36,37 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="aaadraft.py" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://D:/00/aaa/aaadraft.py">
+      <file leaf-file-name="webdav.py" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/webdav.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="51" column="0" selection-start="1410" selection-end="1600" vertical-scroll-proportion="0.0">
+            <state line="113" column="34" selection-start="3251" selection-end="3251" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="webdav.py" pinned="false" current="true" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/webdav.py">
+      <file leaf-file-name="aldec_run.py" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/aldec_run.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="215" column="17" selection-start="6455" selection-end="6455" vertical-scroll-proportion="1.4931507">
+            <state line="18" column="24" selection-start="460" selection-end="460" vertical-scroll-proportion="0.0">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="structure.py" pinned="false" current="true" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/structure.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="227" column="27" selection-start="6077" selection-end="6077" vertical-scroll-proportion="0.5686275">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="aldec.py" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/aldec.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="5" column="0" selection-start="44" selection-end="65" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
@@ -53,34 +75,7 @@
       <file leaf-file-name="hdlManager.py" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/hdlManager.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="161" column="20" selection-start="4913" selection-end="4913" vertical-scroll-proportion="0.0">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="aaadraft2.py" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/aaadraft2.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="1310" column="13" selection-start="44616" selection-end="44616" vertical-scroll-proportion="0.0">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="os.py" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://C:/Python27/Lib/os.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="262" column="4" selection-start="8538" selection-end="8538" vertical-scroll-proportion="0.0">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="__init__.py" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/lib/tinydav/__init__.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="1209" column="55" selection-start="46219" selection-end="46227" vertical-scroll-proportion="0.0">
+            <state line="14" column="0" selection-start="161" selection-end="234" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
@@ -105,22 +100,22 @@
   <component name="IdeDocumentHistory">
     <option name="changedFiles">
       <list>
-        <option value="$PROJECT_DIR$/structure.py" />
-        <option value="$PROJECT_DIR$/verilog/vparser.py" />
-        <option value="$PROJECT_DIR$/test/verilog/vparser_test.py" />
-        <option value="$PROJECT_DIR$/verilog/vpreprocessor.py" />
-        <option value="$PROJECT_DIR$/test/verilog/vpreprocessor_test.py" />
-        <option value="$PROJECT_DIR$/test/all_test.py" />
-        <option value="$PROJECT_DIR$/test/verilog/func_test.py" />
-        <option value="$PROJECT_DIR$/verilog/cache.py" />
+        <option value="C:/Python27/Lib/site-packages/autohdl/__init__.py" />
+        <option value="$PROJECT_DIR$/__init__.py" />
+        <option value="$PROJECT_DIR$/hdl.py" />
         <option value="$PROJECT_DIR$/instance.py" />
-        <option value="$PROJECT_DIR$/log_server.py" />
-        <option value="$PROJECT_DIR$/aaadraft.py" />
-        <option value="$PROJECT_DIR$/.gitignore" />
-        <option value="D:/00/aaa/aaadraft.py" />
-        <option value="$PROJECT_DIR$/aaadraft2.py" />
-        <option value="$PROJECT_DIR$/hdlManager.py" />
+        <option value="$PROJECT_DIR$/template_avhdl_adf.py" />
+        <option value="$PROJECT_DIR$/structure.py" />
+        <option value="$PROJECT_DIR$/../../cs_git/hdl/cores/mk_repo.py" />
+        <option value="$USER_HOME$/Desktop/cppdep/tree.py" />
+        <option value="D:/00/django_wsp/mysite/polls/models.py" />
+        <option value="D:/00/django_wsp/mysite/settings.py" />
+        <option value="D:/00/django_wsp/mysite/polls/views.py" />
+        <option value="D:/00/django_wsp/mysite/urls.py" />
+        <option value="D:/00/django_wsp/mysite/polls/admin.py" />
         <option value="$PROJECT_DIR$/webdav.py" />
+        <option value="$PROJECT_DIR$/aaadraft2.py" />
+        <option value="$PROJECT_DIR$/aldec_run.py" />
       </list>
     </option>
   </component>
@@ -177,94 +172,6 @@
               <option name="myItemId" value="autohdl" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
             </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="External Libraries" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ExternalLibrariesNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="&lt; Python 2.7.1 (C:/Python27/python.exe) &gt;" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.NamedLibraryElementNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="autohdl" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="External Libraries" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ExternalLibrariesNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="&lt; Python 2.7.1 (C:/Python27/python.exe) &gt;" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.NamedLibraryElementNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="site-packages" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="autohdl" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="External Libraries" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ExternalLibrariesNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="&lt; Python 2.7.1 (C:/Python27/python.exe) &gt;" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.NamedLibraryElementNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="site-packages" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="lxml" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="autohdl" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="External Libraries" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ExternalLibrariesNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="&lt; Python 2.7.1 (C:/Python27/python.exe) &gt;" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.NamedLibraryElementNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="Lib" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="autohdl" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="External Libraries" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ExternalLibrariesNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="&lt; Python 2.7.1 (C:/Python27/python.exe) &gt;" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.NamedLibraryElementNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="Lib" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="site-packages" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
           </PATH>
           <PATH>
             <PATH_ELEMENT>
@@ -295,15 +202,15 @@
     <property name="FileHistory.git4idea.history.GitHistoryProvider_flatOrder1" value="1" />
     <property name="FileHistory.git4idea.history.GitHistoryProvider_flatOrder0" value="0" />
     <property name="FileHistory.git4idea.history.GitHistoryProvider_flatWidth2" value="134" />
-    <property name="FileHistory.git4idea.history.GitHistoryProvider_treeWidth3" value="809" />
     <property name="FileHistory.git4idea.history.GitHistoryProvider_flatWidth3" value="813" />
+    <property name="FileHistory.git4idea.history.GitHistoryProvider_treeWidth3" value="809" />
     <property name="FileHistory.git4idea.history.GitHistoryProvider_treeWidth2" value="129" />
     <property name="FileHistory.git4idea.history.GitHistoryProvider_treeWidth1" value="123" />
-    <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="FileHistory.git4idea.history.GitHistoryProvider_flatOrder2" value="2" />
+    <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="FileHistory.git4idea.history.GitHistoryProvider_flatOrder3" value="3" />
-    <property name="options.splitter.details.proportions" value="0.2" />
     <property name="options.searchVisible" value="true" />
+    <property name="options.splitter.details.proportions" value="0.2" />
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
@@ -314,23 +221,7 @@
       <recent name="D:\repo\github\autohdl\test\verilog\gold" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.webdav">
-    <configuration default="false" name="aaadraft" type="PythonConfigurationType" factoryName="Python" temporary="true">
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="D:/00/aaa" />
-      <option name="IS_MODULE_SDK" value="false" />
-      <module name="autohdl" />
-      <option name="SCRIPT_NAME" value="D:/00/aaa/aaadraft.py" />
-      <option name="PARAMETERS" value="" />
-      <RunnerSettings RunnerId="PythonRunner" />
-      <ConfigurationWrapper RunnerId="PythonRunner" />
-      <method />
-    </configuration>
+  <component name="RunManager" selected="Python.deploy">
     <configuration default="false" name="deploy" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -342,6 +233,22 @@
       <option name="IS_MODULE_SDK" value="true" />
       <module name="autohdl" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/deploy.py" />
+      <option name="PARAMETERS" value="" />
+      <RunnerSettings RunnerId="PythonRunner" />
+      <ConfigurationWrapper RunnerId="PythonRunner" />
+      <method />
+    </configuration>
+    <configuration default="false" name="mk_repo" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/../../cs_git/hdl/cores" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <module name="autohdl" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/../../cs_git/hdl/cores/mk_repo.py" />
       <option name="PARAMETERS" value="" />
       <RunnerSettings RunnerId="PythonRunner" />
       <ConfigurationWrapper RunnerId="PythonRunner" />
@@ -363,22 +270,6 @@
       <ConfigurationWrapper RunnerId="PythonRunner" />
       <method />
     </configuration>
-    <configuration default="false" name="aaadraft2" type="PythonConfigurationType" factoryName="Python" temporary="true">
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <module name="autohdl" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/aaadraft2.py" />
-      <option name="PARAMETERS" value="" />
-      <RunnerSettings RunnerId="PythonRunner" />
-      <ConfigurationWrapper RunnerId="PythonRunner" />
-      <method />
-    </configuration>
     <configuration default="false" name="webdav" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -390,6 +281,22 @@
       <option name="IS_MODULE_SDK" value="true" />
       <module name="autohdl" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/webdav.py" />
+      <option name="PARAMETERS" value="" />
+      <RunnerSettings RunnerId="PythonRunner" />
+      <ConfigurationWrapper RunnerId="PythonRunner" />
+      <method />
+    </configuration>
+    <configuration default="false" name="aaadraft2" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <module name="autohdl" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/aaadraft2.py" />
       <option name="PARAMETERS" value="" />
       <RunnerSettings RunnerId="PythonRunner" />
       <ConfigurationWrapper RunnerId="PythonRunner" />
@@ -443,11 +350,11 @@
       <method />
     </configuration>
     <list size="5">
-      <item index="0" class="java.lang.String" itemvalue="Python.aaadraft" />
-      <item index="1" class="java.lang.String" itemvalue="Python.deploy" />
+      <item index="0" class="java.lang.String" itemvalue="Python.deploy" />
+      <item index="1" class="java.lang.String" itemvalue="Python.mk_repo" />
       <item index="2" class="java.lang.String" itemvalue="Python.distribute" />
-      <item index="3" class="java.lang.String" itemvalue="Python.aaadraft2" />
-      <item index="4" class="java.lang.String" itemvalue="Python.webdav" />
+      <item index="3" class="java.lang.String" itemvalue="Python.webdav" />
+      <item index="4" class="java.lang.String" itemvalue="Python.aaadraft2" />
     </list>
   </component>
   <component name="ShelveChangesManager" show_recycled="false" />
@@ -501,16 +408,16 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="1" y="1" width="1278" height="752" extended-state="0" />
-    <editor active="true" />
+    <frame x="-4" y="-4" width="1288" height="762" extended-state="6" />
+    <editor active="false" />
     <layout>
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3306189" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="true" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.16720258" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
-      <window_info id="Structure" active="false" anchor="right" auto_hide="true" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.14967638" sideWeight="0.6672026" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Structure" active="false" anchor="right" auto_hide="true" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.1492659" sideWeight="0.7058824" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Dependency Viewer" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.2675367" sideWeight="0.52124184" order="0" side_tool="false" content_ui="tabs" />
+      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.2880259" sideWeight="0.8022508" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.5530547" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.47875816" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" x="23" y="125" width="1236" height="389" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.1977492" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" x="23" y="125" width="1236" height="389" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.26205787" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
@@ -547,7 +454,7 @@
     <option name="CHECK_COMMIT_MESSAGE_SPELLING" value="true" />
     <option name="DEFAULT_PATCH_EXTENSION" value="patch" />
     <option name="FORCE_NON_EMPTY_COMMENT" value="false" />
-    <option name="LAST_COMMIT_MESSAGE" value="fixed bug with cache" />
+    <option name="LAST_COMMIT_MESSAGE" value="fixed bug: generation aldec data.files" />
     <option name="MAKE_NEW_CHANGELIST_ACTIVE" value="true" />
     <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="CHECK_FILES_UP_TO_DATE_BEFORE_COMMIT" value="false" />
@@ -582,95 +489,109 @@
     <MESSAGE value="unittests for new preprocessor and parser" />
     <MESSAGE value="tdd" />
     <MESSAGE value="fixed bug with cache" />
+    <MESSAGE value="new webdav api; integration with git" />
+    <MESSAGE value="fixed bug: generation aldec data.files" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/verilog/__init__.py">
+    <entry file="file://$USER_HOME$/Desktop/cppdep/depend/dependReport.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="3" column="14" selection-start="58" selection-end="58" vertical-scroll-proportion="0.0" />
+        <state line="21" column="20" selection-start="736" selection-end="736" vertical-scroll-proportion="0.0" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/install.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0" />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/instance.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="74" column="69" selection-start="1869" selection-end="1869" vertical-scroll-proportion="0.0" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/hdlLogger.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="61" column="0" selection-start="1513" selection-end="1513" vertical-scroll-proportion="0.0" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/log_server.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="16" column="18" selection-start="258" selection-end="258" vertical-scroll-proportion="0.0" />
+        <state line="12" column="0" selection-start="223" selection-end="223" vertical-scroll-proportion="0.0" />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/distribute.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="9" column="20" selection-start="225" selection-end="225" vertical-scroll-proportion="0.0" />
+        <state line="19" column="17" selection-start="583" selection-end="583" vertical-scroll-proportion="0.0" />
       </provider>
     </entry>
-    <entry file="file://C:/Python27/Lib/site-packages/autohdl/structure.py">
+    <entry file="file://D:/00/django_wsp/mysite/settings.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="12" column="0" selection-start="186" selection-end="186" vertical-scroll-proportion="0.51428574" />
+        <state line="142" column="30" selection-start="5036" selection-end="5036" vertical-scroll-proportion="0.0" />
       </provider>
     </entry>
-    <entry file="file://C:/Python27/Lib/site-packages/autohdl/__init__.py">
+    <entry file="file://$PROJECT_DIR$/data/build.yaml">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="1" column="0" selection-start="1" selection-end="1" vertical-scroll-proportion="0.03930131" />
+        <state line="3" column="24" selection-start="95" selection-end="106" vertical-scroll-proportion="0.13075061">
+          <folding />
+        </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/hdl.py">
+    <entry file="file://D:/00/django_wsp/mysite/urls.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="19" column="16" selection-start="705" selection-end="705" vertical-scroll-proportion="0.43370786" />
+        <state line="7" column="0" selection-start="197" selection-end="429" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/.gitignore">
+    <entry file="file://D:/00/django_wsp/mysite/polls/views.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="2" column="0" selection-start="18" selection-end="18" vertical-scroll-proportion="0.07860262" />
+        <state line="6" column="65" selection-start="201" selection-end="201" vertical-scroll-proportion="0.0" />
       </provider>
     </entry>
-    <entry file="file://C:/Python27/Lib/site-packages/lxml/__init__.py">
+    <entry file="file://D:/00/django_wsp/mysite/polls/models.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="2" column="0" selection-start="21" selection-end="21" vertical-scroll-proportion="0.12543555" />
+        <state line="5" column="51" selection-start="137" selection-end="169" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://D:/00/django_wsp/mysite/polls/admin.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="17" column="30" selection-start="538" selection-end="538" vertical-scroll-proportion="0.7409201">
+          <folding />
+        </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/hdlManager.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="161" column="20" selection-start="4913" selection-end="4913" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/aaadraft2.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="1310" column="13" selection-start="44616" selection-end="44616" vertical-scroll-proportion="0.0" />
-      </provider>
-    </entry>
-    <entry file="file://C:/Python27/Lib/os.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="262" column="4" selection-start="8538" selection-end="8538" vertical-scroll-proportion="0.0" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/lib/tinydav/__init__.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="1209" column="55" selection-start="46219" selection-end="46227" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://D:/00/aaa/aaadraft.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="51" column="0" selection-start="1410" selection-end="1600" vertical-scroll-proportion="0.0">
+        <state line="14" column="0" selection-start="161" selection-end="234" vertical-scroll-proportion="0.0">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/webdav.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="215" column="17" selection-start="6455" selection-end="6455" vertical-scroll-proportion="1.4931507">
+        <state line="113" column="34" selection-start="3251" selection-end="3251" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/aaadraft2.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="2" column="22" selection-start="37" selection-end="37" vertical-scroll-proportion="0.076271184">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/aldec.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="5" column="0" selection-start="44" selection-end="65" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/aldec_run.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="18" column="24" selection-start="460" selection-end="460" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/structure.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="227" column="27" selection-start="6077" selection-end="6077" vertical-scroll-proportion="0.5686275">
           <folding />
         </state>
       </provider>

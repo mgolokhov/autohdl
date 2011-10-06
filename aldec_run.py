@@ -1,69 +1,38 @@
 import subprocess
-import toolchain
-import time
-import threading
 import sys
-import os
 import shutil
-
-import structure
 import os
 
-from hdlLogger import log_call
-import logging
+from hdlLogger import logging
 log = logging.getLogger(__name__)
-
-logging.debug(str(sys.argv))
-
-os.chdir(sys.argv[1])
-
-
-def action(iMode = 'copy', _logOnce = []):
-    # cwd = <dsnName>/script
-    rootPathAldec = '../aldec/src'
-    rootPathDsn = '..'
-    for root, dirs, files in os.walk('../aldec/src'):
-      virtDir = root.split(rootPathAldec)[1][1:] # exclude slash
-      if not virtDir:
-        continue
-      for afile in files:
-        src = os.path.join(root, afile)
-        dst = os.path.join(rootPathDsn, virtDir, afile)
-        log.info(src)
-        log.info(dst)
-        try:
-          if iMode == 'copy':
-            if not _logOnce:
-              log.info('copying... (every second)') 
-              log.info('src= ' + os.path.abspath(src))
-              log.info('dst= ' + os.path.abspath(dst))
-              _logOnce.append('')
-            shutil.copyfile(src, dst)  
-          elif iMode == 'move':
-            log.info('moving...') 
-            log.info('src= ' + os.path.abspath(src))
-            log.info('dst= ' + os.path.abspath(dst))
-            shutil.move(src, dst)  
-        except IOError, e:
-          log.exception(e)
-        
-
-def copyInRepo():
-  while True:
-    action(iMode = 'copy')
-    time.sleep(1)
 
 
 def moveInRepo():
-  action(iMode = 'move')
-  
+  # cwd = <dsnName>/script
+  rootPathAldec = '../aldec/src/'
+  rootPathDsn = '../'
+  syncDirs = [d for d in os.listdir(rootPathAldec)
+          if d not in ['.svn', '.git'] and d in os.listdir(rootPathDsn)]
+  for dir in syncDirs:
+    for root, dirs, files in os.walk(rootPathAldec+dir):
+      try:
+        dirs[:] = [d for d in dirs if d not in ['.svn', '.git']]
+        pathDsn = root.replace(rootPathAldec, rootPathDsn)
+        if not os.path.exists(pathDsn):
+          os.makedirs(pathDsn)
+        for f in files:
+          src = os.path.abspath(root+'/'+f)
+          dst = os.path.abspath(pathDsn+'/'+f)
+          log.info('Moving src={0} dst={1}'.format(src, dst))
+          shutil.move(src, dst)
+      except IOError as e:
+        log.exception(e)
 
+
+
+log.debug(str(sys.argv))
+os.chdir(sys.argv[1])
 aldec = sys.argv[2] #toolchain.getPath(iTag = 'avhdl_gui')
-
-b = threading.Thread(target=copyInRepo)
-b.setDaemon(1)
-b.start()
-
 subprocess.call(aldec + ' ../aldec/wsp.aws')
 moveInRepo()
 
