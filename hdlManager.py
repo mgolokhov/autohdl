@@ -97,9 +97,18 @@ def getValidUcf(iUcfFromArg, iUcfFromScript, iValidTop):
 @log_call
 def kungfu(iTop = '', iUcf = '', iSize = '', iUpload = ''):
   logging.info('Processing...')
-  #TODO: logging argv
+  logging.debug(sys.argv)
   try: # for Active-hdl compatibility
-    os.chdir(os.path.dirname(sys.modules['__main__'].__file__))
+    if not {'script', 'src'}.issubset(os.listdir(os.getcwd()+'/..')):
+      mayBe = os.path.dirname(sys.modules['__main__'].__file__)
+      if {'script', 'src'}.issubset(os.listdir(mayBe+'/..')):
+        os.chdir(mayBe)
+      else:
+        log.error('Wrong current working path!\n Tried: \n{}\n{}'.format(
+          os.getcwd(),
+          mayBe
+        ))
+        sys.exit()
   except AttributeError as e:
     log.debug(e)
   except WindowsError as e:

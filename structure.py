@@ -123,23 +123,24 @@ class Design(object):
   
   @log_call
   def _copyFiles(self):
-    '''
+    """
     Copy data files to predefined destinations
-    '''
+    """
     log.debug('def _copyFiles')
 
-    listToCopy = ['script/kungfu.py',
-#                  'resource/synthesis_default',
-#                  'resource/implement_default',
-                  'resource/build.yaml']
+    listToCopy = [
+      'script/kungfu.py',
+      'script/run_avhdl.bat',
+      'resource/build.yaml',
+      ]
     for l in listToCopy:
       self._copyFile(iDestination = l)
 
   
   def genPredef(self):
-    '''
+    """
     Generates predefined structure
-    '''
+    """
     for d in gPredefined:
       create = '%s/%s' % (self._pathRoot, d)
       if not os.path.exists(create):
@@ -153,11 +154,11 @@ class Design(object):
 
 @log_call
 def filter(iFiles, iIgnore = [], iOnly = []):
-  '''
+  """
   Precondition:
     iFiles should be a list even if there is one file;
     iIgnore and iOnly: lists of regexp
-  '''
+  """
   if not iIgnore and not iOnly:
     return iFiles
   # make a list if there is one file
@@ -189,11 +190,11 @@ def filter(iFiles, iIgnore = [], iOnly = []):
 
 @log_call
 def search(iPath = '.', iIgnore = None, iOnly = None):
-  '''
+  """
     Search files by pattern.
     Input: path (by default current directory), ignore and only patterns (should be lists)
     Returns list of files.
-  '''
+  """
   ignore = iIgnore or []
   only = iOnly or []
   resFiles = []

@@ -209,13 +209,14 @@ def upload(src, dst, host = 'cs.scircus.ru'):
 
 def git_init(src = '.', addr = 'http://cs.scircus.ru/git/hdl'):
   src = os.path.abspath(src)
+  print src
   if os.path.exists(src+'/.git'):
     print 'Local repo already exists: ', src
     return
-  dirname, name = os.path.split(src)
   path_git = toolchain.Tool('git_batch').result
-  subprocess.call('{0} init {1}'.format(path_git,name))
-  os.chdir(name+'/.git')
+  dirname, name = os.path.split(src)
+  subprocess.call('{0} init {1}'.format(path_git,src))
+  os.chdir(src+'/.git')
   subprocess.call(path_git+' update-server-info')
   os.chdir('..')
   #_netrc

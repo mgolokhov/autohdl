@@ -24,7 +24,7 @@ def shutdownLogServer():
                                                      logging.handlers.DEFAULT_TCP_LOGGING_PORT)
       rootLogger.addHandler(socketHandler)
       logging.warning('shutdown_log_server')
-      time.sleep(1)
+      time.sleep(2)
     else:
       print 'log server were shut down'
       return

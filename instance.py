@@ -31,7 +31,8 @@ def get_instances(files):
       try:
         new = verilog.get_instances(afile)
         parsed.update(new)
-      except IOError:
+      except IOError as e:
+        log.debug(e)
         log.warning("Can't open file: "+afile)
   return parsed
 

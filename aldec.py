@@ -85,6 +85,8 @@ def gen_compile_cfg(iFiles):
 
 @log_call
 def cleanAldec():
+  if not {'aldec', 'script', 'src'}.issubset(os.listdir(os.getcwd()+'/..')):
+    return
   cl = structure.search(iPath = '../aldec', iIgnore = ['/implement/', '/synthesis/', '/src/'])
   for i in cl:
     if os.path.isdir(i):

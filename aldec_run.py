@@ -2,12 +2,14 @@ import subprocess
 import sys
 import shutil
 import os
+import threading
+import time
 
 from hdlLogger import logging
 log = logging.getLogger(__name__)
 
 
-def moveInRepo():
+def syncRepo(move=False):
   # cwd = <dsnName>/script
   rootPathAldec = '../aldec/src/'
   rootPathDsn = '../'
@@ -24,14 +26,29 @@ def moveInRepo():
           src = os.path.abspath(root+'/'+f)
           dst = os.path.abspath(pathDsn+'/'+f)
           log.info('Moving src={0} dst={1}'.format(src, dst))
-          shutil.move(src, dst)
+          if move:
+            shutil.move(src, dst)
+          else:
+            shutil.copyfile(src, dst)
       except IOError as e:
         log.exception(e)
 
+def copyInRepo():
+  while True:
+    syncRepo()
+    time.sleep(1)
 
+
+def moveInRepo():
+  syncRepo(move = True)
 
 log.debug(str(sys.argv))
 os.chdir(sys.argv[1])
+
+b = threading.Thread(target=copyInRepo)
+b.setDaemon(1)
+b.start()
+
 aldec = sys.argv[2] #toolchain.getPath(iTag = 'avhdl_gui')
 subprocess.call(aldec + ' ../aldec/wsp.aws')
 moveInRepo()

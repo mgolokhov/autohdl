@@ -1,23 +1,21 @@
 import argparse
 from autohdl import *
-import sys
-
-
-def hi():
-  print 'hi'
 
 def main():
   parser = argparse.ArgumentParser(description='Helper to create designs')
   parser.add_argument('-n', '--name', dest='name', default='', help='set design name and create structure (default name - current directory)')
   parser.add_argument('-v', '--version', dest='version', action='store_true', help='display package version')
   parser.add_argument('-t', '--test', dest='test', action='store_true', help='run tests')
-  parser.add_argument('-git', nargs = '*')
+  parser.add_argument('-tb', action = 'store_true', help='export in active-hdl')
+  parser.add_argument('-git', nargs = '*', help='usage: hdl.py -git [src [addr]]')
   args = parser.parse_args()
-#  print args
-#  return
+
+
   if args.test:
 #    atests.run()
     pass
+  elif args.tb:
+    hdlManager.kungfu()
   elif args.git is not None:
     if len(args.git) > 2:
       print 'usage: hdl.py -git [src [addr]]'

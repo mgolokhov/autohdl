@@ -43,8 +43,11 @@ def load(file):
     logging.debug(e)
   except Exception as e:
     logging.warning(e)
-  if shaOK(y):
-    return y
+  try:
+    if shaOK(y):
+      return y
+  except IOError as e:
+    logging.debug(e)
 
 
 def dump(data):
