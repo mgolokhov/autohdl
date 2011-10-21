@@ -32,5 +32,8 @@ ignore_undefined_instances:
 # add list like that
 #- name_instance_1
 #- name_instance_2
+size:
+#256
+#512
 
 

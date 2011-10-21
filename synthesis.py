@@ -71,15 +71,11 @@ def setSrc(iPrj):
 
   
 @log_call  
-def getStructure(iTopModule, iMode, iUcf):
-  prj = {}
-  prj['pathTool']      = toolchain.getPath(iMode)
-  prj['mode']          = iMode
-  prj['topModule']     = iTopModule
-  prj['ucf']           = iUcf
+def extend(prj):
+  prj['pathTool']      = toolchain.getPath(prj['mode'])
   prj['pathSynthesis'] = '../synthesis'
   prj['pathScript']    = prj['pathSynthesis']+ '/synthesis.prj'
-  prj['pathLog']       = prj['pathSynthesis'] + '/' + iTopModule + '.srr'
+  prj['pathLog']       = prj['pathSynthesis'] + '/' + prj['topModule'] + '.srr'
   prj['pathWas']       = os.getcwd().replace('\\','/')
 
   try:
@@ -98,7 +94,7 @@ def getStructure(iTopModule, iMode, iUcf):
       except OSError as e:
         log.warning(e)
 
-  synthesis_template = os.path.join(os.path.dirname(__file__), 'data', 'synplify')
+  synthesis_template = os.path.join(os.path.dirname(__file__), 'data', 'template_synplify_prj')
   
   f = open(synthesis_template, 'r')
   prj['scriptContent'] = f.read()
@@ -185,9 +181,9 @@ def run_synplify_gui(iPrj):
 
 @log_call
 def runTool(iPrj, iSilent):
-  '''
+  """
   Runs external tool for synthesis
-  '''
+  """
   os.chdir(iPrj['pathSynthesis'])
   
   if iPrj['mode'] == 'synplify_batch':
@@ -199,15 +195,11 @@ def runTool(iPrj, iSilent):
   os.chdir(iPrj['pathWas'])
 
 
-import glob
-import subprocess
-
 @log_call
-def run(iTopModule, iUcf, iMode = 'synplify_batch', iSilent = True):
+def run(config):
   logging.info('Synthesis stage')
   # changing current location to synthesis directory
-  prj = getStructure(iTopModule = iTopModule, iMode = iMode, iUcf = iUcf)
-  runTool(iPrj = prj, iSilent = iSilent)
-  log.info('Synthesis done!')  
+  runTool(extend(config), iSilent = True)
+  log.info('Synthesis done!')
 
 

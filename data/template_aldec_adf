@@ -178,6 +178,7 @@ VerilogLanguage=7
 
 [Groups]
 src=1
+dep=1
 script=1
 resource=1
 TestBench=1

@@ -1,3 +1,3 @@
-import shutil
+import os
 
-shutil.move('aaadraft2.py', 'folder/ass')
+print os.path.basename('.')
