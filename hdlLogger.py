@@ -59,7 +59,7 @@ def log_call(fn, *args, **kw):
     varnames = fn.func_code.co_varnames
     arglist = ', '.join([i[1]+'='+toShortStr(i[0]) for i in zip(args, varnames)])
     if kw:
-      arglist += ', '.join(['{0}={1}'.format(k, v) for k, v in kw.viewitem()])
+      arglist += ', '.join(['{0}={1}'.format(k, v) for k, v in kw.viewitems()])
     
     logger.debug("%(func)s IN (%(args)s)" % (
                             {'func': fn.__name__,

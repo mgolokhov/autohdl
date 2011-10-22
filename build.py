@@ -1,4 +1,5 @@
 import os
+import pprint
 
 import structure
 import hdlGlobals
@@ -84,44 +85,7 @@ def convertToAbspath(iContent):
   os.chdir('../script')
 
 
-@log_call    
-def defUCFandTop(iContent):
-  #TODO: it's hdlManager work
-  ucf = iContent.get('UCF') or iContent.get('ucf')
-  top = iContent.get('TOPLEVEL') or iContent.get('toplevel')
-  if ucf and top:
-    return
-  elif not ucf and top:
-    ucfList = structure.search(iPath = '../src', iIgnore = hdlGlobals.ignore, iOnly = ['\.ucf'])
-    ucf = ucfList[0] # first occurrence
-    for i in ucfList:
-     if top+'.ucf' in i:
-       ucf = i
-       break
-  elif ucf and not top:
-#    topPath = structure.search(iPath = '../src', iIgnore = hdlGlobals.ignore, iOnly = [ucf.rstrip('.ucf')+'\.v'])
-    pathTop = ucf.rstrip('.ucf')+'.v'
-    if os.path.exists(pathTop):
-      topFile = os.path.split(pathTop)[1]
-      top = os.path.splitext(topFile)[0]
-  elif not ucf and not top:
-    ucfList = structure.search(iPath = '../src', iIgnore = hdlGlobals.ignore, iOnly = ['\.ucf'])
-    for i in ucfList:
-      ucfName = os.path.split(i)[1]
-      ucfName = os.path.splitext(ucfName)[0]
-      topPath = structure.search(iPath = '../src', iIgnore = hdlGlobals.ignore, iOnly = [ucfName+'\.v'])
-      if topPath:
-        topFile = os.path.split(topPath[0])[1]
-        top = os.path.splitext(topFile)[0]
-        ucf = i
-        break
-      else:
-        ucf = i
-  iContent['UCF'] = ucf
-  iContent['TOPLEVEL'] = top
-
-
-@log_call    
+@log_call
 def load(iBuildFile = '../resource/build.yaml', _cacheBuild = {}):
   if _cacheBuild:
     content = _cacheBuild
@@ -131,7 +95,7 @@ def load(iBuildFile = '../resource/build.yaml', _cacheBuild = {}):
         content = yaml.load(f.read())
         convertToAbspath(content)
         _cacheBuild.update(content)
-        dump(iContent = content, iBuildFile = iBuildFile)
+#        dump(iContent = content, iBuildFile = iBuildFile)
     except IOError:
       logging.warning('Cant open file ' + os.path.abspath(iBuildFile))
       return {}
@@ -173,10 +137,10 @@ def getBuild(iFile):
 
 @log_call
 def getBuilds(iFiles):
-  '''
+  """
   Input:  list/set of path to files with undefined instances
   Output: one or set of path to build.yaml's
-  '''
+  """
   pathBuilds = set()
   for f in iFiles:
     pathAsList = f.replace('\\','/').split('/')
@@ -229,10 +193,10 @@ def getDep(iBuild):
 
 @log_call    
 def getDeps(iBuilds):
-  '''
+  """
   Input:  set of path to build.yaml's
   Output: set of new paths/files to parse
-  '''
+  """
   for pathBuild in iBuilds:
     deps = getParam(iKey='dep', iBuild=pathBuild)
     path = set()

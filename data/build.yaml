@@ -10,7 +10,7 @@ device     : 3s250etq144  # DCS2
 # after first run will be converted to relative.
 ucf:
 # Top module name
-toplevel:
+top:
 
 # Include path searching
 include_path:

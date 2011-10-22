@@ -20,7 +20,7 @@ def bit2mcs(iTopModule, iSize):
 
 
 @log_call
-def run(iTopModule, iUCF, iFlashSize = ''):
+def run(config):
   try:
     if os.path.exists('../implement'):
       for root, dirs, files in os.walk('../implement'):
@@ -33,13 +33,13 @@ def run(iTopModule, iUCF, iFlashSize = ''):
   if not os.path.exists('../implement'):
     os.makedirs('../implement')  
     
-  top = structure.search(iPath = '../synthesis', iOnly = [iTopModule+'\.edf'])[0]
+  top = structure.search(iPath = '../synthesis', iOnly = [config['top']+'\.edf'])[0]
   netlists = structure.search(iPath = '../src', iOnly = ['\.edf', '\.ngc'], iIgnore = hdlGlobals.ignore )
   ucfSymplicity = structure.search(iPath='../synthesis', iOnly=['\.ucf'], iIgnore=hdlGlobals.ignore)
-  ucf = ucfSymplicity[0] or iUCF
+  ucf = ucfSymplicity[0] or config['ucf']
 
-  shutil.copyfile(ucf, '../implement/'+iTopModule+'.ucf')
-  shutil.copyfile(top, '../implement/'+iTopModule+'.edf')
+  shutil.copyfile(ucf, '../implement/'+config['top']+'.ucf')
+  shutil.copyfile(top, '../implement/'+config['top']+'.edf')
   for i in netlists:
     shutil.copyfile(i, '../implement/'+os.path.split(i)[1])
   
@@ -47,10 +47,10 @@ def run(iTopModule, iUCF, iFlashSize = ''):
   os.chdir('../implement')
   subprocess.call(('{xflow} -implement balanced.opt'
                    ' -config bitgen.opt {netlist}.edf').format(xflow=toolchain.getPath('ise_xflow'),
-                                                              netlist=iTopModule))
+                                                               netlist=config['top']))
   
-  if iFlashSize:
-    bit2mcs(iTopModule, iFlashSize)
+  if config['size']:
+    bit2mcs(config['top'], config['size'])
     
   log.info('Implementation done')
 

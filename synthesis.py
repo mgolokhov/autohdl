@@ -51,8 +51,8 @@ def setParams(iPrj):
                           part=part,
                           package=package,
                           technology=technology,
-                          topModule=iPrj['topModule'],
-                          netlist=iPrj['pathSynthesis']+'/'+iPrj['topModule']+'.edf',
+                          topModule=iPrj['top'],
+                          netlist=iPrj['pathSynthesis']+'/'+iPrj['top']+'.edf',
                           src_files=iPrj['srcFiles'],
                           includePath=getIncludePath(iPrj))
   f = open(iPrj['pathScript'], 'w')
@@ -75,7 +75,7 @@ def extend(prj):
   prj['pathTool']      = toolchain.getPath(prj['mode'])
   prj['pathSynthesis'] = '../synthesis'
   prj['pathScript']    = prj['pathSynthesis']+ '/synthesis.prj'
-  prj['pathLog']       = prj['pathSynthesis'] + '/' + prj['topModule'] + '.srr'
+  prj['pathLog']       = prj['pathSynthesis'] + '/' + prj['top'] + '.srr'
   prj['pathWas']       = os.getcwd().replace('\\','/')
 
   try:

@@ -1,4 +1,5 @@
 import argparse
+import copy
 import logging
 import os
 import pprint
@@ -11,10 +12,21 @@ import synthesis
 import aldec
 import implement
 import webdav
+import doc
 
 
 from hdlLogger import log_call
 alog = logging.getLogger(__name__)
+
+@log_call
+def convert5to6version(config):
+  if 'toplevel' in config:
+    config['top'] = config.get('toplevel')
+  for i in ['iTop', 'iSize', 'iUpload', 'iUcf']:
+    res = config.get(i)
+    if res:
+      config[i[1:].lower()] = res
+
 
 @log_call
 def validateTop(iTop):
@@ -47,50 +59,49 @@ def getFullPathToUcf(iUcf):
 
 
 @log_call
-def getValidTop(iTopFromArg, iTopFromScript):
+def setValidTop(arguments, config):
   try:
     topAsScriptName = os.path.splitext(os.path.basename(sys.modules['__main__'].__file__))[0]
   except AttributeError as e:
     alog.debug(e)
     topAsScriptName = ''
 
-  if validateTop(iTopFromArg):
-    top = iTopFromArg
+  if validateTop(arguments.top):
+    config['top'] = arguments.top
     alog.info('Using top module name from arguments list')
-  elif validateTop(iTopFromScript):
-    top = iTopFromScript
+  elif validateTop(config['top']):
     alog.info('Using top module name from script')
   elif topAsScriptName and validateTop(topAsScriptName):
-    top = topAsScriptName
+    config['top'] = topAsScriptName
     alog.info('Using top module name same as script name')
   else:
-    top = build.getParam(iKey='toplevel')
-    if not validateTop(top):
+    top = build.getParam(iKey='top')
+    if validateTop(top):
+      alog.info('Using top module from build.yaml')
+      config['top'] = top
+    else:
       alog.error('Top module name undefined!')
-
-  return top
 
 
 @log_call
-def getValidUcf(iUcfFromArg, iUcfFromScript, iValidTop):
-  ucfFromArg = getFullPathToUcf(iUcfFromArg)
-  if ucfFromArg:
-    alog.info('Using ucf file from argument list')
-    return ucfFromArg
+def setValidUcf(config):
 
-  ucfFromScript = getFullPathToUcf(iUcfFromScript)
+  ucfFromScript = getFullPathToUcf(config['ucf'])
   if ucfFromScript:
     alog.info('Using ucf file from script')
-    return ucfFromScript
+    return
 
-  ucfNameAsTop = getFullPathToUcf(iValidTop)
+  ucfNameAsTop = getFullPathToUcf(config['top'])
   if ucfNameAsTop:
+    config['ucf'] = ucfNameAsTop
     alog.info('Using ucf name same as top module')
-    return ucfNameAsTop
+    return
 
-  ucfFromBuild = getFullPathToUcf(build.getParam('UCF'))
+  ucfFromBuild = getFullPathToUcf(build.getParam('ucf'))
   if ucfFromBuild:
-    return ucfFromBuild
+    config['ucf'] = ucfFromBuild
+    alog.info('Using ucf file from build.yaml')
+    return
 
   alog.warning('Ucf file undefined')
 
@@ -113,42 +124,41 @@ def validateLocation():
   except WindowsError as e:
     alog.debug(e)
 
+
 @log_call
-def kungfu(iTop = '', iUcf = '', iSize = '', iUpload = '', iDevice = ''):
-  alog.info('Processing...')
-  alog.debug(sys.argv)
-  validateLocation()
-
-  parser = argparse.ArgumentParser(description='hdl cycles manager')
-  parser.add_argument('-tb', action = 'store_true', help = 'export project to active-hdl')
-  parser.add_argument('-syn', nargs ='?', default = 'nope', choices = ['gui', 'batch'], help = 'synthesis step')
-  parser.add_argument('-impl', action = 'store_true', help = 'implementation step')
-  parser.add_argument('-upload', action = 'store_true', help = 'upload firmware to WebDav server')
-  parser.add_argument('-top', help = 'top module name')
-  parser.add_argument('-d', action = 'store_true', help = 'debug flag')
-
-  res = parser.parse_args()
-  #bugaga: doesnt have default choice
-  if res.syn == 'nope':
-    res.syn = None
-  elif not res.syn:
-    res.syn = 'gui'
-
-  top = getValidTop(iTopFromArg=res.top, iTopFromScript=iTop)
-  ucf = getValidUcf(iUcfFromArg=res.ucf, iUcfFromScript=iUcf, iValidTop = top)
-  size = (res.size or iSize or build.getParam(iKey='size'))
-  upload = True if (not res.tb and not res.syn and not res.impl
-                    and (res.upload or iUpload or build.getParam('upload'))) else False
+def mergeConfig(configScript):
+#  configBuild = build.loadUncached()
+  configBuild = build.load()
+  config = copy.deepcopy(configBuild)
+  convert5to6version(config)
+  convert5to6version(configScript)
+  # overwrite
+  config.update(configScript)
+  depExtend = list(set(configScript.get('dep', []))-set(configBuild['dep']))
+  configBuild['dep'] += depExtend
+  config['dep'] = configBuild['dep']
+  build.dump(configBuild)
+  return config
 
 
-  config = build.load()
-  config['topModule'] = top
-  config['ucf'] = ucf
-  config['size'] = size
-  config['mode'] = 'synplify_gui' if res.syn_gui else 'synplify_batch'
-  config['device'] = iDevice if iDevice else config['device']
+@log_call
+def setMode(arguments, config):
+  #bugaga in argparse lib: doesnt have default choice
+  if arguments.syn == 'nope':
+    arguments.syn = None
+  elif not arguments.syn:
+    arguments.syn = 'batch'
+  config['mode'] = 'synplify_gui' if arguments.syn == 'gui' else 'synplify_batch'
 
 
+@log_call
+def setUpload(arguments, config):
+  config['upload'] = True if (not arguments.tb and not arguments.syn and not arguments.impl
+                              and (arguments.upload or config['upload'])) else False
+
+
+@log_call
+def printInfo(config):
   alog.info(('Main design settings:\n'
                  + '#'*40 +
                 '\n'
@@ -159,36 +169,70 @@ def kungfu(iTop = '', iUcf = '', iSize = '', iUpload = '', iDevice = ''):
                 'upload     : {upload}\n'
                  + '#'*40 +
                 '').format(device = config['device'],
-                                    top = top,
-                                    ucf = ucf,
-                                    size = size,
-                                    upload = True if upload else False))
+                           top = config['top'],
+                           ucf = config['ucf'],
+                           size = config['size'],
+                           upload = config['upload']))
 
-  if res.d:
+
+@log_call
+def kungfu(**config):
+  alog.info('Processing...')
+  alog.debug('args: ', sys.argv)
+  alog.debug('config: ', config)
+
+  validateLocation()
+
+  parser = argparse.ArgumentParser(description='hdl cycles manager')
+  parser.add_argument('-tb', action = 'store_true', help = 'export project to active-hdl')
+  parser.add_argument('-syn', nargs ='?', default = 'nope', choices = ['gui', 'batch'], help = 'synthesis step')
+  parser.add_argument('-impl', action = 'store_true', help = 'implementation step')
+  parser.add_argument('-upload', action = 'store_true', help = 'upload firmware to WebDav server')
+  parser.add_argument('-top', help = 'top module name')
+  parser.add_argument('-info', help = 'print help for concrete command')
+  parser.add_argument('-d', action = 'store_true', help = 'debug flag')
+  arguments = parser.parse_args()
+
+  if arguments.info == 'build':
+    print doc.buildYaml
+    return
+
+  config = mergeConfig(config)
+
+  setValidTop(arguments, config)
+  setValidUcf(config)
+  setMode(arguments, config)
+  setUpload(arguments, config)
+
+  printInfo(config)
+
+  if arguments.d:
+    pprint.pprint(config)
     sys.exit()
 
-
-  if res.tb:
+  if arguments.tb:
     aldec.export()
+  elif arguments.syn:
     synthesis.run(config)
-  elif res.impl:
-    implement.run(iTopModule=config['topModule'], iUCF=config['ucf'], iFlashSize=config['size'])
-  elif res.upload:
+  elif arguments.impl:
+    implement.run(config)
+  elif arguments.upload:
     pass
   else:
     synthesis.run(config)
-    implement.run(iTopModule=config['topModule'], iUCF=config['ucf'], iFlashSize=config['size'])
+    implement.run(config)
 
-  if upload:
+  if config['upload']:
     webdav.upload_fw('../implement/{0}.bit'.format(top))
     webdav.upload_fw('../implement/{0}.mcs'.format(top))
 
 
 if __name__ == '__main__':
-  d = {'a':1, 'b': '2'}
-  d1 = {'a':33, 'c': '4'}
-  d1[None] = 'dfdf'
-  print d.update(d1)
-  print d
+  def func(**kw):
+    print kw
+
+  func()
+  func(a='as', b='dfd')
+#  func({'c':1, 'd':'df'})
 
   
