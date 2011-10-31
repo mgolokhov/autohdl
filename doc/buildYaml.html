@@ -1,0 +1,28 @@
+﻿<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+    <link rel="stylesheet" type="text/css" href="mystyle.css"/>
+    <title>Настройка проекта</title>
+</head>
+<body>
+<h1>Настройка проекта</h1>
+
+<p>Вся конфигурация по умолчанию определяется в build.yaml. Этот файл работает подобно базовому классу в ООП.</p>
+
+<p>Любой параметр может быть переопределен в kungfu.py (т.е. любым скриптом с hdlManager).</p>
+
+<p>Отдельный случай при переопределении в скриптах для параметра "dep" - после запуска, автоматически пополняет список
+    зависимостей в build.yaml</p>
+</body>
+</html>
+<!--
+build.yaml info:
+1. Some sort of base class for all configurations in the current design.
+   Every field(1*) can be redefined in script (e.g. kungfu.py)
+2. "dep" field is very important for dependency analyze,
+   because location of build.yaml predefined.
+
+1* for "dep" field - script adds new paths, so extends dep list in build.yaml
+   after first run.
+-->
