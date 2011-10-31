@@ -1,0 +1,29 @@
+﻿<html>
+<head>
+<style>
+.tab { margin-left: 20px; }
+</style>
+</head>
+<h3>Работа с гит репозиторием</h3>
+<pre>
+При создании нового проекта всегда локально инициализируется новый репозиторий,
+также генерируется .gitignore.
+
+Поддерживаются следующие команды:
+hdl.py -git clone      = клонировать весь hdl репо;
+hdl.py -git pull       = заапдейтить и смержить имеющиеся репозитории;
+hdl.py -git cmd        = запустить гит консоль в текущей директории;
+kungfu.py* -git upload = загрузить текущий репо на webdav;
+  kungfu.py - любой скрипт в котором определен hdlManager;
+  если локального репо нет - будет создан новый;
+</pre>
+</html>
+<!--Creation of a new design initialize local git repo.
+Configure your repo.
+	See parameters: core, host, webdavSrcPath (root path), webdavBuildPath(root path),
+-git upload = upload a new repo to webdav
+-git cmd = launch git bash in current directory
+-git clone = clone all hdl repo
+-git update = update all hdl repo (new repos would be cloned)
+-git push = ???
+-->

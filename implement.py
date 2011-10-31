@@ -1,6 +1,7 @@
 import os
 import shutil
 import subprocess
+import sys
 import hdlGlobals
 
 import toolchain
@@ -33,7 +34,13 @@ def run(config):
   if not os.path.exists('../implement'):
     os.makedirs('../implement')  
     
-  top = structure.search(iPath = '../synthesis', iOnly = [config['top']+'\.edf'])[0]
+  top = structure.search(iPath = '../synthesis', iOnly = [config['top']+'\.edf'])
+  if top:
+    top = top[0]
+  else:
+    log.error('Cant find netlist, try sythesis step first.')
+    sys.exit()
+    
   netlists = structure.search(iPath = '../src', iOnly = ['\.edf', '\.ngc'], iIgnore = hdlGlobals.ignore )
   ucfSymplicity = structure.search(iPath='../synthesis', iOnly=['\.ucf'], iIgnore=hdlGlobals.ignore)
   ucf = ucfSymplicity[0] or config['ucf']

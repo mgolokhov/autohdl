@@ -3,11 +3,13 @@ import copy
 import logging
 import os
 import pprint
+import subprocess
 import sys
 
 import instance
 import structure
 import build
+import git
 import synthesis
 import aldec
 import implement
@@ -16,6 +18,7 @@ import doc
 
 
 from hdlLogger import log_call
+
 alog = logging.getLogger(__name__)
 
 @log_call
@@ -29,14 +32,14 @@ def convert5to6version(config):
 
 
 @log_call
-def validateTop(iTop):
-  if not iTop:
-    return False
-  srcFiles = structure.search(iPath='../src', iOnly=['\.v$'], iIgnore=['\.svn', '\.git'])
-#  parsed = instance.parseFilesMultiproc(srcFiles)
-  parsed = instance.get_instances(srcFiles)
-#  pprint.pprint(parsed)
-  if parsed.get(iTop):
+def validateTop(iTop, config):
+  parsed = config.get('src_main')
+  if not parsed:
+    srcFiles = structure.search(iPath='../src', iOnly=['\.v$'], iIgnore=['\.svn', '\.git'])
+    config['src_main'] = instance.get_instances(srcFiles)
+    config['src_dep'] = structure.getDepSrc(srcFiles)
+
+  if iTop and parsed.get(iTop):
     return True
 
 
@@ -66,17 +69,17 @@ def setValidTop(arguments, config):
     alog.debug(e)
     topAsScriptName = ''
 
-  if validateTop(arguments.top):
+  if validateTop(arguments.top, config):
     config['top'] = arguments.top
     alog.info('Using top module name from arguments list')
-  elif validateTop(config['top']):
+  elif validateTop(config['top'], config):
     alog.info('Using top module name from script')
-  elif topAsScriptName and validateTop(topAsScriptName):
+  elif topAsScriptName and validateTop(topAsScriptName, config):
     config['top'] = topAsScriptName
     alog.info('Using top module name same as script name')
   else:
     top = build.getParam(iKey='top')
-    if validateTop(top):
+    if validateTop(top, config):
       alog.info('Using top module from build.yaml')
       config['top'] = top
     else:
@@ -134,10 +137,14 @@ def mergeConfig(configScript):
   convert5to6version(configScript)
   # overwrite
   config.update(configScript)
-  depExtend = list(set(configScript.get('dep', []))-set(configBuild['dep']))
-  configBuild['dep'] += depExtend
-  config['dep'] = configBuild['dep']
-  build.dump(configBuild)
+
+  depInScript = configScript.get('dep', [])
+  if depInScript:
+    depInBuild = configBuild.get('dep', []) or []
+    depExtend = list(set(depInScript)-set(depInBuild))
+    configBuild['dep'] = configBuild.get('dep', []) + depExtend
+    config['dep'] = configBuild['dep']
+    build.dump(configBuild)
   return config
 
 
@@ -181,16 +188,22 @@ def kungfu(**config):
   alog.debug('args: ', sys.argv)
   alog.debug('config: ', config)
 
+  if not config:
+    config = {}
+
   validateLocation()
 
-  parser = argparse.ArgumentParser(description='hdl cycles manager')
+  parser = argparse.ArgumentParser(description='HDL Manager')
   parser.add_argument('-tb', action = 'store_true', help = 'export project to active-hdl')
+  parser.add_argument('-top', help = 'top module name')
   parser.add_argument('-syn', nargs ='?', default = 'nope', choices = ['gui', 'batch'], help = 'synthesis step')
   parser.add_argument('-impl', action = 'store_true', help = 'implementation step')
   parser.add_argument('-upload', action = 'store_true', help = 'upload firmware to WebDav server')
-  parser.add_argument('-top', help = 'top module name')
+  parser.add_argument('-git', help = 'creation/synchronization with webdav repo')
+
   parser.add_argument('-info', help = 'print help for concrete command')
   parser.add_argument('-d', action = 'store_true', help = 'debug flag')
+
   arguments = parser.parse_args()
 
   if arguments.info == 'build':
@@ -204,11 +217,15 @@ def kungfu(**config):
   setMode(arguments, config)
   setUpload(arguments, config)
 
-  printInfo(config)
-
   if arguments.d:
     pprint.pprint(config)
     sys.exit()
+
+  printInfo(config)
+
+  if arguments.git:
+    git.handle(arguments.git, config)
+    return
 
   if arguments.tb:
     aldec.export()
@@ -223,16 +240,13 @@ def kungfu(**config):
     implement.run(config)
 
   if config['upload']:
-    webdav.upload_fw('../implement/{0}.bit'.format(top))
-    webdav.upload_fw('../implement/{0}.mcs'.format(top))
+    webdav.upload_fw('../implement/{0}.bit'.format(config['top']))
+    webdav.upload_fw('../implement/{0}.mcs'.format(config['top']))
 
 
 if __name__ == '__main__':
-  def func(**kw):
-    print kw
-
-  func()
-  func(a='as', b='dfd')
-#  func({'c':1, 'd':'df'})
+  parser = argparse.ArgumentParser(description='hdl cycles manager')
+  parser.add_argument('-tb', help = 'export project to active-hdl')
+  print parser.parse_args('-tb bka-dflkdjfd'.split())
 
   

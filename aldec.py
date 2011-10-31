@@ -126,7 +126,7 @@ def export():
   prj = initPrj()
   gen_aws(iPrj = prj)
   gen_adf(iPrj = prj)
-  gen_compile_cfg(iFiles = prj['filesToCompile'])
+  gen_compile_cfg(iFiles = prj['allSrc']+prj['depSrc']) # prj['filesToCompile'])
   if build.getParam(iKey = 'test'):
     return
   aldec = toolchain.getPath(iTag = 'avhdl_gui')

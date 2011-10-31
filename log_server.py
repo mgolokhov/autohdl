@@ -14,7 +14,7 @@ def shutdownLogServer():
   # 0 - connect ok
   # 10061 no socket
   # 10056 already binded
-  for i in range(5):
+  for i in range(3):
     print 'shutting down log server...'
     s = socket.socket()
     if not s.connect_ex(('localhost', logging.handlers.DEFAULT_TCP_LOGGING_PORT)):
@@ -24,7 +24,7 @@ def shutdownLogServer():
                                                      logging.handlers.DEFAULT_TCP_LOGGING_PORT)
       rootLogger.addHandler(socketHandler)
       logging.warning('shutdown_log_server')
-      time.sleep(2)
+      time.sleep(1)
     else:
       print 'log server were shut down'
       return

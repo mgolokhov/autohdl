@@ -1,5 +1,7 @@
 
 __all__ = [
+  'doc',
+  'git',
   'hdlManager',
   'synthesis',
   'implement',

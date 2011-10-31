@@ -23,7 +23,7 @@ class ToolchainException(Exception):
 class Tool(object):
   @log_call
   def __init__(self, iTag):
-    
+    self.result = ''
     try:
       self.tool, self.mode = iTag.split('_')
       self.tag = iTag
@@ -41,7 +41,8 @@ class Tool(object):
                  'synplify' : {'gui'   : 'synplify_premier.exe',
                                'batch' : 'synplify_premier.exe',
                                'path'  : ['/Synopsys/', '/Synplicity/']},
-                 'git'      : {'batch' : 'git.exe',
+                 'git'      : {'batch' : 'git.cmd',
+                               'sh'    : 'sh.exe',
                                'path'  : ['/Git/']}
                  }
     try:
@@ -126,7 +127,9 @@ class Tool(object):
       self.fullPaths.sort(cmp=None, key=os.path.getmtime, reverse=True)
       self.askConfirm()
       self.saveSearchResult()
-           
+    else:
+      log.warning('Cant find tool: '+ self.tag)
+
 
   @log_call
   def saveSearchResult(self):

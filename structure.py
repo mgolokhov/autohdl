@@ -215,6 +215,8 @@ def search(iPath = '.', iIgnore = None, iOnly = None):
 @log_call
 def getDepSrc(iSrc, iIgnore = None, iOnly = None):
   log.info('Analyzing dependences...')
+  if type(iSrc) is not list:
+    iSrc = [iSrc]
   #TODO: filter *.v input files (all list from xilinx), print only for that list, others silently ignore
   verilogSrc = [i for i in iSrc if os.path.splitext(i)[1] == '.v']
 #  parsed = instance.parseFilesMultiproc(verilogSrc)

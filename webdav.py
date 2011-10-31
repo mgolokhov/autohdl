@@ -69,7 +69,7 @@ def dump_netrc(host, username, password):
     f.write(data)
 
 
-def authenticate(host):
+def authenticate(host = 'cs.scircus.ru'):
   print 'Authentication',
   path = sys.prefix + '/Lib/site-packages/autohdl_cfg/open_sesame'
   username, password = loadAuth(path)
@@ -208,13 +208,11 @@ def upload(src, dst, host = 'cs.scircus.ru'):
       os.chdir(path_was)
 
 def git_init(src = '.', addr = 'http://cs.scircus.ru/git/hdl'):
+  if addr == 'cores':
+    addr = 'http://cs.scircus.ru/git/hdl/cores'
   src = os.path.abspath(src)
-  print src
-  if os.path.exists(src+'/.git'):
-    print 'Local repo already exists: ', src
-    return
   path_git = toolchain.Tool('git_batch').result
-  dirname, name = os.path.split(src)
+  _, name = os.path.split(src)
   subprocess.call('{0} init {1}'.format(path_git,src))
   os.chdir(src+'/.git')
   subprocess.call(path_git+' update-server-info')
