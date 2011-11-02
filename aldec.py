@@ -11,12 +11,13 @@ import template_avhdl_adf
 import toolchain
 
 
+
 @log_call
 def initPrj():
-  '''
+  """
   Precondition: cwd= <dsn_name>/script
   Output: dictionary { keys=main, dep, tb, other values=list of path files}
-  '''
+  """
   dict = {}
   dict['rootPath'] = os.path.abspath('..').replace('\\', '/')
   dict['dsnName'] = os.path.split(dict['rootPath'])[1]
@@ -46,6 +47,26 @@ def initPrj():
 
   dict['filesToCompile'] = dict['mainSrc'] + dict['depSrc'] + dict['TestBenchSrc'] + mainSrcUncopied
 
+  #TODO: bugaga
+  path = os.path.abspath(os.getcwd())
+  pathAsList = path.replace('\\', '/').split('/')
+  if pathAsList[-3] == 'cores':
+    repoPath = '/'.join(pathAsList[:-3])
+  else:
+    repoPath = '/'.join(pathAsList[:-2])
+  dict['repoPath'] = repoPath
+  print repoPath
+  repoSrc = []
+  for root, dirs, files in os.walk(repoPath):
+    if dict['dsnName'] in dirs:
+      dirs.remove(dict['dsnName'])
+    for i in ['aldec', 'synthesis', 'implement', '.svn', '.git', 'TestBench', 'script', 'resource']:
+      if i in dirs:
+        dirs.remove(i)
+    for f in files:
+      if 'src' in root+'/'+f:
+        repoSrc.append(os.path.abspath(root+'/'+f).replace('\\', '/'))
+  dict['repoSrc'] = repoSrc
   dict['build'] = build.load()
 
   return dict
@@ -66,7 +87,7 @@ def gen_adf(iPrj):
 
 
 @log_call
-def gen_compile_cfg(iFiles):
+def gen_compile_cfg(iFiles, iRepoSrc):
   src = [] 
   start = os.path.dirname('../aldec/compile.cfg')
   for i in iFiles:
@@ -76,7 +97,15 @@ def gen_compile_cfg(iFiles):
     except ValueError:
       res = '[file:{0}]\nEnabled=1'.format(i)
     src.append(res)
-      
+
+  for i in iRepoSrc:
+    path = os.path.abspath(i)
+    try:
+      res = '[file:.\\{0}]\nEnabled=0'.format(os.path.relpath(path = path, start = start))
+    except ValueError:
+      res = '[file:{0}]\nEnabled=0'.format(i)
+    src.append(res)
+
   content = '\n'.join(src)
   f = open('../aldec/compile.cfg', 'w')
   f.write(content)
@@ -126,7 +155,7 @@ def export():
   prj = initPrj()
   gen_aws(iPrj = prj)
   gen_adf(iPrj = prj)
-  gen_compile_cfg(iFiles = prj['allSrc']+prj['depSrc']) # prj['filesToCompile'])
+  gen_compile_cfg(iFiles = prj['allSrc']+prj['depSrc'], iRepoSrc=prj['repoSrc']) # prj['filesToCompile'])
   if build.getParam(iKey = 'test'):
     return
   aldec = toolchain.getPath(iTag = 'avhdl_gui')

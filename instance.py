@@ -1,4 +1,5 @@
 import os
+import pprint
 import build
 
 import verilog
@@ -21,7 +22,6 @@ def get_instances(files):
       instances: set(instance1, instance2,..)
   """
   parsed = {}
-#  print files
   if files:
     if not isinstance(files, list):
       files = [files]
@@ -42,14 +42,7 @@ def resolve_undef(instance, in_file, _parsed = {}):
   if instance in _parsed:
     return {instance: _parsed[instance]}
 
-  dep_file = build.getFile(iInstance = instance, iInFile = in_file)
-  if dep_file:
-    parsed = get_instances(dep_file)
-    _parsed.update(parsed)
-    if instance in parsed:
-      return parsed
-     
-  dep_files = build.getFile() #return all cache
+  dep_files = build.getDepPaths(in_file)
   if dep_files:
     parsed = get_instances([d for d in dep_files if os.path.splitext(d)[1] in ['.v']])
     _parsed.update(parsed)

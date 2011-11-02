@@ -125,154 +125,58 @@ def dump(iContent = '', iBuildFile = '../resource/build.yaml'):
   convertToRelpath(content)
   if content != oldContent:
     yaml.dump(content, open(iBuildFile, 'w'), default_flow_style=False)
-    
-    
-@log_call
-def getBuild(iFile):
-  path = os.path.abspath(iFile)
-  pathAsList = path.replace('\\','/').split('/')
-  pathBuild = ''
-  if pathAsList.count('src'):
-    index = pathAsList.index('src')
-    rootPath = '/'.join(pathAsList[:index])
-    pathBuild = os.path.join(rootPath, 'resource', 'build.yaml')
-    if not os.path.exists(pathBuild):
-      log.warning("Can't find build file: " + pathBuild)
-      pathBuild = ''
-  else:
-    log.warning('Wrong location for source file: ' + iPathFile)
-    log.warning('Expecting in <dsn_name>/src/ directory')
-  return pathBuild
-  
 
 
 @log_call
-def getBuilds(iFiles):
-  """
-  Input:  list/set of path to files with undefined instances
-  Output: one or set of path to build.yaml's
-  """
-  pathBuilds = set()
-  for f in iFiles:
-    pathAsList = f.replace('\\','/').split('/')
-    if pathAsList.count('src'):
-      index = pathAsList.index('src')
-      rootPath = '/'.join(pathAsList[:index])
-      pathBuild = os.path.join(rootPath, 'resource', 'build.yaml')
-      if not os.path.exists(pathBuild):
-        log.warning("Can't find build file: " + pathBuild)
-        continue
-      pathBuilds.add(pathBuild)
-    else:
-      log.warning('Wrong location for source file: ' + iPathFile)
-      log.warning('Expecting in <dsn_name>/src/ directory')
-      continue
-  return pathBuilds
-
-
-
-@log_call  
 def getParam(iKey, iBuild = '../resource/build.yaml', iDefault = None):
   iDefault = iDefault or []
   content = load(iBuild)
   res = None
-  for key in [iKey.upper(), iKey.lower()]: 
+  for key in [iKey.upper(), iKey.lower()]:
     try:
       res = content[key]
     except KeyError:
       continue
   res = res or iDefault
   return res
-    
+
+
 @log_call
-def getDep(iBuild):
-  deps = getParam(iKey = 'dep', iBuild = iBuild)
-  if not deps:
-    return 
-  # os.chdir('../resource') for relative path same as '../script'
-  deps = [os.path.abspath(d) for d in deps]
-  paths = set()
-  for d in deps:
-    if not os.path.exists(d):
-      log.warning('Path does not exists: '+ d + '; in file: ' + pathBuild)
-    else:
-      paths.add(d)
-  return paths 
-
-
-
-
-@log_call    
-def getDeps(iBuilds):
-  """
-  Input:  set of path to build.yaml's
-  Output: set of new paths/files to parse
-  """
-  for pathBuild in iBuilds:
-    deps = getParam(iKey='dep', iBuild=pathBuild)
-    path = set()
-    if not deps:
-      return []
-    os.chdir('../resource')
-    deps = [os.path.abspath(d) for d in deps]
-    os.chdir('../script')
-    for d in deps:
-      if not os.path.exists(d):
-        log.warning('Path does not exists: '+ d + '; in file: ' + pathBuild)
-      else:
-        path.add(d)
+def getPathToBuild(file):
+  file = os.path.abspath(file)
+  pathAsList = file.replace('\\','/').split('/')
+  path = ''
+  if pathAsList.count('src'):
+    index = pathAsList.index('src')
+    rootPath = '/'.join(pathAsList[:index])
+    path = os.path.join(rootPath, 'resource', 'build.yaml')
+    if not os.path.exists(path):
+      log.warning("Can't find build file: " + path)
+      path = ''
+  else:
+    log.warning('Wrong location for source file: ' + file)
+    log.warning('Expects in <dsn_name>/src/ directory')
   return path
 
 
-def getTree(iPaths):
-  tree = []
-  for path in iPaths:
-    if os.path.isfile(path):
-      tree.append(path)
-    else:
-      for root, dirs, files in os.walk(path):
-        for f in files:
-          tree.append(os.path.join(root, f))
-  return tree  
-
-
-def getFileName(iPath):
-  return os.path.splitext(os.path.split(iPath)[1])[0]
-
-
-def getFile(iInstance = '', iInFile = '', _cache = {}):
-  if not iInstance and not iInFile:
-    return _cache.values()
-  build = getBuild(iInFile)
-  key = (iInstance, build)
-  res = _cache.get(key)
-  if not res:
-    paths = getDep(build)
-    if not paths:
-      return
-    tree = getTree(paths)
-    new = {(getFileName(i), build):i for i in tree}
-    _cache.update(new)
-    res = _cache.get(key)
-  return res
-
-
 @log_call
-def getDepTree(iFile):
-  if type(iFile) == type(""):
-    iFile = [iFile]
-  iFile = list(set(iFile))
-  pathBuilds = getBuilds(iFile)
-  paths = getDeps(pathBuilds)
-  depTree = []
-  for path in paths:
-    if os.path.isfile(path):
-      depTree.append(path)
-    else:
-      for root, dirs, files in os.walk(path):
+def getDepPaths(file):
+  """
+  Input:  path to file with undefined instance;
+  Output: list of path to dependent files
+  """
+  path = getPathToBuild(file)
+  depInBuild = getParam(iKey='dep', iBuild=path, iDefault=[])
+  if type(depInBuild) is not list:
+    depInBuild = [depInBuild]
+  paths = []
+  for i in depInBuild:
+    if os.path.isfile(i):
+      paths.append(os.path.abspath(i))
+    elif os.path.isdir(i):
+      for root, dirs, files in os.walk(i):
         for f in files:
-          depTree.append(os.path.join(root, f))
-  return depTree
-
-
-
+          paths.append(os.path.abspath(os.path.join(root, f)))
+    else:
+      log.warning('Path does not exists: '+ os.path.abspath(i) + '; in file: ' + file)
+  return paths

@@ -54,6 +54,17 @@ def files(iPrj):
     iPrj['depSrc'].sort(key=str.lower)
     dep  = ['dep/../../../script/' + i + '=-1' for i in iPrj['depSrc']]
 
+  rootPath = iPrj['repoPath']+'/'
+  l = []
+  # relative path to aldec/src/virtualDirectory
+  for i in iPrj['repoSrc']:
+    virtFolder = os.path.dirname(i).replace('\\', '/').split(rootPath)[1]
+    virtFolder = virtFolder.replace('/', '\\')
+    ass = len(virtFolder.split('\\')) + 1 # counts repo dir
+    l.append('repo\\' + virtFolder +'/..'*ass + '/../../script/' + os.path.relpath(i) + '=-1')
+  repo = l
+
+
   netlist = []
 #  if iPrj.get('netlistSrc'):
 #    iPrj['netlistSrc'].sort()
@@ -74,7 +85,7 @@ def files(iPrj):
     virtFolder = virtFolder.replace('/', '\\')
     l.append(virtFolder + '/' + i + '=-1')
   allOtherSrc = l
-  files = '\n'.join(dep + netlist + allOtherSrc + uncopied)
+  files = '\n'.join(dep + netlist + allOtherSrc + uncopied + repo)
   return files
 
 
@@ -270,9 +281,11 @@ def generate(iPrj):
   
   '[Groups]\n'
   'src=1\n'
+  'dep=1\n'
   'script=1\n'
   'resource=1\n'
   'TestBench=1\n'
+  'repo\n'
   
   '[Files]\n'
   +'{Files}\n'.format(Files=files(iPrj))+

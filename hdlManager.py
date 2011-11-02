@@ -201,14 +201,9 @@ def kungfu(**config):
   parser.add_argument('-upload', action = 'store_true', help = 'upload firmware to WebDav server')
   parser.add_argument('-git', help = 'creation/synchronization with webdav repo')
 
-  parser.add_argument('-info', help = 'print help for concrete command')
   parser.add_argument('-d', action = 'store_true', help = 'debug flag')
 
   arguments = parser.parse_args()
-
-  if arguments.info == 'build':
-    print doc.buildYaml
-    return
 
   config = mergeConfig(config)
 
