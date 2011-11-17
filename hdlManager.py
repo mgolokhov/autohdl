@@ -235,7 +235,7 @@ def kungfu(**config):
     implement.run(config)
 
   if config['upload']:
-    webdav.upload_fw('../implement/{0}.bit'.format(config['top']))
+    webdav.upload_fw('../implement/{0}.bit'.format(config['top']), conf = config)
     webdav.upload_fw('../implement/{0}.mcs'.format(config['top']))
 
 
