@@ -1,12 +1,15 @@
 import os
 import hashlib
+import sys
 
 try:
   from lib import yaml
   from hdlLogger import logging
+  from pkg_info import getVersion
 except ImportError:
   from ..lib import yaml
   from ..hdlLogger import logging
+  from ..pkg_info import getVersion
 
 
 CACHE_PATH = '../resource/parsed'
@@ -31,6 +34,9 @@ def shaOK(data):
     if sha == data['sha']:
       return True
 
+def versionOK(data):
+  if data.get('version') == getVersion():
+    return True
 
 def load(file):
   if not CACHE_LOAD:
@@ -44,7 +50,7 @@ def load(file):
   except Exception as e:
     logging.warning(e)
   try:
-    if shaOK(y):
+    if shaOK(y) and versionOK(y):
       return y
   except IOError as e:
     logging.debug(e)
@@ -63,6 +69,7 @@ def dump(data):
       with open(i) as f:
         h.update(f.read())
     data['sha'] = h.hexdigest()
+    data['version'] = getVersion()
     # curdir = <dsn>/script
     del data['preprocessed']
     del data['cachable']

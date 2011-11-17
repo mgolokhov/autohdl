@@ -55,7 +55,7 @@ def initPrj():
   else:
     repoPath = '/'.join(pathAsList[:-2])
   dict['repoPath'] = repoPath
-  print repoPath
+#  print repoPath
   repoSrc = []
   for root, dirs, files in os.walk(repoPath):
     if dict['dsnName'] in dirs:
@@ -88,6 +88,9 @@ def gen_adf(iPrj):
 
 @log_call
 def gen_compile_cfg(iFiles, iRepoSrc):
+  filesSet = set(iFiles)
+  iFiles = list(filesSet)
+  iRepoSrc = list(set(iRepoSrc)-filesSet)
   src = [] 
   start = os.path.dirname('../aldec/compile.cfg')
   for i in iFiles:

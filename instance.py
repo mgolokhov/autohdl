@@ -23,7 +23,7 @@ def get_instances(files):
   """
   parsed = {}
   if files:
-    if not isinstance(files, list):
+    if type(files) is not list:
       files = [files]
     for afile in files:
       if os.path.splitext(afile)[1] not in ['.v']:
@@ -39,15 +39,23 @@ def get_instances(files):
 
 @log_call
 def resolve_undef(instance, in_file, _parsed = {}):
+#  print 'searching instance ', instance
+#  print 'undef in file: ', in_file
   if instance in _parsed:
     return {instance: _parsed[instance]}
 
   dep_files = build.getDepPaths(in_file)
   if dep_files:
-    parsed = get_instances([d for d in dep_files if os.path.splitext(d)[1] in ['.v']])
-    _parsed.update(parsed)
-    if instance in parsed:
-      return {instance: parsed[instance]}
+    for i in dep_files:
+      parsed = get_instances([i])
+#      print parsed
+#      raw_input('next')
+      for i in parsed:
+        if i not in _parsed:
+#          print 'added'
+          _parsed[i] = parsed[i]
+    if instance in _parsed:
+      return {instance: _parsed[instance]}
 
 
 @log_call
@@ -56,7 +64,6 @@ def analyze(parsed, _ignore = set()):
   Input: dictionary
   Output: dictionary
   """
-  log.info('Analyzing...')
   _ignore.update(set(build.getParam(iKey='ignore_undefined_instances', iDefault=[])))
   for module in parsed:
     val = parsed[module]

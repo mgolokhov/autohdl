@@ -97,6 +97,8 @@ def exists(path, client):
     sys.exit()
 
 
+
+
 def upload_fw(file, host = 'cs.scircus.ru', path = '/test/distout/rtl', _cache = []):
   # dsn_name/implement/file
   dsn_name = os.path.abspath(file).replace('\\', '/').split('/')[-3]
@@ -207,21 +209,7 @@ def upload(src, dst, host = 'cs.scircus.ru'):
     finally:
       os.chdir(path_was)
 
-def git_init(src = '.', addr = 'http://cs.scircus.ru/git/hdl'):
-  if addr == 'cores':
-    addr = 'http://cs.scircus.ru/git/hdl/cores'
-  src = os.path.abspath(src)
-  path_git = toolchain.Tool('git_batch').result
-  _, name = os.path.split(src)
-  subprocess.call('{0} init {1}'.format(path_git,src))
-  os.chdir(src+'/.git')
-  subprocess.call(path_git+' update-server-info')
-  os.chdir('..')
-  #_netrc
-  res = urlparse.urlparse(addr)
-  upload(src=src+'/.git', dst='{0}/{1}.git'.format(res.path,name), host=res.hostname)
-  subprocess.call('{0} remote add webdav {1}/{2}.git'.format(path_git, addr, name))
-  
+
 
 
 if __name__ == '__main__':

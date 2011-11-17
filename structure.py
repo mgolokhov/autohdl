@@ -212,9 +212,23 @@ def search(iPath = '.', iIgnore = None, iOnly = None):
   return resFiles
 
 
+import threading, time
+
+done = False
+def progressBar(l=['|','/', '-', '\\', 0]):
+  while not done:
+    sys.stdout.write('\r{}\r'.format(l[l[-1]]))
+    l[-1] = (l[-1]+1)%(len(l)-1)
+    time.sleep(0.4)
+
 @log_call
 def getDepSrc(iSrc, iIgnore = None, iOnly = None):
   log.info('Analyzing dependences...')
+
+  t = threading.Thread(target=progressBar)
+  t.setDaemon(1)
+  t.start()
+
   if type(iSrc) is not list:
     iSrc = [iSrc]
   #TODO: filter *.v input files (all list from xilinx), print only for that list, others silently ignore
@@ -229,6 +243,10 @@ def getDepSrc(iSrc, iIgnore = None, iOnly = None):
       break
   allSrcFiles = {val['path'].replace('\\', '/') for val in parsed.values()}     
   depSrcFiles = allSrcFiles - {os.path.relpath(i).replace('\\','/') for i in iSrc}
+
+  global  done
+  done = True
+
   return list(depSrcFiles)
   
   

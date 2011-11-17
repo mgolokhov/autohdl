@@ -30,6 +30,7 @@ class FuncTest(unittest.TestCase):
         expected = yaml.load(af)
       with open(os.path.dirname(os.path.abspath(__file__))+'/in/tmp/'+f+'cache') as af:
         actual = yaml.load(af)
+      actual.pop('version')
       self.assertEqual(actual, expected)
 
       

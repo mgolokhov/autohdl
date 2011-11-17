@@ -22,16 +22,15 @@ class BuildException(Exception):
 
 
 @log_call    
-def convertToRelpath(iContent):
-  os.chdir('../resource')
-
-  pathUCF = iContent.get('UCF') or iContent.get('ucf')
+def convertToRelpath(iContent, buildFile):
+  buildPath = os.path.dirname(buildFile)
+  pathUCF = getParam('ucf')
   if pathUCF:
-    iContent['ucf'] = os.path.relpath(pathUCF)
+    iContent['ucf'] = os.path.relpath(pathUCF, buildPath)
 
-  depSrc = iContent.get('dep') or iContent.get('DEP')
+  depSrc = getParam('dep')
   if depSrc:
-    iContent['dep'] = [os.path.relpath(i) for i in depSrc]
+    iContent['dep'] = [os.path.relpath(i, buildPath) for i in depSrc]
 
   include_path = iContent.get('include_path')
   # TODO: bugaga
@@ -39,33 +38,35 @@ def convertToRelpath(iContent):
   if include_path:
     if type(include_path) != type(list()):
       include_path = [include_path]
-    iContent['include_path'] = [os.path.relpath(i) for i in include_path]
-
-  os.chdir('../script')
-
+    iContent['include_path'] = [os.path.relpath(i, buildPath) for i in include_path]
 
 
 @log_call    
-def convertToAbspath(iContent):
-  os.chdir('../resource')
-
-  pathUCF = iContent.get('UCF') or iContent.get('ucf')
+def convertToAbspath(iContent, buildPath):
+  rootPath = os.path.dirname(buildPath)
+  pathUCF = iContent.get('ucf')
+  iContent['dump'] = False
   if pathUCF and os.path.exists(pathUCF):
-    path = os.path.abspath(pathUCF)
+    if ':' not in pathUCF:
+      path = os.path.normpath(rootPath+'/'+pathUCF)
+    else:
+      iContent['dump'] = True
+      path = pathUCF
     iContent['ucf'] = path
     
   depSrc = iContent.get('dep')
   if depSrc:
     dep = []
-    dep_wrong = []
     for i in depSrc:
-      if os.path.exists(i):
-        dep.append(os.path.abspath(i))
+      if ':' not in i:
+        i = os.path.normpath(rootPath+'/'+i)
       else:
-        dep_wrong.append(i)
+        iContent['dump'] = True
+      if os.path.exists(i):
+        dep.append(i)
+      else:
+        log.warning('Wrong path: '+i)
     iContent['dep'] = dep
-    if dep_wrong:
-      iContent['dep_wrong'] = dep_wrong
 
   include_path = iContent.get('include_path')
   if include_path:
@@ -74,6 +75,10 @@ def convertToAbspath(iContent):
     incl = []
     incl_wrong = []
     for i in include_path:
+      if ':' not in i:
+        i = os.path.normpath(rootPath+'/'+i)
+      else:
+        iContent['dump'] = True
       if os.path.exists(i):
         incl.append(os.path.abspath(i).replace('\\', '/'))
       else:
@@ -82,15 +87,12 @@ def convertToAbspath(iContent):
     if incl_wrong:
       iContent['include_path_wrong'] = incl_wrong
 
-  os.chdir('../script')
-
 
 @log_call
 def load(iBuildFile = '../resource/build.yaml', _cacheBuild = {}):
-  if False:
-    pass
-#  if _cacheBuild:
-#    content = _cacheBuild
+  path = os.path.abspath(iBuildFile)
+  if _cacheBuild.get(path):
+    return _cacheBuild.get(path)
   else:
     try:
       with open(iBuildFile) as f:
@@ -100,36 +102,42 @@ def load(iBuildFile = '../resource/build.yaml', _cacheBuild = {}):
           newFields  = list(contentDefault.viewkeys() - content.viewkeys())
           for i in newFields:
             content[i] = contentDefault[i]
-          convertToAbspath(content)
-          _cacheBuild.update(content)
+          convertToAbspath(content, iBuildFile)
+          _cacheBuild.update({path:content})
           dump(iContent = content, iBuildFile = iBuildFile)
-    except IOError:
+    except IOError as e:
+      log.warning(e)
       logging.warning('Cant open file ' + os.path.abspath(iBuildFile))
       return {}
 
   return content
 
+
 def loadDefault():
   with open(os.path.dirname(__file__)+'/data/build.yaml') as f2:
-    return yaml.load(f2.read())
+    content = yaml.load(f2.read())
+    convertToAbspath(content, '../resource/build.yaml')
+    return content
 
 
 def loadUncached(iBuildFile = '../resource/build.yaml'):
-  return yaml.load(open(iBuildFile, 'r'))
+  with open(iBuildFile) as f2:
+    content = yaml.load(f2.read())
+    convertToAbspath(content, iBuildFile)
+    return content
 
 
 @log_call    
-def dump(iContent = '', iBuildFile = '../resource/build.yaml'):
-  content  = iContent or load(iBuildFile = iBuildFile)
+def dump(iContent, iBuildFile = '../resource/build.yaml'):
+  content = iContent
+  convertToRelpath(content, iBuildFile)
   oldContent = loadUncached(iBuildFile = iBuildFile)
-  convertToRelpath(content)
-  if content != oldContent:
+  if content != oldContent or content.pop('dump', False):
     yaml.dump(content, open(iBuildFile, 'w'), default_flow_style=False)
 
 
 @log_call
 def getParam(iKey, iBuild = '../resource/build.yaml', iDefault = None):
-  iDefault = iDefault or []
   content = load(iBuild)
   res = None
   for key in [iKey.upper(), iKey.lower()]:
@@ -137,7 +145,7 @@ def getParam(iKey, iBuild = '../resource/build.yaml', iDefault = None):
       res = content[key]
     except KeyError:
       continue
-  res = res or iDefault
+  res = res or iDefault or []
   return res
 
 
@@ -166,17 +174,39 @@ def getDepPaths(file):
   Output: list of path to dependent files
   """
   path = getPathToBuild(file)
-  depInBuild = getParam(iKey='dep', iBuild=path, iDefault=[])
+  depInBuild = loadUncached(path).get('dep')
+  if not depInBuild:
+    return []
   if type(depInBuild) is not list:
     depInBuild = [depInBuild]
   paths = []
-  for i in depInBuild:
+  for i in [os.path.abspath(os.path.dirname(file))] + depInBuild:
     if os.path.isfile(i):
-      paths.append(os.path.abspath(i))
+      paths.append(i)
     elif os.path.isdir(i):
       for root, dirs, files in os.walk(i):
         for f in files:
-          paths.append(os.path.abspath(os.path.join(root, f)))
+          if os.path.splitext(f)[1] in ['.v']:
+            paths.append((os.path.join(root, f)))
     else:
       log.warning('Path does not exists: '+ os.path.abspath(i) + '; in file: ' + file)
   return paths
+
+
+@log_call
+def updateDeps(files):
+  if type(files) is not list:
+    files = [files]
+  build = load()
+  dep = build.get('dep')
+  # build.yaml returns None
+  if dep:
+    dep = [os.path.abspath(d) for d in dep]
+  else:
+    dep = []
+  log.error('files ' + str(files))
+  log.error('dep ' +str(dep))
+  files = [os.path.relpath(i, '../resource') for i in files
+           if os.path.abspath(i) not in dep]
+  build['dep'] = files + dep
+  dump(build)
