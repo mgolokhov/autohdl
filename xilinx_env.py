@@ -1,13 +1,10 @@
-import ctypes
-import logging
-from hdlLogger import log_call
-log = logging.getLogger(__name__)
-
 import glob
 import subprocess
-import toolchain
 import os
 import ctypes
+import logging
+log = logging.getLogger(__name__)
+
 
 # TODO: duplication in toolchain
 def getWin32Drivers():

@@ -3,18 +3,16 @@ import copy
 import logging
 import os
 import pprint
-import subprocess
 import sys
 
-import instance
-import structure
-import build
-import git
-import synthesis
-import aldec
-import implement
-import webdav
-import doc
+from autohdl import instance
+from autohdl import structure
+from autohdl import build
+from autohdl import git
+from autohdl import synthesis
+from autohdl import aldec
+from autohdl import implement
+from autohdl import webdav
 
 
 from hdlLogger import log_call
@@ -91,6 +89,7 @@ def setValidUcf(config):
 
   ucfFromScript = getFullPathToUcf(config['ucf'])
   if ucfFromScript:
+    config['ucf'] = ucfFromScript
     alog.info('Using ucf file from script')
     return
 

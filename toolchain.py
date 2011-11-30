@@ -1,16 +1,13 @@
 import ctypes
-from xml.dom import minidom
-import xml
 import os
 import sys
-import string
 import glob
 
-from hdlLogger import log_call, logging
+from autohdl.hdlLogger import log_call, logging
 log = logging.getLogger(__name__)  
 
-import lib.yaml as yaml
-from lib.yaml.error import YAMLError
+import autohdl.lib.yaml as yaml
+from autohdl.lib.yaml.error import YAMLError
 
 class ToolchainException(Exception):
   def __init__(self, iString):

@@ -1,10 +1,6 @@
 import os
-import pprint
 
-import structure
-import hdlGlobals
-
-import lib.yaml as yaml
+import autohdl.lib.yaml as yaml
 
 
 from hdlLogger import log_call, logging

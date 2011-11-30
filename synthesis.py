@@ -1,17 +1,15 @@
 import os
-import sys
-import re
 import shutil
 import subprocess
 import time
 
-import structure
-import toolchain
-import build
-import hdlGlobals
+from autohdl import structure
+from autohdl import toolchain
+from autohdl import build
+from autohdl import hdlGlobals
 
 import logging
-from hdlLogger import log_call
+from autohdl.hdlLogger import log_call
 log = logging.getLogger(__name__)
 
 

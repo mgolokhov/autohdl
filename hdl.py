@@ -1,7 +1,11 @@
 import argparse
-import os
-import subprocess
-from autohdl import *
+
+import autohdl.build as build
+import autohdl.structure as structure
+import autohdl.git as git
+import autohdl.hdlManager as hdlManager
+import autohdl.pkg_info as pkg_info
+import autohdl.doc as doc
 
 def main():
   parser = argparse.ArgumentParser(description='Helper to create designs')

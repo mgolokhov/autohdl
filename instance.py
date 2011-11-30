@@ -1,9 +1,9 @@
 import os
 import pprint
-import build
 
-import verilog
-from hdlLogger import log_call, logging
+from autohdl import build
+from autohdl import verilog
+from autohdl.hdlLogger import log_call, logging
 log = logging.getLogger(__name__)
 
 

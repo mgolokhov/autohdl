@@ -1,12 +1,10 @@
 import re
 import os
 import shutil
-import subprocess
 import sys
 
-import instance
-import build
-import hdlGlobals
+from autohdl import instance
+from autohdl import hdlGlobals
 
 from hdlLogger import log_call, logging
 log = logging.getLogger(__name__)

@@ -2,10 +2,10 @@ import os
 import shutil
 import subprocess
 import sys
-import hdlGlobals
 
-import toolchain
-import structure
+from autohdl import hdlGlobals
+from autohdl import toolchain
+from autohdl import structure
 
 
 from hdlLogger import log_call, logging

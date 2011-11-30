@@ -3,12 +3,12 @@ import shutil
 import subprocess
 
 
-from hdlLogger import log_call
-import structure
-import build
-import hdlGlobals
-import template_avhdl_adf
-import toolchain
+from autohdl.hdlLogger import log_call
+from autohdl import structure
+from autohdl import build
+from autohdl import hdlGlobals
+from autohdl import template_avhdl_adf
+from autohdl import toolchain
 
 
 

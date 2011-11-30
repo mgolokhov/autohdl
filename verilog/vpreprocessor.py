@@ -8,7 +8,7 @@ try:
   from hdlLogger import log_call, logging
 except ImportError:
   from ..lib.pyparsing import quotedString, cppStyleComment
-  from .. import build
+  from autohdl import build
   from ..hdlLogger import log_call, logging
 
 

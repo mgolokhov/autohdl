@@ -1,13 +1,11 @@
 import logging
 import sys
 import os
-import time
-
 import socket
 import logging.handlers
 import subprocess
 
-from lib.decorator import decorator
+from autohdl.lib.decorator import decorator
 
 
 class MyLogger(logging._loggerClass):

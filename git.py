@@ -1,12 +1,11 @@
 import os
-import pprint
 import subprocess
 import urlparse
-from lib.pyparsing import makeHTMLTags, SkipTo
-import toolchain
-import webdav
 
-from hdlLogger import logging
+from autohdl.lib.pyparsing import makeHTMLTags, SkipTo
+from autohdl import toolchain
+from autohdl import webdav
+from autohdl.hdlLogger import logging
 
 
 def initialize(path = '.'):

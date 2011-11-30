@@ -4,9 +4,10 @@ import shutil
 import os
 import threading
 import time
-import build
 
-from hdlLogger import logging
+from autohdl import build
+from autohdl.hdlLogger import logging
+
 log = logging.getLogger(__name__)
 
 

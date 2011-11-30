@@ -3,14 +3,13 @@ import os
 import socket
 import sys
 import getpass
-import build
-import lib.tinydav as tinydav
-from lib.pyparsing import makeHTMLTags, SkipTo
-from lib.tinydav.exception import HTTPUserError
 
-import lib.yaml as yaml
-
-from hdlLogger import log_call, logging
+from autohdl import build
+import autohdl.lib.tinydav as tinydav
+from autohdl.lib.pyparsing import makeHTMLTags, SkipTo
+from autohdl.lib.tinydav.exception import HTTPUserError
+import autohdl.lib.yaml as yaml
+from autohdl.hdlLogger import log_call, logging
 
 log = logging.getLogger(__name__)
 
