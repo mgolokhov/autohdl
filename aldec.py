@@ -9,7 +9,7 @@ from autohdl import build
 from autohdl import hdlGlobals
 from autohdl import template_avhdl_adf
 from autohdl import toolchain
-
+import sys
 
 
 @log_call
@@ -94,6 +94,8 @@ def gen_compile_cfg(iFiles, iRepoSrc):
   src = [] 
   start = os.path.dirname('../aldec/compile.cfg')
   for i in iFiles:
+    if os.path.splitext(i)[1] not in hdlGlobals.srcFileTypes:
+      continue
     path = os.path.abspath(i)
     try:
       res = '[file:.\\{0}]\nEnabled=1'.format(os.path.relpath(path = path, start = start))
@@ -102,6 +104,8 @@ def gen_compile_cfg(iFiles, iRepoSrc):
     src.append(res)
 
   for i in iRepoSrc:
+    if i not in hdlGlobals.srcFileTypes:
+      continue
     path = os.path.abspath(i)
     try:
       res = '[file:.\\{0}]\nEnabled=0'.format(os.path.relpath(path = path, start = start))
@@ -162,6 +166,7 @@ def export():
   if build.getParam(iKey = 'test'):
     return
   aldec = toolchain.getPath(iTag = 'avhdl_gui')
+#  sys.exit()
   subprocess.Popen('pythonw {0}/aldec_run.py {1} "{2}"'.format(
                                                             os.path.dirname(__file__),
                                                             os.getcwd(),

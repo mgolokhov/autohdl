@@ -57,22 +57,32 @@ def resolve_undef(instance, in_file, _parsed = {}):
     if instance in _parsed:
       return {instance: _parsed[instance]}
 
+def asNetlist(inFile, config):
+  netlist = os.path.splitext(inFile)[0]+'.ngc'
+  if os.path.exists(netlist):
+    if config.get('depNetlist'):
+      config['depNetlist'].append(netlist)
+    else:
+      config['depNetlist'] = [netlist]
+    return True
+
 
 @log_call
-def analyze(parsed, _ignore = set()):
+def analyze(parsed, config = {}, _ignore = set()):
   """
   Input: dictionary
   Output: dictionary
   """
-  _ignore.update(set(build.getParam(iKey='ignore_undefined_instances', iDefault=[])))
+#  _ignore.update(set(build.getParam(iKey='ignore_undefined_instances', iDefault=[])))
   for module in parsed:
     val = parsed[module]
-    in_file = val['path']
+    in_file = os.path.abspath(val['path'])
     for instance in val['instances']:
-      if instance not in _ignore and instance not in parsed:
+      if (instance, in_file) not in _ignore and instance not in parsed:
         parsed_new = resolve_undef(instance, in_file)
         if not parsed_new:
-          log.warning("Undefined instance="+instance+' in file='+os.path.abspath(in_file))
-          _ignore.add(instance)
+          if not asNetlist(in_file, config):
+            log.warning("Undefined instance="+instance+' in file='+in_file)
+          _ignore.add((instance, in_file))
         else:
           return parsed_new

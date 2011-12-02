@@ -5,7 +5,7 @@ import os
 import pprint
 import sys
 
-from autohdl import instance
+from autohdl import instance, hdlGlobals
 from autohdl import structure
 from autohdl import build
 from autohdl import git
@@ -33,9 +33,9 @@ def convert5to6version(config):
 def validateTop(iTop, config):
   parsed = config.get('src_main')
   if not parsed:
-    srcFiles = structure.search(iPath='../src', iOnly=['\.v$'], iIgnore=['\.svn', '\.git'])
+    srcFiles = structure.search(iPath='../src', iOnly=['\.v$'], iIgnore=hdlGlobals.ignoreRepoFiles)
     config['src_main'] = instance.get_instances(srcFiles)
-    config['src_dep'] = structure.getDepSrc(srcFiles)
+    config['src_dep'] = structure.getDepSrc(srcFiles, config)
 
   if iTop and parsed.get(iTop):
     return True
@@ -171,7 +171,7 @@ def printInfo(config):
                 'device     : {device}\n'
                 'top module : {top}\n'
                 'ucf        : {ucf}\n'
-                'flash size : {size}\n'
+                'PROM size  : {size} kilobytes\n'
                 'upload     : {upload}\n'
                  + '#'*40 +
                 '').format(device = config['device'],
@@ -223,6 +223,7 @@ def kungfu(**config):
 
   if arguments.tb:
     aldec.export()
+    return
   elif arguments.syn:
     synthesis.run(config)
   elif arguments.impl:

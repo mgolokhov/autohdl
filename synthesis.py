@@ -174,7 +174,7 @@ def run_synplify_batch(iPrj):
 
 @log_call
 def run_synplify_gui(iPrj):
-  subprocess.call([iPrj['pathTool'], iPrj['pathScript']], env = xilinx_env.get())
+  subprocess.check_call([iPrj['pathTool'], iPrj['pathScript']], env = xilinx_env.get())
 
 
 @log_call

@@ -211,7 +211,6 @@ def search(iPath = '.', iIgnore = None, iOnly = None):
 
 
 import threading, time
-
 done = False
 def progressBar(l=['|','/', '-', '\\', 0]):
   while not done:
@@ -219,29 +218,30 @@ def progressBar(l=['|','/', '-', '\\', 0]):
     l[-1] = (l[-1]+1)%(len(l)-1)
     time.sleep(0.4)
 
+
 @log_call
-def getDepSrc(iSrc, iIgnore = None, iOnly = None):
+def getDepSrc(iSrc, config = {}):
   log.info('Analyzing dependences...')
 
+  # display progress bar while parsing
   t = threading.Thread(target=progressBar)
   t.setDaemon(1)
   t.start()
 
   if type(iSrc) is not list:
     iSrc = [iSrc]
-  #TODO: filter *.v input files (all list from xilinx), print only for that list, others silently ignore
+
   verilogSrc = [i for i in iSrc if os.path.splitext(i)[1] == '.v']
-#  parsed = instance.parseFilesMultiproc(verilogSrc)
   parsed = instance.get_instances(verilogSrc)
   while True:
-    new = instance.analyze(parsed)
+    new = instance.analyze(parsed, config)
     if new:
       parsed.update(new)
     else:
       break
   allSrcFiles = {val['path'].replace('\\', '/') for val in parsed.values()}     
   depSrcFiles = allSrcFiles - {os.path.relpath(i).replace('\\','/') for i in iSrc}
-
+  # set flag to stop progress bar
   global  done
   done = True
 

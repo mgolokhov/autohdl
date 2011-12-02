@@ -52,7 +52,7 @@ def run(config):
   
   
   os.chdir('../implement')
-  subprocess.call(('{xflow} -implement balanced.opt'
+  subprocess.check_call(('{xflow} -implement balanced.opt'
                    ' -config bitgen.opt {netlist}.edf').format(xflow=toolchain.getPath('ise_xflow'),
                                                                netlist=config['top']))
   
