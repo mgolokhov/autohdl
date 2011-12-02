@@ -98,8 +98,4 @@ s = socket.socket()  #socket.AF_INET, socket.SOCK_STREAM
 # check if logging server up, else - run
 if s.connect_ex(('localhost', logging.handlers.DEFAULT_TCP_LOGGING_PORT)): #9020
   path = os.path.dirname(__file__) + '/log_server.py'
-  subprocess.Popen('pythonw '+ path)
-
-
-
-#log = logging.getLogger('')
+  p = subprocess.Popen('pythonw '+ path)

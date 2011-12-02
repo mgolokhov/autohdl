@@ -5,7 +5,7 @@ from distutils.core import setup, Command
 
 from log_server import shutdownLogServer
 import pkg_info
-
+import progressBar
 
 
 
@@ -33,7 +33,9 @@ class ShutdownLogServer(Command):
   def finalize_options(self):
     self.cwd = os.getcwd()
   def run(self):
+    progressBar.run()
     shutdownLogServer()
+    progressBar.stop()
 
 def getDataTree(iPath):
   res = []

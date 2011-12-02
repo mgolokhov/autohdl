@@ -1,6 +1,6 @@
 import cPickle
 import logging
-import logging.handlers
+from logging.handlers import DEFAULT_TCP_LOGGING_PORT
 import SocketServer
 import struct
 import select
@@ -14,23 +14,21 @@ def shutdownLogServer():
   # 0 - connect ok
   # 10061 no socket
   # 10056 already binded
-  for i in range(2):
-    print 'shutting down log server...'
+  print 'shutting down log server...'
+  rootLogger = logging.getLogger('')
+  rootLogger.setLevel(logging.DEBUG)
+  socketHandler = logging.handlers.SocketHandler('localhost', DEFAULT_TCP_LOGGING_PORT)
+  rootLogger.addHandler(socketHandler)
+  logging.warning('shutdown_log_server')
+  for i in range(20):
     s = socket.socket()
-    time.sleep(2)
-    if not s.connect_ex(('localhost', logging.handlers.DEFAULT_TCP_LOGGING_PORT)):
-      rootLogger = logging.getLogger('')
-      rootLogger.setLevel(logging.DEBUG)
-      socketHandler = logging.handlers.SocketHandler('localhost',
-                                                     logging.handlers.DEFAULT_TCP_LOGGING_PORT)
-      rootLogger.addHandler(socketHandler)
-      logging.warning('shutdown_log_server')
-#      time.sleep(1)
+    if not s.connect_ex(('localhost', DEFAULT_TCP_LOGGING_PORT)):
+      time.sleep(5)
     else:
       print 'log server were shut down'
       return
   print 'FAILED to shutdown log server'
-
+  
 
 class LogRecordStreamHandler(SocketServer.StreamRequestHandler):
     """Handler for a streaming logging request.
@@ -56,7 +54,7 @@ class LogRecordStreamHandler(SocketServer.StreamRequestHandler):
             obj = self.unPickle(chunk)
             record = logging.makeLogRecord(obj)
             if 'shutdown_log_server' in str(record):
-                print record
+#                print record
                 self.server.abort = True
             self.handleLogRecord(record)
 

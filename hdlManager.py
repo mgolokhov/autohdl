@@ -184,8 +184,8 @@ def printInfo(config):
 @log_call
 def kungfu(**config):
   alog.info('Processing...')
-  alog.debug('args: ', sys.argv)
-  alog.debug('config: ', config)
+  alog.debug('args: '+ str(sys.argv))
+  alog.debug('config: ' + str(config))
 
   if not config:
     config = {}
