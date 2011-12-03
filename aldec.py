@@ -13,39 +13,33 @@ import sys
 
 
 @log_call
-def initPrj():
+def extend(config):
   """
   Precondition: cwd= <dsn_name>/script
   Output: dictionary { keys=main, dep, tb, other values=list of path files}
   """
-  dict = {}
-  dict['rootPath'] = os.path.abspath('..').replace('\\', '/')
-  dict['dsnName'] = os.path.split(dict['rootPath'])[1]
+  config['rootPath'] = os.path.abspath('..').replace('\\', '/')
+  config['dsnName'] = os.path.split(config['rootPath'])[1]
   
   allSrc = []
   ignore = hdlGlobals.ignore
   for i in ['../src', '../TestBench', '../script', '../resource']:
     allSrc += structure.search(iPath = i, iIgnore = ignore)
-  dict['allSrc'] = allSrc
+  config['allSrc'] = allSrc
 
-  mainSrc = structure.search(iPath = '../src',
-                             iOnly = ['\.v', '\.vm', '\.vhdl', '\.vhd'],
-                             iIgnore = ignore)
 
   mainSrcUncopied = structure.search(iPath = '../aldec/src',
-                           iOnly = ['\.v', '\.vm', '\.vhdl', '\.vhd'],
-                           iIgnore = ignore)
-  dict['srcUncopied'] = mainSrcUncopied
-  dict['mainSrc'] = mainSrc
-  dict['depSrc'] = structure.getDepSrc(iSrc = mainSrc, iIgnore = ignore)
+                                     iOnly = hdlGlobals.verilogFileExtRe+hdlGlobals.vhdlFileExtRe,
+                                     iIgnore = hdlGlobals.ignoreRepoFiles)
+  config['srcUncopied'] = mainSrcUncopied
 
-  dict['TestBenchSrc'] = structure.search(iPath='../TestBench', iIgnore = ignore)
+  config['TestBenchSrc'] = structure.search(iPath='../TestBench', iIgnore = hdlGlobals.ignoreRepoFiles)
   
 
-  dict['netlistSrc'] = structure.search(iPath = '../aldec/src',
+  config['netlistSrc'] = structure.search(iPath = '../aldec/src',
                                         iOnly = ['\.sedif', '\.edn', '\.edf', '\.edif', '\.ngc' ])
 
-  dict['filesToCompile'] = dict['mainSrc'] + dict['depSrc'] + dict['TestBenchSrc'] + mainSrcUncopied
+  config['filesToCompile'] = config['mainSrc'] + config['depSrc'] + config['TestBenchSrc'] + mainSrcUncopied
 
   #TODO: bugaga
   path = os.path.abspath(os.getcwd())
@@ -54,22 +48,20 @@ def initPrj():
     repoPath = '/'.join(pathAsList[:-3])
   else:
     repoPath = '/'.join(pathAsList[:-2])
-  dict['repoPath'] = repoPath
+  config['repoPath'] = repoPath
 #  print repoPath
   repoSrc = []
   for root, dirs, files in os.walk(repoPath):
-    if dict['dsnName'] in dirs:
-      dirs.remove(dict['dsnName'])
+    if config['dsnName'] in dirs:
+      dirs.remove(config['dsnName'])
     for i in ['aldec', 'synthesis', 'implement', '.svn', '.git', 'TestBench', 'script', 'resource']:
       if i in dirs:
         dirs.remove(i)
     for f in files:
       if 'src' in root+'/'+f:
         repoSrc.append(os.path.abspath(root+'/'+f).replace('\\', '/'))
-  dict['repoSrc'] = repoSrc
-  dict['build'] = build.load()
-
-  return dict
+  config['repoSrc'] = repoSrc
+  config['build'] = build.load()
 
 
 @log_call
@@ -157,12 +149,12 @@ def preparation():
 
 #TODO: add arguments top, ucf, test
 @log_call
-def export():
+def export(config):
   preparation()
-  prj = initPrj()
-  gen_aws(iPrj = prj)
-  gen_adf(iPrj = prj)
-  gen_compile_cfg(iFiles = prj['allSrc']+prj['depSrc'], iRepoSrc=prj['repoSrc']) # prj['filesToCompile'])
+  extend(config)
+  gen_aws(config)
+  gen_adf(config)
+  gen_compile_cfg(iFiles = config['allSrc']+config['depSrc'], iRepoSrc=config['repoSrc']) # prj['filesToCompile'])
   if build.getParam(iKey = 'test'):
     return
   aldec = toolchain.getPath(iTag = 'avhdl_gui')

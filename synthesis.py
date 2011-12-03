@@ -42,11 +42,10 @@ def setParams(iPrj):
   
 @log_call
 def setSrc(iPrj):
-  ignore = hdlGlobals.ignoreRepoFiles
-  only = []
-  filesMain = structure.search(iPath = '../src', iIgnore = ignore+['\.ucf'], iOnly = only)
-  filesDep = structure.getDepSrc(iSrc = filesMain)
-  srcFiles = filesMain + list(filesDep)+ [iPrj['ucf']]
+  srcMain = iPrj['mainSrc']
+  srcDep = iPrj['depSrc'] or []
+  ucf = iPrj['ucf'] or []
+  srcFiles =  srcMain + srcDep + ucf
   iPrj['srcFiles'] = '\n'.join(['add_file "{0}"'.format(i) for i in srcFiles])
 
   

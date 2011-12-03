@@ -1,3 +1,4 @@
+import pprint
 import re
 import os
 import shutil
@@ -209,29 +210,36 @@ def search(iPath = '.', iIgnore = None, iOnly = None):
         if filter(iFiles = fullPath, iOnly = only, iIgnore = ignore): 
           resFiles.append(fullPath)
   return resFiles
+########################################################################
+@log_call
+def setMainSrc(config):
+  config['mainSrc'] = search('../src',
+                             iOnly=hdlGlobals.verilogFileExtRe,
+                             iIgnore=hdlGlobals.ignoreRepoFiles)
+  config['mainSrcParsed'] = instance.get_instances(config['mainSrc'])
+
+def setSrc(config):
+  log.info('Analyzing dependences...')
+  progressBar.run()
+  setMainSrc(config)
+  setDepSrc(config)
+  progressBar.stop()
 
 
 @log_call
-def getDepSrc(iSrc, config = {}):
-  log.info('Analyzing dependences...')
-  progressBar.run()
-
-  if type(iSrc) is not list:
-    iSrc = [iSrc]
-
-  verilogSrc = [i for i in iSrc if os.path.splitext(i)[1] == '.v']
-  parsed = instance.get_instances(verilogSrc)
+def setDepSrc(config):
+  parsed = config['mainSrcParsed']
+  del config['mainSrcParsed']
   while True:
     new = instance.analyze(parsed, config)
     if new:
       parsed.update(new)
     else:
       break
-  allSrcFiles = {val['path'].replace('\\', '/') for val in parsed.values()}     
-  depSrcFiles = allSrcFiles - {os.path.relpath(i).replace('\\','/') for i in iSrc}
 
-  progressBar.stop()
-  return list(depSrcFiles)
-  
+  config['parsed'] = parsed
+  allSrcFiles = {os.path.abspath(val['path']).replace('\\', '/') for val in parsed.values()}
+  config['depSrc'] = list(allSrcFiles - set(config['mainSrc']))
+
   
 

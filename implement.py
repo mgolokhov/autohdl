@@ -43,8 +43,8 @@ def clean(path):
 
 @log_call
 def run(config):
-  implPath = os.path.abspath('../implement')
-  synPath = os.path.abspath('../synthesis')
+  implPath = os.path.abspath('../implement')+'/'
+  synPath = os.path.abspath('../synthesis')+'/'
   clean(implPath)
   top = structure.search(synPath, iOnly = [config['top']+'\.edf'])
   if top:
@@ -71,7 +71,7 @@ def run(config):
     log.error(e)
     sys.exit()
 
-  bit2mcs(config['top'])
+  bit2mcs(config)
     
   log.info('Implementation done')
 

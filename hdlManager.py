@@ -31,11 +31,10 @@ def convert5to6version(config):
 
 @log_call
 def validateTop(iTop, config):
-  parsed = config.get('src_main')
+  parsed = config.get('parsed')
   if not parsed:
-    srcFiles = structure.search(iPath='../src', iOnly=['\.v$'], iIgnore=hdlGlobals.ignoreRepoFiles)
-    config['src_main'] = instance.get_instances(srcFiles)
-    config['src_dep'] = structure.getDepSrc(srcFiles, config)
+    structure.setSrc(config)
+    parsed = config['parsed']
 
   if iTop and parsed.get(iTop):
     return True
@@ -187,7 +186,7 @@ def kungfu(**config):
   parser.add_argument('-top', help = 'top module name')
   parser.add_argument('-syn', nargs ='?', const = 'batch', help = 'synthesis step')
   parser.add_argument('-impl', action = 'store_true', help = 'implementation step')
-  parser.add_argument('-mcs', nargs = '?', const = 'config', default = 'config', help = 'generate .mcs from .bit file')
+  parser.add_argument('-mcs', nargs = '?', const = 'config', help = 'generate .mcs from .bit file')
   parser.add_argument('-upload', action = 'store_true', help = 'upload firmware to WebDav server')
   parser.add_argument('-git', help = 'creation/synchronization with webdav repo')
   parser.add_argument('-d', action = 'store_true', help = 'debug flag')
@@ -199,7 +198,7 @@ def kungfu(**config):
   setValidUcf(config)
   setUpload(arguments, config)
   config['mode'] = 'synplify_gui' if arguments.syn == 'gui' else 'synplify_batch'
-  if arguments.mcs != 'config': config['size'] = arguments.mcs
+  if arguments.mcs and arguments.mcs != 'config': config['size'] = arguments.mcs
 
   if arguments.d:
     pprint.pprint(config)
@@ -212,7 +211,7 @@ def kungfu(**config):
     return
 
   if arguments.tb:
-    aldec.export()
+    aldec.export(config)
     return
   elif arguments.syn:
     synthesis.run(config)
