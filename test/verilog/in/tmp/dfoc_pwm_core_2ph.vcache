@@ -1,9 +1,0 @@
-file_path: in\func\dfoc_pwm_core_2ph.v
-includes:
-  paths: []
-parsed:
-  dfoc_pwm_core_2ph:
-    instances: !!set {PI_Regulator: null, cordic_core_v3: null, dead_interval_core: null,
-      mult16: null, mult19: null, pwm_core_hl: null}
-    path: in\func\dfoc_pwm_core_2ph.v
-sha: 8499b168947a765aad4bf854efdcd35f366e9f8a

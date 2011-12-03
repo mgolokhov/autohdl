@@ -1,9 +1,0 @@
-file_path: in\func\dfoc_pwm_core.v
-includes:
-  paths: []
-parsed:
-  dfoc_pwm_core:
-    instances: !!set {ClarkParkTransform: null, InverseParkTransform: null, PI_Regulator: null,
-      cordic_core_v2: null, mult19: null, mult_sens_32_v2: null, sin_pwm: null}
-    path: in\func\dfoc_pwm_core.v
-sha: fd64ee2824e669782c5eac9b4d0a416d643bee06

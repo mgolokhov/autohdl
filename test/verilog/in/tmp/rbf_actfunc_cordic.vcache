@@ -1,8 +1,0 @@
-file_path: in\func\rbf_actfunc_cordic.v
-includes:
-  paths: []
-parsed:
-  rbf_actfunc_cordic:
-    instances: !!set {cordic_mult: null}
-    path: in\func\rbf_actfunc_cordic.v
-sha: 35a2e722670b6ae7b2166ce7cb6a43d13f03fef6

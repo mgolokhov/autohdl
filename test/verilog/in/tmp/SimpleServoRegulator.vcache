@@ -1,9 +1,0 @@
-file_path: in\func\SimpleServoRegulator.v
-includes:
-  paths: []
-parsed:
-  SimpleServoRegulator:
-    instances: !!set {PID_Regulator: null, aperiodic_core: null, eps_saturator: null,
-      mult19: null}
-    path: in\func\SimpleServoRegulator.v
-sha: e95676c5a836c431b12eedd0fab6da13d1c3e17f

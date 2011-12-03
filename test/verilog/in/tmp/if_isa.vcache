@@ -1,8 +1,0 @@
-file_path: in\func\if_isa.v
-includes:
-  paths: []
-parsed:
-  if_isa:
-    instances: !!set {strobing_l2h: null}
-    path: in\func\if_isa.v
-sha: 40a7d35c65903355645ec06f0da097e694b9dfc4
