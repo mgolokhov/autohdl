@@ -13,24 +13,6 @@ from autohdl.hdlLogger import log_call
 log = logging.getLogger(__name__)
 
 
-class SynthesisException(Exception):
-  def __init__(self, iString):
-    self.string = iString
-  def __str__(self):
-    return self.string
-  
-
-@log_call
-def _getIncludePath(iPrj):
-    includePath = ['.']
-    for i in range(11):
-      incl = build.getParam('IncludeDir'+str(i))
-      if not incl:
-        break
-      includePath.append(incl)
-    return ';'.join(includePath) 
-
-  
 @log_call
 def getIncludePath(iPrj):
   incl = build.getParam('include_path', iDefault=".")
@@ -60,10 +42,10 @@ def setParams(iPrj):
   
 @log_call
 def setSrc(iPrj):
-  ignore = hdlGlobals.ignore
+  ignore = hdlGlobals.ignoreRepoFiles
   only = []
   filesMain = structure.search(iPath = '../src', iIgnore = ignore+['\.ucf'], iOnly = only)
-  filesDep = structure.getDepSrc(iSrc = filesMain, iIgnore =ignore, iOnly = only)
+  filesDep = structure.getDepSrc(iSrc = filesMain)
   srcFiles = filesMain + list(filesDep)+ [iPrj['ucf']]
   iPrj['srcFiles'] = '\n'.join(['add_file "{0}"'.format(i) for i in srcFiles])
 
@@ -140,7 +122,6 @@ def run_synplify_batch(iPrj):
                 '-batch', iPrj['pathScript'])
   subprocess.Popen(run, env = xilinx_env.get())
   loge = ''
-  #TODO: stop waiting
   for i in range(13):
     time.sleep(3)
     try:
@@ -165,17 +146,15 @@ def run_synplify_batch(iPrj):
       print res
     elif done:
       break
-    else:  
+    else:
       loge.seek(where)
       time.sleep(1)
-      
-  loge.close()
 
+  loge.close()
 
 @log_call
 def run_synplify_gui(iPrj):
   subprocess.check_call([iPrj['pathTool'], iPrj['pathScript']], env = xilinx_env.get())
-
 
 @log_call
 def runTool(iPrj, iSilent):

@@ -148,16 +148,6 @@ def mergeConfig(configScript):
 
 
 @log_call
-def setMode(arguments, config):
-  #bugaga in argparse lib: doesnt have default choice
-  if arguments.syn == 'nope':
-    arguments.syn = None
-  elif not arguments.syn:
-    arguments.syn = 'batch'
-  config['mode'] = 'synplify_gui' if arguments.syn == 'gui' else 'synplify_batch'
-
-
-@log_call
 def setUpload(arguments, config):
   config['upload'] = True if (not arguments.tb and not arguments.syn and not arguments.impl
                               and (arguments.upload or config['upload'])) else False
@@ -195,21 +185,21 @@ def kungfu(**config):
   parser = argparse.ArgumentParser(description='HDL Manager')
   parser.add_argument('-tb', action = 'store_true', help = 'export project to active-hdl')
   parser.add_argument('-top', help = 'top module name')
-  parser.add_argument('-syn', nargs ='?', default = 'nope', choices = ['gui', 'batch'], help = 'synthesis step')
+  parser.add_argument('-syn', nargs ='?', const = 'batch', help = 'synthesis step')
   parser.add_argument('-impl', action = 'store_true', help = 'implementation step')
+  parser.add_argument('-mcs', nargs = '?', const = 'config', default = 'config', help = 'generate .mcs from .bit file')
   parser.add_argument('-upload', action = 'store_true', help = 'upload firmware to WebDav server')
   parser.add_argument('-git', help = 'creation/synchronization with webdav repo')
-
   parser.add_argument('-d', action = 'store_true', help = 'debug flag')
-
   arguments = parser.parse_args()
 
   config = mergeConfig(config)
 
   setValidTop(arguments, config)
   setValidUcf(config)
-  setMode(arguments, config)
   setUpload(arguments, config)
+  config['mode'] = 'synplify_gui' if arguments.syn == 'gui' else 'synplify_batch'
+  if arguments.mcs != 'config': config['size'] = arguments.mcs
 
   if arguments.d:
     pprint.pprint(config)
@@ -228,6 +218,9 @@ def kungfu(**config):
     synthesis.run(config)
   elif arguments.impl:
     implement.run(config)
+  elif arguments.mcs:
+    implement.bit2mcs(config)
+    return
   elif arguments.upload:
     pass
   else:

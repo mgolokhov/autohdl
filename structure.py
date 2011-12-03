@@ -5,6 +5,7 @@ import sys
 
 from autohdl import instance
 from autohdl import hdlGlobals
+from autohdl import progressBar
 
 from hdlLogger import log_call, logging
 log = logging.getLogger(__name__)
@@ -210,23 +211,10 @@ def search(iPath = '.', iIgnore = None, iOnly = None):
   return resFiles
 
 
-import threading, time
-done = False
-def progressBar(l=['|','/', '-', '\\', 0]):
-  while not done:
-    sys.stdout.write('\r{}\r'.format(l[l[-1]]))
-    l[-1] = (l[-1]+1)%(len(l)-1)
-    time.sleep(0.4)
-
-
 @log_call
 def getDepSrc(iSrc, config = {}):
   log.info('Analyzing dependences...')
-
-  # display progress bar while parsing
-  t = threading.Thread(target=progressBar)
-  t.setDaemon(1)
-  t.start()
+  progressBar.run()
 
   if type(iSrc) is not list:
     iSrc = [iSrc]
@@ -241,10 +229,8 @@ def getDepSrc(iSrc, config = {}):
       break
   allSrcFiles = {val['path'].replace('\\', '/') for val in parsed.values()}     
   depSrcFiles = allSrcFiles - {os.path.relpath(i).replace('\\','/') for i in iSrc}
-  # set flag to stop progress bar
-  global  done
-  done = True
 
+  progressBar.stop()
   return list(depSrcFiles)
   
   
