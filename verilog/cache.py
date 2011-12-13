@@ -1,5 +1,6 @@
 import os
 import hashlib
+import shutil
 import sys
 
 try:
@@ -22,6 +23,7 @@ def cache_path(file):
 #  return CACHE_PATH + file.replace('//', '_').replace('\\', '_').replace('.','_')
   return CACHE_PATH + '/' + name
 
+
 def shaOK(data):
   if data:
     h = hashlib.sha1()
@@ -34,9 +36,46 @@ def shaOK(data):
     if sha == data['sha']:
       return True
 
+
 def versionOK(data):
   if data.get('version') == getVersion():
     return True
+
+
+def clean():
+  for i in os.listdir(CACHE_PATH):
+    try:
+      if os.path.splitext(i)[1] == '.vcache':
+        os.remove(CACHE_PATH+'/'+i)
+    except Exception as e:
+      print e
+#  shutil.rmtree(CACHE_PATH, ignore_errors=True)
+
+def refreshCache(_once=[]):
+  if _once:
+    return
+  _once.append(True)
+  try:
+    with open('../resource/build.yaml') as f:
+      h = hashlib.sha1()
+      h.update(f.read())
+      shaNew = h.hexdigest()
+    sha_build = CACHE_PATH+'/sha_build'
+    try:
+      with open(sha_build) as f:
+        shaOld = f.read()
+        if shaOld != shaNew:
+          with open(sha_build, 'w') as f:
+            f.write(shaNew)
+            return True
+    except IOError:
+      with open(sha_build, 'w') as f:
+        f.write(shaNew)
+        return True
+  except IOError as e:
+    logging.error(e)
+    return True
+
 
 def load(file):
   if not CACHE_LOAD:

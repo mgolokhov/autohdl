@@ -39,7 +39,6 @@ def ucf(iPrj):
 
 
 def include_path(iPrj):
-  #TODO: consistancy, rid of ';' -> just list
   incl_path = iPrj['build'].get('include_path')
   if not incl_path:
     return ''

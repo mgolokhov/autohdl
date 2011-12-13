@@ -1,7 +1,7 @@
 import zipfile
 import os
 
-from autohdl import pkg_info
+import pkg_info
 
 os.chdir('..')
 zipFileName = 'autohdl-' + pkg_info.incBuild()+ '.zip'

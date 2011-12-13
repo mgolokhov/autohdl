@@ -44,7 +44,7 @@ def setParams(iPrj):
 def setSrc(iPrj):
   srcMain = iPrj['mainSrc']
   srcDep = iPrj['depSrc'] or []
-  ucf = iPrj['ucf'] or []
+  ucf = [iPrj['ucf']] or []
   srcFiles =  srcMain + srcDep + ucf
   iPrj['srcFiles'] = '\n'.join(['add_file "{0}"'.format(i) for i in srcFiles])
 

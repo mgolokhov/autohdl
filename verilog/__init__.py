@@ -11,6 +11,8 @@ def get_instances(file):
   moduleName: path      : full_path
               inctances : set()
   """
+  if cache.refreshCache():
+    cache.clean()
   cached = cache.load(file)
   if cached:
     return cached['parsed']
