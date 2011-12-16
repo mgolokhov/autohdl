@@ -1,3 +1,4 @@
+import hashlib
 import subprocess
 import sys
 import shutil
@@ -9,6 +10,23 @@ from autohdl import build
 from autohdl.hdlLogger import logging
 
 log = logging.getLogger(__name__)
+
+def calcSha(afile):
+  with open(afile) as f:
+    h = hashlib.sha1()
+    h.update(f.read())
+    return h.hexdigest()
+
+
+
+def isModified(src, dst):
+  if not os.path.exists(dst):
+    return True
+  if os.stat(src).st_mtime == os.stat(dst).st_mtime:
+    return
+  if calcSha(src) == calcSha(dst):
+    return
+  return True
 
 
 def syncRepo(move=False):
@@ -27,12 +45,13 @@ def syncRepo(move=False):
         for f in files:
           src = os.path.abspath(root+'/'+f)
           dst = os.path.abspath(pathDsn+'/'+f)
-          log.info('Moving src={0} dst={1}'.format(src, dst))
           if move:
+            log.info('Move src={0} dst={1}'.format(src, dst))
             shutil.move(src, dst)
-          else:
+          elif isModified(src, dst):
+            log.info('Copy src={0} dst={1}'.format(src, dst))
             shutil.copyfile(src, dst)
-      except IOError as e:
+      except Exception as e:
         log.exception(e)
 
 def copyInRepo():

@@ -43,14 +43,15 @@ def versionOK(data):
 
 
 def clean():
-  for i in os.listdir(CACHE_PATH):
-    try:
-      if os.path.splitext(i)[1] == '.vcache':
-        os.remove(CACHE_PATH+'/'+i)
-    except Exception as e:
-      print e
-#  shutil.rmtree(CACHE_PATH, ignore_errors=True)
+  if os.path.exists(CACHE_PATH):
+    for i in os.listdir(CACHE_PATH):
+      try:
+        if os.path.splitext(i)[1] == '.vcache':
+          os.remove(CACHE_PATH+'/'+i)
+      except Exception as e:
+        print e
 
+        
 def refreshCache(_once=[]):
   if _once:
     return
@@ -69,6 +70,8 @@ def refreshCache(_once=[]):
             f.write(shaNew)
             return True
     except IOError:
+      if not os.path.exists(CACHE_PATH):
+        os.mkdir(CACHE_PATH)
       with open(sha_build, 'w') as f:
         f.write(shaNew)
         return True
