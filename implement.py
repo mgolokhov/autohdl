@@ -58,7 +58,7 @@ def run(config):
 
   shutil.copyfile(ucf, implPath + config['top']+'.ucf')
   shutil.copyfile(top, implPath + config['top']+'.edf')
-  for i in config['depNetlist']:
+  for i in config.get('depNetlist', []):
     shutil.copyfile(i, implPath + os.path.split(i)[1])
   
   
