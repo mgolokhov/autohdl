@@ -85,7 +85,7 @@ def convertToAbspath(iContent, buildPath):
 
 
 @log_call
-def load(iBuildFile = '../resource/build.yaml', _cacheBuild = {}):
+def load(iBuildFile = '../resource/build.yaml', _cacheBuild = {}, silent = False):
   path = os.path.abspath(iBuildFile)
   if _cacheBuild.get(path):
     return _cacheBuild.get(path)
@@ -102,8 +102,9 @@ def load(iBuildFile = '../resource/build.yaml', _cacheBuild = {}):
           _cacheBuild.update({path:content})
           dump(iContent = content, iBuildFile = iBuildFile)
     except IOError as e:
-      log.warning(e)
-      logging.warning('Cant open file ' + os.path.abspath(iBuildFile))
+      if not silent:
+        log.warning(e)
+        logging.warning('Cant open file ' + os.path.abspath(iBuildFile))
       return {}
 
   return content
@@ -116,11 +117,16 @@ def loadDefault():
     return content
 
 
-def loadUncached(iBuildFile = '../resource/build.yaml'):
-  with open(iBuildFile) as f2:
-    content = yaml.load(f2.read())
-    convertToAbspath(content, iBuildFile)
-    return content
+def loadUncached(iBuildFile = '../resource/build.yaml', silent = False):
+  try:
+    with open(iBuildFile) as f2:
+      content = yaml.load(f2.read())
+      convertToAbspath(content, iBuildFile)
+      return content
+  except IOError as e:
+    if not silent:
+      log.warning(e)
+      logging.warning('Cant open file ' + os.path.abspath(iBuildFile))
 
 
 @log_call    

@@ -9,14 +9,22 @@ from autohdl.hdlLogger import logging
 
 
 def initialize(path = '.'):
+  if os.path.exists(path+'/.git'):
+    print 'Already initialized'
+    return
   gitPath = toolchain.Tool('git_batch').result
   if gitPath:
     path = os.path.abspath(path)
-    subprocess.call('{} init {}'.format(gitPath, path))
+    print subprocess.check_output('{} init {}'.format(gitPath, path))
     gitignore = path+'/.gitignore'
     if not os.path.exists(gitignore):
       with open(gitignore, 'w') as f:
         f.write('aldec/*\nimplement/*\nsynthesis/*\nresource/parsed/*\n')
+    pathWas = os.getcwd()
+    os.chdir(path)
+    print subprocess.check_output('{} add {}'.format(gitPath, path))
+    print subprocess.check_output('{} commit -m "initial commit"'.format(gitPath))
+    os.chdir(pathWas)
 
 
 def upload(path = '.', addr = 'http://cs.scircus.ru/git/hdl'):
@@ -77,24 +85,49 @@ def clone(config):
       subprocess.call('{} clone http://{}/{} -o webdav'.format(gitPath, config['host'], repo))
     os.chdir('..')
 
-      
-def handle(arg, config):
-  if arg == 'upload':
+
+def synchWithBuild(config):
+  gitPath = toolchain.Tool('git_batch').result
+  res = subprocess.check_output('{} status'.format(gitPath))
+  if 'working directory clean' in res:
+    return
+  res = subprocess.check_output('{} branch'.format(gitPath))
+  if ' develop\n' in res:
+    print subprocess.check_output('{} checkout develop'.format(gitPath))
+  else:
+    print subprocess.check_output('{} checkout -b develop'.format(gitPath))
+  print subprocess.check_output('{} add ../.'.format(gitPath))
+  print subprocess.check_output('{} commit -m "{}"'.format(gitPath, config.get('gitMessage')))
+
+
+def getGitRoot(path):
+  path = os.path.abspath(path)
+  while os.path.sep in path:
+    if os.path.exists(path+'/.git'):
+      return path
+    path = os.path.dirname(path)
+
+
+def handle(config):
+  if config['git'] == 'upload':
+    pathWas = os.getcwd()
+    os.chdir(getGitRoot(pathWas))
     webdavSrcPath = config.get('webdavSrcPath')
     host = config.get('host')
     core = config.get('core')
-    if host and webdavSrcPath:
-      addr = 'http://{0}/{1}/{2}'.format(host, webdavSrcPath, core if core else '')
-      upload('..', addr)
-    else:
-      upload('..')
-  elif arg == 'cmd':
+    addr = 'http://{0}/{1}/{2}'.format(host, webdavSrcPath, core if core else '')
+    upload('.', addr)
+  elif config['git'] == 'cmd':
     gitPath = toolchain.Tool('git_sh').result
     if gitPath:
+      pathWas = os.getcwd()
+      os.chdir(getGitRoot(pathWas))
       subprocess.call('{} --login -i'.format(gitPath))
-  elif arg == 'pull':
+#      os.chdir(pathWas)
+  # pull & clone don't depend on root path
+  elif config['git'] == 'pull':
     pull(config)
-  elif  arg == 'clone':
+  elif  config['git'] == 'clone':
     clone(config)
-  elif arg == 'help':
+  elif config['git'] == 'help':
     subprocess.Popen(os.path.dirname(__file__)+'/doc/git.html', shell = True)

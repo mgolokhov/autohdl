@@ -38,6 +38,7 @@ class Tool(object):
                  'synplify' : {'gui'   : 'synplify_premier.exe',
                                'batch' : 'synplify_premier.exe',
                                'path'  : ['/Synopsys/', '/Synplicity/']},
+                 # tested on version Git-1.7.4-preview20110204
                  'git'      : {'batch' : 'git.cmd',
                                'sh'    : 'sh.exe',
                                'path'  : ['/Git/']}

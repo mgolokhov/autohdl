@@ -188,7 +188,7 @@ def kungfu(**config):
   parser.add_argument('-impl', action = 'store_true', help = 'implementation step')
   parser.add_argument('-mcs', nargs = '?', const = 'config', help = 'generate .mcs from .bit file')
   parser.add_argument('-upload', action = 'store_true', help = 'upload firmware to WebDav server')
-  parser.add_argument('-git', help = 'creation/synchronization with webdav repo')
+#  parser.add_argument('-git', help = 'creation/synchronization with webdav repo')
   parser.add_argument('-d', action = 'store_true', help = 'debug flag')
   arguments = parser.parse_args()
 
@@ -206,9 +206,9 @@ def kungfu(**config):
 
   printInfo(config)
 
-  if arguments.git:
-    git.handle(arguments.git, config)
-    return
+#  if arguments.git:
+#    git.handle(arguments.git, config)
+#    return
 
   if arguments.tb:
     aldec.export(config)
@@ -227,8 +227,10 @@ def kungfu(**config):
     implement.run(config)
 
   if config['upload']:
+    #TODO: refactor
     webdav.upload_fw('../implement/{0}.bit'.format(config['top']), conf = config)
     webdav.upload_fw('../implement/{0}.mcs'.format(config['top']))
+    git.synchWithBuild(config)
 
 
 if __name__ == '__main__':

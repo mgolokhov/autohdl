@@ -121,6 +121,7 @@ def getBuildVer(client, folder, root_build):
 def formBaseInfo(conf):
   b = conf or build.load()
   comment = raw_input('Add some comment: ')
+  conf['gitMessage'] += comment
   content = 'encoding: utf-8\ncomment: {}\ndevice: {}\nPROM size: {} kilobytes'.format(
                             comment, b.get('device'), b.get('size'))
 
@@ -134,12 +135,19 @@ def upload_fw(file, host = 'cs.scircus.ru', path = '/test/distout/rtl', _cache =
   root, ext = os.path.splitext(os.path.basename(file))
   key = dsn_name+root
   name = _cache.get(key)
-  content = getContent(file)
+#  content = getContent(file)
+  try:
+    with open(file, 'rb') as f:
+      content = f.read()
+  except IOError:
+    print 'Cant open file ' + os.path.abspath(file)
+    return
   if not name:
     folder = path+'/'+dsn_name
     print 'Uploading folder: ', folder,
     print client.mkcol(folder)
     buildNum = getBuildVer(client, folder, root+'_build_')+1
+    conf['gitMessage'] = 'build_{} '.format(buildNum)
     name = '{path}/{dsn}/{dsn}_{root}_build_{num}'.format(
         path=path, dsn=dsn_name, root=root, num=buildNum)
 
@@ -179,6 +187,7 @@ def connect(host='cs.scircus.ru'):
 
 @log_call
 def upload(src, dst, host = 'cs.scircus.ru'):
+  #TODO: atomic uploading
   client = connect(host)
   try:
     d = dst if dst[-1] != '/' else dst[:-1]
