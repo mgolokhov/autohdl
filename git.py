@@ -1,3 +1,4 @@
+import argparse
 import os
 import subprocess
 import urlparse
@@ -6,6 +7,7 @@ from autohdl.lib.pyparsing import makeHTMLTags, SkipTo
 from autohdl import toolchain
 from autohdl import webdav
 from autohdl.hdlLogger import logging
+import autohdl.doc as doc
 
 
 def initialize(path = '.'):
@@ -97,6 +99,7 @@ def synchWithBuild(config):
   else:
     print subprocess.check_output('{} checkout -b develop'.format(gitPath))
   print subprocess.check_output('{} add ../.'.format(gitPath))
+  #TODO: unicode
   print subprocess.check_output('{} commit -m "{}"'.format(gitPath, config.get('gitMessage')))
 
 
@@ -106,6 +109,16 @@ def getGitRoot(path):
     if os.path.exists(path+'/.git'):
       return path
     path = os.path.dirname(path)
+
+
+def commands():
+  parser = argparse.ArgumentParser(add_help=False)
+  parser.add_argument('-git', nargs='?',
+                      choices=['upload', 'cmd', 'pull', 'clone', 'doc'],
+                      const= 'cmd', default='cmd',
+                      help='creation/synchronization with webdav repo'
+                      )
+  return parser
 
 
 def handle(config):
@@ -129,5 +142,6 @@ def handle(config):
     pull(config)
   elif  config['git'] == 'clone':
     clone(config)
-  elif config['git'] == 'help':
-    subprocess.Popen(os.path.dirname(__file__)+'/doc/git.html', shell = True)
+  elif config['git'] == 'doc':
+    doc.handler('git')
+#    subprocess.Popen(os.path.dirname(__file__)+'/doc/_static/git.html', shell = True)

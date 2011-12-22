@@ -124,8 +124,8 @@ def formBaseInfo(conf):
   conf['gitMessage'] += comment
   content = 'encoding: utf-8\ncomment: {}\ndevice: {}\nPROM size: {} kilobytes'.format(
                             comment, b.get('device'), b.get('size'))
-
-  return content.decode(sys.stdin.encoding).encode('utf-8')
+  print content
+  return content.decode(sys.stdin.encoding or 'utf-8').encode('utf-8')
 
 
 def upload_fw(file, host = 'cs.scircus.ru', path = '/test/distout/rtl', _cache = {}, conf = ''):

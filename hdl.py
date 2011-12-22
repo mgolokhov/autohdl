@@ -14,19 +14,19 @@ import autohdl.doc as doc
 import sys
 
 def main():
-  parser = argparse.ArgumentParser(description='Helper to create designs')
-  parser.add_argument('-help', action='store_true', help='extended documentation in browser')
+  parser = argparse.ArgumentParser(parents=[git.commands()], description='Helper to create designs')
+  parser.add_argument('-doc', action='store_true', help='extended documentation in browser')
   parser.add_argument('-n', '--name', dest='name', default='', help='set design name and create structure (default name - current directory)')
   parser.add_argument('-v', '--version', dest='version', action='store_true', help='display package version')
   parser.add_argument('-tb', action = 'store_true', help = 'export project to active-hdl')
-  parser.add_argument('-git', help = 'creation/synchronization with webdav repo')
+#  parser.add_argument('-git', help = 'creation/synchronization with webdav repo; more info type -git doc')
   #TODO: choices
-  parser.add_argument('-edit', help = 'edit default build.yaml/log file')
+  parser.add_argument('-edit', choices = ['default_build'], help = 'edit default build.yaml file')
   args = parser.parse_args()
 
   if args.version:
     print 'autohdl version: ' + pkg_info.getVersion()
-  elif args.help:
+  elif args.doc:
     doc.handler('index')
   elif args.tb:
     hdlManager.kungfu()

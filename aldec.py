@@ -147,7 +147,6 @@ def preparation():
   copyNetlists()
 
 
-#TODO: add arguments top, ucf, test
 @log_call
 def export(config):
   preparation()
