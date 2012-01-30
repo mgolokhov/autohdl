@@ -16,7 +16,7 @@ log = logging.getLogger(__name__)
 def bit2mcs(config):
   try:
     if config['size']:
-      proc = '{tool} -u 0 {top} -s {size} -w'.format(tool = toolchain.getPath('ise_promgen'),
+      proc = '{tool} -u 0 {top} -s {size} -w'.format(tool = toolchain.Tool().get('ise_promgen'),
                                                      top = '../implement/'+config['top']+'.bit',
                                                      size = config['size'])
       subprocess.check_call(proc)
@@ -65,7 +65,7 @@ def run(config):
   os.chdir(implPath)
   try:
     subprocess.check_call(('{xflow} -implement balanced.opt'
-                           ' -config bitgen.opt {netlist}.edf').format(xflow=toolchain.getPath('ise_xflow'),
+                           ' -config bitgen.opt {netlist}.edf').format(xflow=toolchain.Tool().get('ise_xflow'),
                                                                        netlist=config['top']))
   except subprocess.CalledProcessError as e:
     log.error(e)

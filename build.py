@@ -206,8 +206,8 @@ def updateDeps(files):
     dep = [os.path.abspath(d) for d in dep]
   else:
     dep = []
-  log.error('files ' + str(files))
-  log.error('dep ' +str(dep))
+  log.debug('files ' + '\n'.join(files))
+  log.debug('dep ' + '\n'.join(dep))
   files = [os.path.relpath(i, '../resource') for i in files
            if os.path.abspath(i) not in dep]
   build['dep'] = files + dep

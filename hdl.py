@@ -19,9 +19,7 @@ def main():
   parser.add_argument('-n', '--name', dest='name', default='', help='set design name and create structure (default name - current directory)')
   parser.add_argument('-v', '--version', dest='version', action='store_true', help='display package version')
   parser.add_argument('-tb', action = 'store_true', help = 'export project to active-hdl')
-#  parser.add_argument('-git', help = 'creation/synchronization with webdav repo; more info type -git doc')
-  #TODO: choices
-  parser.add_argument('-edit', choices = ['default_build'], help = 'edit default build.yaml file')
+  parser.add_argument('-edit', choices = ['default_build', 'toolchain'], help = 'edit default build.yaml file')
   args = parser.parse_args()
 
   if args.version:
@@ -37,8 +35,11 @@ def main():
       config = build.loadDefault()
     config.update({'git':args.git})
     git.handle(config)
-  elif args.edit == 'default_build':
-    subprocess.Popen('notepad {}/Lib/site-packages/autohdl/data/build.yaml'.format(sys.prefix))
+  elif args.edit:
+    if args.edit == 'default_build':
+      subprocess.Popen('notepad {}/Lib/site-packages/autohdl/data/build.yaml'.format(sys.prefix))
+    elif args.edit == 'toolchain':
+      subprocess.Popen('notepad {}/Lib/site-packages/autohdl_cfg/toolchain.yaml'.format(sys.prefix))
   else:
     dsn = structure.Design(iName = args.name)
     git.initialize(args.name if args.name else '.')

@@ -1,3 +1,4 @@
+import copy
 import hashlib
 import subprocess
 import sys
@@ -9,7 +10,16 @@ import time
 from autohdl import build
 from autohdl.hdlLogger import logging
 
-log = logging.getLogger(__name__)
+print logging.handlers
+
+alog = logging.getLogger(__name__)
+alog.setLevel(logging.DEBUG)
+consoleHandler = logging.StreamHandler()
+consoleHandler.setLevel(logging.DEBUG)
+consoleFormatter = logging.Formatter("%(levelname)s:%(message)s")
+consoleHandler.setFormatter(consoleFormatter)
+alog.addHandler(consoleHandler)
+
 
 def calcSha(afile):
   with open(afile) as f:
@@ -31,6 +41,7 @@ def isModified(src, dst):
 
 def syncRepo(move=False):
   # cwd = <dsnName>/script
+#  alog.debug('Wazzzup!')
   rootPathAldec = '../aldec/src/'
   rootPathDsn = '../'
   syncDirs = [d for d in os.listdir(rootPathAldec)
@@ -46,13 +57,13 @@ def syncRepo(move=False):
           src = os.path.abspath(root+'/'+f)
           dst = os.path.abspath(pathDsn+'/'+f)
           if move:
-            log.info('Move src={0} dst={1}'.format(src, dst))
+            alog.info('Move src={0} dst={1}'.format(src, dst))
             shutil.move(src, dst)
           elif isModified(src, dst):
-            log.info('Copy src={0} dst={1}'.format(src, dst))
+            alog.info('Copy src={0} dst={1}'.format(src, dst))
             shutil.copyfile(src, dst)
       except Exception as e:
-        log.exception(e)
+        alog.exception(e)
 
 def copyInRepo():
   while True:
@@ -66,10 +77,15 @@ def moveInRepo():
 
 def parse(content):
   d = set()
-  lines = content.splitlines()
-  for i, l in enumerate(lines):
-    if l == 'Enabled=0':
-      d.add(lines[i-1])
+#  lines = content.splitlines()
+  files = [i for i in content.splitlines() if '[file:' in i or 'Enabled' in i]
+#  alog.info('\n'.join(files))
+#  time.sleep(5)
+  for i, l in enumerate(files):
+    if l == 'Enabled=1':
+      d.add(files[i-1])
+    elif l == 'Enabled=0':
+      alog.debug(str(files[i-1]))
   return d
 
 
@@ -82,43 +98,30 @@ def updateDeps(files):
 def synchBuild():
   # relative to dsn/script dsn/aldec/config.cfg
   config = os.path.abspath('../aldec/compile.cfg')
-  state = None
-  for i in range(10):
-    time.sleep(1)
-    try:
-      state = os.stat(config).st_mtime
-      with open(config) as f:
-        content = f.read()
-      break
-    except IOError as e:
-      log.error('Cant open file: '+config)
-    except WindowsError as e:
-      log.error('No such file: '+config)
-  if not state:
-    return # no config
-
-  files = parse(content)
-#  log.info('files: '+str(files))
+  timestamp = None
+  files = set()
   while True:
-    time.sleep(1)
     try:
-      if state != os.stat(config).st_mtime:
+      timestampNew = os.stat(config).st_mtime
+      if timestamp != timestampNew:
+#        alog.debug("new time "+str(timestamp))
         with open(config) as f:
           content = f.read()
-    except IOError as e:
-      log.error('Cant open file: '+config)
-    except WindowsError as e:
-      log.error('No such file: '+config)
-    filesNew = parse(content)
-    added = files - filesNew
-    if added:
-      log.info('Added: '+str(added))
-      updateDeps(added)
-      files = filesNew
+        timestamp = timestampNew
+        filesNew = parse(content)
+        added = filesNew - files
+        if files and added:
+          alog.debug('Added: '+'\n'.join(added))
+          updateDeps(added)
+        files = copy.copy(filesNew)
+    except (IOError, WindowsError) as e:
+      alog.error('Cant open file: '+config)
+      alog.exception(e)
+    time.sleep(1)
 
 
 
-log.debug(str(sys.argv))
+alog.debug(str(sys.argv))
 os.chdir(sys.argv[1])
 
 b = threading.Thread(target=copyInRepo)

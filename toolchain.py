@@ -4,29 +4,15 @@ import sys
 import glob
 
 from autohdl.hdlLogger import log_call, logging
-log = logging.getLogger(__name__)  
+alog = logging.getLogger(__name__)
 
 import autohdl.lib.yaml as yaml
 from autohdl.lib.yaml.error import YAMLError
 
-class ToolchainException(Exception):
-  def __init__(self, iString):
-    self.string = iString
-  def __str__(self):
-    return self.string
 
-  
-  
 class Tool(object):
   @log_call
-  def __init__(self, iTag):
-    self.result = ''
-    try:
-      self.tool, self.mode = iTag.split('_')
-      self.tag = iTag
-    except ValueError as exp:
-      raise ToolchainException ('Invalid tag format. Tag= {0}; ({1})'.format(iTag, exp))
-    
+  def __init__(self):
     self.data = {'avhdl'    : {'gui'   : 'avhdl.exe',
                                'batch' : None,
                                'path'  : ['/Aldec/']},
@@ -43,48 +29,66 @@ class Tool(object):
                                'sh'    : 'sh.exe',
                                'path'  : ['/Git/']}
                  }
-    try:
-      self.utilName = self.data[self.tool][self.mode]
-    except KeyError as exp:
-      raise ToolchainException('Cannot find tag in database. Tag= {0}; ({1})'.format(iTag, exp))
-
     self.pathCfg = sys.prefix + '/Lib/site-packages/autohdl_cfg/toolchain.yaml'
-    self.cfg = dict()
-    if not self.getFromCfg():
+
+
+  def checkTag(self, tag):
+    self.tag = tag
+    try:
+      self.tool, self.mode = tag.split('_')
+      self.paths = self.data[self.tool]['path']
+      self.util = self.data[self.tool][self.mode]
+    except Exception as e:
+      print e
+      alog.debug(e)
+      raise KeyError('Wrong tag ' + tag)
+
+
+  def get(self, tag):
+    """
+    Input: tool_mode
+    internally form tag, tool, mode, paths
+    """
+    # try toolchain.yaml
+    # else search
+    # dump to toolchain.yaml
+    self.checkTag(tag)
+    path = self.getFromCfg()
+    if path:
+      return path
+    self.searchLight()
+    return self.result
+
+
+  def refresh(self, tag = ''):
+    if tag:
+      self.checkTag(tag)
+      self.getFromCfg()
       self.searchLight()
-    
+      return self.result
+    else:
+      try:
+        os.remove(self.pathCfg)
+      except IOError as e:
+        alog.debug(e)
+
+
   @log_call
   def getFromCfg(self):
+    self.cfg = {}
     try:
       with open(self.pathCfg, 'r') as f:
         self.cfg = yaml.load(f)
-    except (IOError, YAMLError) as exp:
-      log.debug(exp)
-      return False    
-    
-    if not self.cfg:
-      return False
-    
-    try:
-      path = self.cfg[self.tag]
-    except KeyError as exp:
-      log.debug(exp)
+        path = self.cfg[self.tag]
+    except Exception as e:
+      print e
+      alog.debug(e)
       return False
     
     if os.path.exists(path):
-      self.result = path
-      return True
+      return path
 
     return False  
-
-  @log_call
-  def searchBrutal(self):
-    for root, dirs, files in os.walk(path): #@UnusedVariable
-      for i in files:
-        log.info('Searching: '+root+'/'+i)
-        if i == self.utilName:
-          path = '/'.join([root.replace('\\','/'), i])
-          return path    
 
 
   @log_call
@@ -103,22 +107,19 @@ class Tool(object):
   @log_call
   def searchLight(self):
     logicDrives = self.getWin32Drivers()
-    try:
-      paths = self.data[self.tool]['path']
-    except KeyError as exp:
-      raise ToolchainException('Cannot find tag in database. Tag= {0}; ({1})'.format(iTag, exp))
+    paths = self.paths
     rootDirs = []
     for logicDrive in logicDrives:
       for path in paths:
         for nested in ['', '/*/', '/*/'*2, '/*/'*3]: 
-          log.info('Searching {}...'.format(self.tag))
-          log.info('{drive}{nested}{path}'.format(drive=logicDrive, nested=nested, path=path))
+          alog.info('Searching {}...'.format(self.tag))
+          alog.info('{drive}{nested}{path}'.format(drive=logicDrive, nested=nested, path=path))
           rootDirs += glob.glob('{drive}{nested}{path}'.format(drive=logicDrive, nested=nested, path=path))
     self.fullPaths = []
     for i in rootDirs:
       for nested in ['', '/*/', '/*/'*2, '/*/'*3, '/*/'*4, '/*/'*5, '/*/'*6]:
-        log.info('Searching {}...'.format(self.tag)) 
-        self.fullPaths += glob.glob('{0}{1}{2}'.format(i, nested, self.utilName))
+        alog.info('Searching {}...'.format(self.tag))
+        self.fullPaths += glob.glob('{0}{1}{2}'.format(i, nested, self.util))
     
     if self.fullPaths:
       self.fullPaths = [i.replace('\\', '/') for i in self.fullPaths]
@@ -126,7 +127,7 @@ class Tool(object):
       self.askConfirm()
       self.saveSearchResult()
     else:
-      log.warning('Cant find tool: '+ self.tag)
+      alog.warning('Cant find tool: '+ self.tag)
 
 
   @log_call
@@ -138,7 +139,7 @@ class Tool(object):
         self.cfg.update({self.tag: '{}'.format(self.result)})
         yaml.dump(self.cfg, f, default_flow_style=False)
     except (IOError, YAMLError) as exp:
-      log.error(exp)
+      alog.error(exp)
       return
 
 
@@ -161,28 +162,20 @@ class Tool(object):
         if int(num) <= len(d):
           current = int(num) 
       except ValueError as exp:
-        log.debug(exp)
+        alog.debug(exp)
         print 'Invalid input!'
 
-
-
-@log_call
-def getPath(iTag):
-  return Tool(iTag).result
         
 
 if __name__ == '__main__':
+#  Tool().refresh('ise_xflow')
+  print Tool().get('git_sh')
+#  print Tool().get('ise_xflow')
 #  print Tool('avhdl_gui').result
 #  print Tool('synplify_batch').result
-  print Tool('git_batch').result
+#  print Tool('git_batch').result
 #  print Tool('synplify_gui').result
 #  print Tool('ise_gui').result
 #  print Tool('ise_batch').result
 #  print Tool('ise_xflow').result
-#  getPath('avhdl_gui')
-#  getPath('synplify_batch')
-#  getPath('synplify_gui')
-#  getPath('ise_gui')
-#  getPath('ise_batch')
-#  getPath('ise_xflow')
 

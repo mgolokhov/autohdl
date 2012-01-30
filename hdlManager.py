@@ -202,7 +202,8 @@ def kungfu(**config):
 
   if arguments.d:
     pprint.pprint(config)
-    sys.exit()
+    config['debug'] = True
+#    sys.exit()
 
   printInfo(config)
 
@@ -222,7 +223,7 @@ def kungfu(**config):
     return
   elif arguments.upload:
     pass
-  else:
+  elif not config.get('debug'):
     synthesis.run(config)
     implement.run(config)
 

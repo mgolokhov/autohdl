@@ -51,7 +51,7 @@ def setSrc(iPrj):
   
 @log_call  
 def extend(prj):
-  prj['pathTool']      = toolchain.getPath(prj['mode'])
+  prj['pathTool']      = toolchain.Tool().get(prj['mode'])
   prj['pathSynthesis'] = '../synthesis'
   prj['pathScript']    = prj['pathSynthesis']+ '/synthesis.prj'
   prj['pathLog']       = prj['pathSynthesis'] + '/' + prj['top'] + '.srr'

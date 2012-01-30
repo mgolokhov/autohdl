@@ -14,7 +14,7 @@ def initialize(path = '.'):
   if os.path.exists(path+'/.git'):
     print 'Already initialized'
     return
-  gitPath = toolchain.Tool('git_batch').result
+  gitPath = toolchain.Tool().get('git_batch')
   if gitPath:
     path = os.path.abspath(path)
     print subprocess.check_output('{} init {}'.format(gitPath, path))
@@ -30,7 +30,7 @@ def initialize(path = '.'):
 
 
 def upload(path = '.', addr = 'http://cs.scircus.ru/git/hdl'):
-  gitPath = toolchain.Tool('git_batch').result
+  gitPath = toolchain.Tool().get('git_batch')
   if gitPath:
     initialize(path)
     path = os.path.abspath(path)
@@ -46,7 +46,7 @@ def upload(path = '.', addr = 'http://cs.scircus.ru/git/hdl'):
     subprocess.call('{0} remote add webdav {1}/{2}.git'.format(gitPath, addr, name))
 
 def pull(config):
-  gitPath = toolchain.Tool('git_batch').result
+  gitPath = toolchain.Tool().get('git_batch')
   if gitPath:
     cwdWas = os.getcwd()
     repos = []
@@ -72,7 +72,7 @@ def getRepos(client, path):
 
 
 def clone(config):
-  gitPath = toolchain.Tool('git_batch').result
+  gitPath = toolchain.Tool().get('git_batch')
   if gitPath:
     client = webdav.connect(config['host'])
     repos = getRepos(client, config['webdavSrcPath'])
@@ -89,7 +89,7 @@ def clone(config):
 
 
 def synchWithBuild(config):
-  gitPath = toolchain.Tool('git_batch').result
+  gitPath = toolchain.Tool().get('git_batch')
   res = subprocess.check_output('{} status'.format(gitPath))
   if 'working directory clean' in res:
     return
@@ -104,18 +104,21 @@ def synchWithBuild(config):
 
 
 def getGitRoot(path):
-  path = os.path.abspath(path)
+  pathWas = os.path.abspath(path)
+  path = pathWas
   while os.path.sep in path:
     if os.path.exists(path+'/.git'):
+      logging.info('Path changed to '+path)
       return path
-    path = os.path.dirname(path)
+    path = os.path.dirname(path).rstrip(os.path.sep)
+  logging.warning('Cant find git repo, using current directory')
+  return pathWas
 
 
 def commands():
   parser = argparse.ArgumentParser(add_help=False)
-  parser.add_argument('-git', nargs='?',
+  parser.add_argument('-git',
                       choices=['upload', 'cmd', 'pull', 'clone', 'doc'],
-                      const= 'cmd', default='cmd',
                       help='creation/synchronization with webdav repo'
                       )
   return parser
@@ -131,7 +134,7 @@ def handle(config):
     addr = 'http://{0}/{1}/{2}'.format(host, webdavSrcPath, core if core else '')
     upload('.', addr)
   elif config['git'] == 'cmd':
-    gitPath = toolchain.Tool('git_sh').result
+    gitPath = toolchain.Tool().get('git_sh')
     if gitPath:
       pathWas = os.getcwd()
       os.chdir(getGitRoot(pathWas))
@@ -144,4 +147,3 @@ def handle(config):
     clone(config)
   elif config['git'] == 'doc':
     doc.handler('git')
-#    subprocess.Popen(os.path.dirname(__file__)+'/doc/_static/git.html', shell = True)
