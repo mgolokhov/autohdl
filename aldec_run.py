@@ -10,7 +10,12 @@ import time
 from autohdl import build
 from autohdl.hdlLogger import logging
 
-print logging.handlers
+# get all logging handlers
+# get StreamHandler
+# reconfigure debug level
+
+lll = logging.getLogger()
+#alog = [i for i in lll.handlers if type(i) is logging.StreamHandler][0]
 
 alog = logging.getLogger(__name__)
 alog.setLevel(logging.DEBUG)
@@ -19,6 +24,11 @@ consoleHandler.setLevel(logging.DEBUG)
 consoleFormatter = logging.Formatter("%(levelname)s:%(message)s")
 consoleHandler.setFormatter(consoleFormatter)
 alog.addHandler(consoleHandler)
+print 'print'
+alog.debug('debug')
+alog.info('info')
+alog.warning('warning')
+alog.error('error')
 
 
 def calcSha(afile):

@@ -1,3 +1,4 @@
+import hashlib
 import os
 
 import autohdl.lib.yaml as yaml
@@ -7,148 +8,114 @@ from hdlLogger import log_call, logging
 log = logging.getLogger(__name__)
 
 
-
-
-class BuildException(Exception):
-  def __init__(self, iString):
-    self.string = iString
-  def __str__(self):
-    return self.string
-  
-
-
 @log_call    
-def convertToRelpath(iContent, buildFile):
-  buildPath = os.path.dirname(buildFile)
-  pathUCF = getParam('ucf')
+def _toRelative(content, file):
+  """
+  Convert all paths in content to relative;
+  Input:
+    content - dictionary with config parameters;
+    file - path to configure file;
+  """
+  path = os.path.dirname(file)
+  pathUCF = content.get('ucf')
   if pathUCF:
-    iContent['ucf'] = os.path.relpath(pathUCF, buildPath)
+    content['ucf'] = os.path.relpath(pathUCF, path)
 
-  depSrc = getParam('dep')
+  depSrc = content.get('dep')
   if depSrc:
-    iContent['dep'] = [os.path.relpath(i, buildPath) for i in depSrc]
+    content['dep'] = [os.path.relpath(i, path) for i in depSrc]
 
-  include_path = iContent.get('include_path')
-  # TODO: bugaga
-#  print include_path
-  if include_path:
-    if type(include_path) != type(list()):
-      include_path = [include_path]
-    iContent['include_path'] = [os.path.relpath(i, buildPath) for i in include_path]
+  includePath = content.get('include_path')
+  if includePath:
+    if type(includePath) is not list:
+      includePath = [includePath]
+    content['include_path'] = [os.path.relpath(i, path) for i in includePath]
 
 
 @log_call    
-def convertToAbspath(iContent, buildPath):
-  rootPath = os.path.dirname(buildPath)
-  pathUCF = iContent.get('ucf')
-  iContent['dump'] = False
-  if pathUCF and os.path.exists(pathUCF):
-    if ':' not in pathUCF:
-      path = os.path.normpath(rootPath+'/'+pathUCF)
+def _toAbsolute(content, file):
+  """
+  Convert all paths in content to absolute;
+  Input:
+    content - dictionary with config parameters;
+    file - path to configure file
+  """
+  rootPath = os.path.dirname(file)
+  pathUCF = content.get('ucf')
+  if pathUCF:
+    if os.path.exists(pathUCF):
+      if not os.path.isabs(pathUCF):
+        content['ucf'] = os.path.normpath(rootPath+'/'+pathUCF)
     else:
-      iContent['dump'] = True
-      path = pathUCF
-    iContent['ucf'] = path
-    
-  depSrc = iContent.get('dep')
+      log.warning('Wrong path: '+pathUCF)
+
+  depSrc = content.get('dep')
   if depSrc:
     dep = []
     for i in depSrc:
-      if ':' not in i:
+      if not os.path.isabs(i):
         i = os.path.normpath(rootPath+'/'+i)
-      else:
-        iContent['dump'] = True
       if os.path.exists(i):
         dep.append(i)
       else:
         log.warning('Wrong path: '+i)
-    iContent['dep'] = dep
+    content['dep'] = dep
 
-  include_path = iContent.get('include_path')
+  include_path = content.get('include_path')
   if include_path:
-    if type(include_path) != type(list()):
+    if type(include_path) is not list:
       include_path = [include_path]
     incl = []
-    incl_wrong = []
     for i in include_path:
-      if ':' not in i:
+      if not os.path.isabs(i):
         i = os.path.normpath(rootPath+'/'+i)
-      else:
-        iContent['dump'] = True
       if os.path.exists(i):
-        incl.append(os.path.abspath(i).replace('\\', '/'))
+        incl.append(i)
       else:
-        incl_wrong.append(i)
-    iContent['include_path'] = incl
-    if incl_wrong:
-      iContent['include_path_wrong'] = incl_wrong
+        log.warning('Wrong path: '+i)
+    content['include_path'] = incl
 
 
 @log_call
-def load(iBuildFile = '../resource/build.yaml', _cacheBuild = {}, silent = False):
-  path = os.path.abspath(iBuildFile)
-  if _cacheBuild.get(path):
-    return _cacheBuild.get(path)
+def load(file = '../resource/build.yaml', _cache = {}, cacheEnable = True):
+  path = os.path.abspath(file)
+  if cacheEnable and _cache.get(path):
+    return _cache.get(path)
   else:
     try:
-      with open(iBuildFile) as f:
-        with open(os.path.dirname(__file__)+'/data/build.yaml') as f2:
-          contentDefault = yaml.load(f2.read())
-          content = yaml.load(f.read())
-          newFields  = list(contentDefault.viewkeys() - content.viewkeys())
-          for i in newFields:
-            content[i] = contentDefault[i]
-          convertToAbspath(content, iBuildFile)
-          _cacheBuild.update({path:content})
-          dump(iContent = content, iBuildFile = iBuildFile)
+      with open(file) as f:
+        content = yaml.load(f.read())
+        _toAbsolute(content, path)
+        return content
     except IOError as e:
-      if not silent:
-        log.warning(e)
-        logging.warning('Cant open file ' + os.path.abspath(iBuildFile))
+      log.warning(e)
+      logging.warning('Cant open file ' + path)
       return {}
 
-  return content
 
-
-def loadDefault():
-  with open(os.path.dirname(__file__)+'/data/build.yaml') as f2:
-    content = yaml.load(f2.read())
-    convertToAbspath(content, '../resource/build.yaml')
+def default():
+  with open(os.path.dirname(__file__)+'/data/build.yaml') as f:
+    content = yaml.load(f.read())
     return content
 
 
-def loadUncached(iBuildFile = '../resource/build.yaml', silent = False):
-  try:
-    with open(iBuildFile) as f2:
-      content = yaml.load(f2.read())
-      convertToAbspath(content, iBuildFile)
-      return content
-  except IOError as e:
-    if not silent:
-      log.warning(e)
-      logging.warning('Cant open file ' + os.path.abspath(iBuildFile))
-
-
-@log_call    
-def dump(iContent, iBuildFile = '../resource/build.yaml'):
-  content = iContent
-  convertToRelpath(content, iBuildFile)
-  oldContent = loadUncached(iBuildFile = iBuildFile)
-  if content != oldContent or content.pop('dump', False):
-    yaml.dump(content, open(iBuildFile, 'w'), default_flow_style=False)
-
+def isModified(content, file):
+  h = hashlib.sha1()
+  h.update(yaml.dump(content, default_flow_style=False))
+  shaNew = h.hexdigest()
+  h = hashlib.sha1()
+  h.update(open(file).read())
+  shaOld = h.hexdigest()
+  if shaNew != shaOld:
+    return True
 
 @log_call
-def getParam(iKey, iBuild = '../resource/build.yaml', iDefault = None):
-  content = load(iBuild)
-  res = None
-  for key in [iKey.upper(), iKey.lower()]:
-    try:
-      res = content[key]
-    except KeyError:
-      continue
-  res = res or iDefault or []
-  return res
+def dump(content, file = '../resource/build.yaml'):
+  #todo: compare old & new shas in parsed/build_sha
+  path = os.path.abspath(file)
+  _toRelative(content, path)
+  if isModified(content, path):
+    yaml.dump(content, open(path, 'w'), default_flow_style=False)
 
 
 @log_call
@@ -176,7 +143,7 @@ def getDepPaths(file):
   Output: list of path to dependent files
   """
   path = getPathToBuild(file)
-  depInBuild = loadUncached(path).get('dep')
+  depInBuild = load(path, cacheEnable=False).get('dep')
   if not depInBuild:
     return []
   if type(depInBuild) is not list:
@@ -199,7 +166,7 @@ def getDepPaths(file):
 def updateDeps(files):
   if type(files) is not list:
     files = [files]
-  build = load()
+  build = load(cacheEnable=False)
   dep = build.get('dep')
   # build.yaml returns None
   if dep:

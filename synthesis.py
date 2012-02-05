@@ -15,16 +15,16 @@ log = logging.getLogger(__name__)
 
 @log_call
 def getIncludePath(iPrj):
-  incl = build.getParam('include_path', iDefault=".")
+  incl = (iPrj.get('include_path', ".") or '.')
   return ';'.join(incl)
   
 
 @log_call
 def setParams(iPrj):
-  device = build.getParam('DEVICE')
+  device = iPrj.get('device')
   part = 'xc' + device[:-5]
   package = device[-5:]
-  family = build.getParam('FAMILY')
+  family = iPrj.get('family')
   technology = family.split()[1] # e.g. 'Xilinx11x SPARTAN3E'
   iPrj['scriptContent'] = iPrj['scriptContent'].format(
                           device=device,

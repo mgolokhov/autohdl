@@ -20,16 +20,6 @@ from hdlLogger import log_call
 alog = logging.getLogger(__name__)
 
 @log_call
-def convert5to6version(config):
-  if 'toplevel' in config:
-    config['top'] = config.get('toplevel')
-  for i in ['iTop', 'iSize', 'iUpload', 'iUcf']:
-    res = config.get(i)
-    if res:
-      config[i[1:].lower()] = res
-
-
-@log_call
 def validateTop(iTop, config):
   parsed = config.get('parsed')
   if not parsed:
@@ -127,23 +117,16 @@ def validateLocation():
 
 
 @log_call
-def mergeConfig(configScript):
-#  configBuild = build.loadUncached()
-  configBuild = build.load()
-  config = copy.deepcopy(configBuild)
-  convert5to6version(config)
-  convert5to6version(configScript)
-  # overwrite
-  config.update(configScript)
+def mergeConfig(configScript, configBuild):
+  """
+  Rewrites all params in configBuild by configScript, except 'dep' (it extends);
+  """
+  depInScript = configScript.pop('dep', []) or []
+  configBuild.update(configScript)
 
-  depInScript = configScript.get('dep', [])
   if depInScript:
-    depInBuild = configBuild.get('dep', []) or []
-    depExtend = list(set(depInScript)-set(depInBuild))
-    configBuild['dep'] = configBuild.get('dep', []) + depExtend
-    config['dep'] = configBuild['dep']
-    build.dump(configBuild)
-  return config
+    configBuild['dep'] = depInScript + (configBuild.get('dep', []) or [])
+  return configBuild
 
 
 @log_call
@@ -171,15 +154,15 @@ def printInfo(config):
 
 
 @log_call
-def kungfu(**config):
+def kungfu(**configScript):
   alog.info('Processing...')
   alog.debug('args: '+ str(sys.argv))
-  alog.debug('config: ' + str(config))
-
-  if not config:
-    config = {}
+  alog.debug('config: ' + str(configScript))
 
   validateLocation()
+  configBuild = build.load(cacheEnable=False)
+  build.dump(configBuild)
+  config = mergeConfig(configScript, configBuild)
 
   parser = argparse.ArgumentParser(description='HDL Manager')
   parser.add_argument('-tb', action = 'store_true', help = 'export project to active-hdl')
@@ -188,11 +171,9 @@ def kungfu(**config):
   parser.add_argument('-impl', action = 'store_true', help = 'implementation step')
   parser.add_argument('-mcs', nargs = '?', const = 'config', help = 'generate .mcs from .bit file')
   parser.add_argument('-upload', action = 'store_true', help = 'upload firmware to WebDav server')
-#  parser.add_argument('-git', help = 'creation/synchronization with webdav repo')
   parser.add_argument('-d', action = 'store_true', help = 'debug flag')
   arguments = parser.parse_args()
 
-  config = mergeConfig(config)
 
   setValidTop(arguments, config)
   setValidUcf(config)
@@ -203,13 +184,9 @@ def kungfu(**config):
   if arguments.d:
     pprint.pprint(config)
     config['debug'] = True
-#    sys.exit()
 
   printInfo(config)
 
-#  if arguments.git:
-#    git.handle(arguments.git, config)
-#    return
 
   if arguments.tb:
     aldec.export(config)

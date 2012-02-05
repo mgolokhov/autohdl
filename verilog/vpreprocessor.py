@@ -196,7 +196,9 @@ class Preprocessor(object):
     res = re.search(r'`include\s+"(.+?)"', iLine)
     if res:
       inclFile = res.group(1)
-      searchPaths = build.getParam(iKey = 'include_path')
+      searchPaths = build.load().get('include_path', '.')
+      if type(searchPaths) is not list:
+        searchPaths = [searchPaths]
       searchPaths += [os.path.dirname(self.path)]
       for path in searchPaths:
         fullPath = os.path.join(path, inclFile)
