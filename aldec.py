@@ -154,13 +154,7 @@ def export(config):
   gen_aws(config)
   gen_adf(config)
   gen_compile_cfg(iFiles = config['allSrc']+config['depSrc'], iRepoSrc=config['repoSrc']) # prj['filesToCompile'])
-  if build.getParam(iKey = 'test'):
-    return
   aldec = toolchain.Tool().get('avhdl_gui')
-  if config.get('debug'):
-    import logging
-    l = logging.getLogger()
-    l.setLevel(logging.DEBUG)
   subprocess.Popen('python{3} {0}/aldec_run.py {1} "{2}"'.format(
                                                             os.path.dirname(__file__),
                                                             os.getcwd(),

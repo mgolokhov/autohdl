@@ -11,6 +11,7 @@ import autohdl.git as git
 import autohdl.hdlManager as hdlManager
 import autohdl.pkg_info as pkg_info
 import autohdl.doc as doc
+import autohdl.programmator as programmator
 import sys
 
 def main():
@@ -19,8 +20,14 @@ def main():
   parser.add_argument('-n', '--name', dest='name', default='', help='set design name and create structure (default name - current directory)')
   parser.add_argument('-v', '--version', dest='version', action='store_true', help='display package version')
   parser.add_argument('-tb', action = 'store_true', help = 'export project to active-hdl')
+  parser.add_argument('-prog', action = 'store_true', help = 'run programmator')
   parser.add_argument('-edit', choices = ['default_build', 'toolchain'], help = 'edit default build.yaml file')
   args = parser.parse_args()
+
+  if args.prog:
+#    programmator.run()
+    subprocess.Popen('python {}/Lib/site-packages/autohdl/programmator.py'.format(sys.prefix))
+    return
 
   if args.version:
     print 'autohdl version: ' + pkg_info.getVersion()
@@ -29,10 +36,10 @@ def main():
   elif args.tb:
     hdlManager.kungfu()
   elif args.git:
-    config = build.loadUncached(iBuildFile='resource/build.yaml', silent = True)
+    config = build.load()
     if not config:
       alog.info('Using default build.yaml (to see content: hdl.py -edit default_build)')
-      config = build.loadDefault()
+      config = build.default()
     config.update({'git':args.git})
     git.handle(config)
   elif args.edit:

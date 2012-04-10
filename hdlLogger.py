@@ -4,8 +4,57 @@ import os
 import socket
 import logging.handlers
 import subprocess
+import logging.config as lc
 
 from autohdl.lib.decorator import decorator
+
+
+LOGGING = {
+  'version': 1,
+  'disable_existing_loggers': True,
+  'formatters': {
+    'verbose': {
+      'format': '%(asctime)s:%(filename)s:%(lineno)d:%(levelname)s:%(message)s'
+    },
+    'simple': {
+      'format': '%(levelname)s: %(message)s'
+    },
+    },
+  'handlers': {
+    'consoleDebug': {
+      'level': 'DEBUG',
+      'class': 'logging.StreamHandler',
+      'formatter': 'verbose'
+    },
+    'consoleInfo': {
+      'level': 'INFO',
+      'class': 'logging.StreamHandler',
+      'formatter': 'simple'
+    },
+    'socket': {
+      'level': 'DEBUG',
+      'class': 'logging.handlers.SocketHandler',
+      'host': 'localhost',
+      'port': logging.handlers.DEFAULT_TCP_LOGGING_PORT,
+    },
+    },
+  'loggers': {
+    '': {
+      'handlers': ['consoleInfo', 'socket'],
+      'level': 'DEBUG',
+      },
+    }
+}
+
+lc.dictConfig(LOGGING)
+
+
+
+s = socket.socket()  #socket.AF_INET, socket.SOCK_STREAM
+# check if logging server up, else - run
+if s.connect_ex(('localhost', logging.handlers.DEFAULT_TCP_LOGGING_PORT)): #9020
+  path = os.path.dirname(__file__) + '/log_server.py'
+  p = subprocess.Popen('pythonw '+ path)
 
 
 class MyLogger(logging._loggerClass):
@@ -19,35 +68,6 @@ class MyLogger(logging._loggerClass):
 
 logging.setLoggerClass(MyLogger)
 
-
-
-
-
-socketHandler = logging.handlers.SocketHandler('localhost',
-                                               logging.handlers.DEFAULT_TCP_LOGGING_PORT)
-socketHandler.setLevel(logging.DEBUG)
-
-
-consoleHandler = logging.StreamHandler()
-consoleHandler.setLevel(logging.INFO)
-consoleFormatter = logging.Formatter("%(levelname)s:%(message)s")
-consoleHandler.setFormatter(consoleFormatter)
-
-# rootLogger
-rootLogger = logging.getLogger('')
-rootLogger.setLevel(logging.DEBUG)
-rootLogger.addHandler(socketHandler)
-rootLogger.addHandler(consoleHandler)
-
-
-
-def toShortStr(obj, max=20):
-  s = str(obj)
-#  if len(s) > max:
-#      return str(type(obj))
-  return s
-
-
 @decorator
 def log_call(fn, *args, **kw):
   """Log calls to fn, reporting caller, args, and return value"""
@@ -55,21 +75,21 @@ def log_call(fn, *args, **kw):
   try:
     frame = sys._getframe(2)
     varnames = fn.func_code.co_varnames
-    arglist = ', '.join([i[1]+'='+toShortStr(i[0]) for i in zip(args, varnames)])
+    arglist = ', '.join([i[1]+'='+str(i[0]) for i in zip(args, varnames)])
     if kw:
       arglist += ', '.join(['{0}={1}'.format(k, v) for k, v in kw.viewitems()])
-    
+
     logger.debug("%(func)s IN (%(args)s)" % (
-                            {'func': fn.__name__,
-                             'args': arglist,
-                             }),
-                        extra={
-                            'filename': os.path.split(frame.f_code.co_filename)[-1],
-                            'pathname': frame.f_code.co_filename,
-                            'lineno': frame.f_lineno,
-                            'module': fn.__module__,
-                            'funcName': fn.__name__})
-    
+        {'func': fn.__name__,
+         'args': arglist,
+         }),
+                 extra={
+                   'filename': os.path.split(frame.f_code.co_filename)[-1],
+                   'pathname': frame.f_code.co_filename,
+                   'lineno': frame.f_lineno,
+                   'module': fn.__module__,
+                   'funcName': fn.__name__})
+
     result = fn(*args, **kw)
 
   except Exception as e:
@@ -78,24 +98,20 @@ def log_call(fn, *args, **kw):
     raise
   else:
     logger.debug("%(func)s OUT %(ret)s" % (
-                          {'func': fn.__name__,
-                           'ret': toShortStr(result),
-                           }),
-                      extra={
-                          'filename': os.path.split(frame.f_code.co_filename)[-1],
-                          'pathname': frame.f_code.co_filename,
-                          'lineno': frame.f_lineno,
-                          'module': fn.__module__,
-                          'funcName': fn.__name__})
+        {'func': fn.__name__,
+         'ret': str(result),
+         }),
+                 extra={
+                   'filename': os.path.split(frame.f_code.co_filename)[-1],
+                   'pathname': frame.f_code.co_filename,
+                   'lineno': frame.f_lineno,
+                   'module': fn.__module__,
+                   'funcName': fn.__name__})
 
-    
-    
-    
+
+
+
   return result
 
 
-s = socket.socket()  #socket.AF_INET, socket.SOCK_STREAM
-# check if logging server up, else - run
-if s.connect_ex(('localhost', logging.handlers.DEFAULT_TCP_LOGGING_PORT)): #9020
-  path = os.path.dirname(__file__) + '/log_server.py'
-  p = subprocess.Popen('pythonw '+ path)
+

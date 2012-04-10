@@ -65,7 +65,7 @@ def setValidTop(arguments, config):
     config['top'] = topAsScriptName
     alog.info('Using top module name same as script name')
   else:
-    top = build.getParam(iKey='top')
+    top = build.load().get('top')
     if validateTop(top, config):
       alog.info('Using top module from build.yaml')
       config['top'] = top
@@ -88,7 +88,7 @@ def setValidUcf(config):
     alog.info('Using ucf name same as top module')
     return
 
-  ucfFromBuild = getFullPathToUcf(build.getParam('ucf'))
+  ucfFromBuild = getFullPathToUcf(build.load().get('ucf'))
   if ucfFromBuild:
     config['ucf'] = ucfFromBuild
     alog.info('Using ucf file from build.yaml')

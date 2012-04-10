@@ -45,7 +45,7 @@ def getDataTree(iPath):
   return res
 
 
-setup(name         = 'autohdl',
+setup(name         = 'AutoHDL',
       version      = pkg_info.getVersion(),
       description  = 'Automatization Utilities',
       author       = 'Max Golohov',
@@ -56,7 +56,7 @@ setup(name         = 'autohdl',
                       'autohdl.lib',
                       'autohdl.lib.yaml',
                       'autohdl.lib.tinydav'],
-      package_data = {'autohdl': ['data/*']+getDataTree('autohdl/doc')},
+      package_data = {'autohdl': ['data/*']+getDataTree('autohdl/doc')+['lib/djtgcfg.exe']},
       # + getDataTree('autohdl/test/fake_repo_gold') + getDataTree('autohdl/test/fake_repo')},
       data_files   = [('', ['autohdl/hdl.py'])],
       cmdclass     = {'uninstall': Uninstall, 'shutdownlog': ShutdownLogServer},

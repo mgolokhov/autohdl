@@ -19,3 +19,5 @@ for root, dirs, files in os.walk('autohdl'):
     myZipFile.write(path, path, zipfile.ZIP_DEFLATED)
 myZipFile.write('autohdl/install.py', 'install.py', zipfile.ZIP_DEFLATED)  
 myZipFile.close()
+
+print 'Generation done: ', zipFileName
