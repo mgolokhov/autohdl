@@ -11,7 +11,6 @@ import autohdl.git as git
 import autohdl.hdlManager as hdlManager
 import autohdl.pkg_info as pkg_info
 import autohdl.doc as doc
-import autohdl.programmator as programmator
 import sys
 
 def main():
@@ -26,7 +25,7 @@ def main():
 
   if args.prog:
 #    programmator.run()
-    subprocess.Popen('python {}/Lib/site-packages/autohdl/programmator.py'.format(sys.prefix))
+    subprocess.Popen('python {}/Lib/site-packages/autohdl/programmator/programmator.py'.format(sys.prefix))
     return
 
   if args.version:

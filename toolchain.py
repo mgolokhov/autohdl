@@ -17,6 +17,7 @@ class Tool(object):
                                'batch' : None,
                                'path'  : ['/Aldec/']},
                  'ise'      : {'gui'   : 'ise.exe',
+                               'impact': 'impact.exe',
                                'batch' : 'xtclsh.exe',
                                'xflow' : 'xflow.exe',
                                'promgen': 'promgen.exe',
@@ -169,7 +170,7 @@ class Tool(object):
 
 if __name__ == '__main__':
 #  Tool().refresh('ise_xflow')
-  print Tool().get('git_sh')
+  print Tool().get('ise_impact')
 #  print Tool().get('ise_xflow')
 #  print Tool('avhdl_gui').result
 #  print Tool('synplify_batch').result
