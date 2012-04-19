@@ -11,6 +11,9 @@ from lxml.etree import HTML, ElementTree
 import sys
 import time
 
+from autohdl.hdlLogger import log_call, logging
+log = logging.getLogger(__name__)
+
 
 FirmWare = namedtuple('Firmware', 'name uri date size')
 
@@ -145,13 +148,14 @@ class PLogic():
       self.spiDevice = r[0]
     return data
 
-
+  @log_call
   def program(self, fw_name, board_name, chip_idx):
+    log.debug('Cable type: '+self.cable)
     if self.cable == 'digilent':
       p = subprocess.Popen("{}" \
                            " prog -d {} " \
                            "-f {} " \
-                           "-i {}".format(self.digilent, board_name, fw_name, str(chip_idx)),
+                           "-i {}".format(self.digilent, self.alias, fw_name, str(chip_idx)),
                            stdin = subprocess.PIPE,
                            stdout = subprocess.PIPE
       )
