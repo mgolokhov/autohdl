@@ -7,7 +7,7 @@ import os
 import threading
 import time
 
-from autohdl import build
+from autohdl import build, hdlGlobals
 from autohdl.hdlLogger import logging
 
 # get all logging handlers
@@ -100,8 +100,9 @@ def parse(content):
 
 
 def updateDeps(files):
-  #[file:.\..\..\circle\src\achtung.v]
   files = [os.path.abspath('../aldec'+f[7:-1]) for f in files]
+  files = [i for i in files if '\\aldec\\src\\' not in i and '\\aldec\\src\\src\\' not in i]
+  files = [i for i in files if os.path.splitext(i)[1] in hdlGlobals.srcFileTypes]
   build.updateDeps(files)
 
 
@@ -121,7 +122,7 @@ def synchBuild():
         filesNew = parse(content)
         added = filesNew - files
         if files and added:
-          alog.debug('Added: '+'\n'.join(added))
+          alog.debug('Added: '+ str(added))
           updateDeps(added)
         files = copy.copy(filesNew)
     except (IOError, WindowsError) as e:
