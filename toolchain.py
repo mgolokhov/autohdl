@@ -1,4 +1,5 @@
 import ctypes
+import fnmatch
 import os
 import sys
 import glob
@@ -8,7 +9,7 @@ alog = logging.getLogger(__name__)
 
 import autohdl.lib.yaml as yaml
 from autohdl.lib.yaml.error import YAMLError
-
+import autohdl.progressBar as progressBar
 
 class Tool(object):
   @log_call
@@ -31,6 +32,12 @@ class Tool(object):
                                'path'  : ['/Git/']}
                  }
     self.pathCfg = sys.prefix + '/Lib/site-packages/autohdl_cfg/toolchain.yaml'
+    if not os.path.exists(self.pathCfg):
+      dir = os.path.dirname(self.pathCfg)
+      if not os.path.exists(dir):
+        os.mkdir(dir)
+      open(self.pathCfg, 'w').close()
+    self.result = None
 
 
   def checkTag(self, tag):
@@ -105,23 +112,29 @@ class Tool(object):
     return drivers
 
 
+  def find_files(self, directory, pattern):
+    for root, dirs, files in os.walk(directory):
+      for basename in files:
+        if fnmatch.fnmatch(basename, pattern):
+          filename = os.path.join(root, basename)
+          yield filename
+
   @log_call
   def searchLight(self):
+    alog.info('Searching {}...'.format(self.tag))
+    progressBar.run()
     logicDrives = self.getWin32Drivers()
     paths = self.paths
     rootDirs = []
     for logicDrive in logicDrives:
       for path in paths:
         for nested in ['', '/*/', '/*/'*2, '/*/'*3]: 
-          alog.info('Searching {}...'.format(self.tag))
-          alog.info('{drive}{nested}{path}'.format(drive=logicDrive, nested=nested, path=path))
           rootDirs += glob.glob('{drive}{nested}{path}'.format(drive=logicDrive, nested=nested, path=path))
     self.fullPaths = []
     for i in rootDirs:
       for nested in ['', '/*/', '/*/'*2, '/*/'*3, '/*/'*4, '/*/'*5, '/*/'*6]:
-        alog.info('Searching {}...'.format(self.tag))
         self.fullPaths += glob.glob('{0}{1}{2}'.format(i, nested, self.util))
-    
+    progressBar.stop()
     if self.fullPaths:
       self.fullPaths = [i.replace('\\', '/') for i in self.fullPaths]
       self.fullPaths.sort(cmp=None, key=os.path.getmtime, reverse=True)
@@ -169,8 +182,8 @@ class Tool(object):
         
 
 if __name__ == '__main__':
-#  Tool().refresh('ise_xflow')
-  print Tool().get('ise_impact')
+  Tool().refresh('ise_xflow')
+#  print Tool().get('ise_impact')
 #  print Tool().get('ise_xflow')
 #  print Tool('avhdl_gui').result
 #  print Tool('synplify_batch').result

@@ -224,6 +224,7 @@ class PLogic():
 
   def initialize(self):
     if not self.tryDigilent():
-      self.tryImpact()
+      if self.impact:
+        self.tryImpact()
     self.oQueue.put('Done')
     return self.output
