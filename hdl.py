@@ -1,5 +1,6 @@
 import argparse
 import logging
+import os
 import pprint
 import subprocess
 
@@ -24,9 +25,12 @@ def main():
   args = parser.parse_args()
 
   if args.prog:
-#    programmator.run()
+    if os.path.basename(os.getcwd()) == 'script':
+      if not os.path.exists('../programmator'):
+        os.mkdir('../programmator')
+      os.chdir('../programmator')
     subprocess.Popen('python {}/Lib/site-packages/autohdl/programmator/programmator.py'.format(sys.prefix))
-    return
+    sys.exit()
 
   if args.version:
     print 'autohdl version: ' + pkg_info.getVersion()
