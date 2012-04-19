@@ -21,7 +21,7 @@ def initialize(path = '.'):
     gitignore = path+'/.gitignore'
     if not os.path.exists(gitignore):
       with open(gitignore, 'w') as f:
-        f.write('aldec/*\nimplement/*\nsynthesis/*\nresource/parsed/*\n')
+        f.write('aldec/*\nimplement/*\nsynthesis/*\nresource/parsed/*\nprogrammator/*\n')
     pathWas = os.getcwd()
     os.chdir(path)
     print subprocess.check_output('{} add {}'.format(gitPath, path))
