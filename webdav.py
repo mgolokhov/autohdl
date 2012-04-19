@@ -121,10 +121,11 @@ def getBuildVer(client, folder, root_build):
 def formBaseInfo(conf):
   b = conf or build.load()
   comment = raw_input('Add some comment: ')
-  conf['gitMessage'] += comment
+#  conf['gitMessage'] += comment
   content = 'encoding: utf-8\ncomment: {}\ndevice: {}\nPROM size: {} kilobytes\nspi: {}'.format(
                             comment, b.get('device'), b.get('size'), b.get('spi'))
   print content
+  conf['gitMessage'] += comment.decode(sys.stdin.encoding or 'utf-8').encode('utf-8')
   return content.decode(sys.stdin.encoding or 'utf-8').encode('utf-8')
 
 
