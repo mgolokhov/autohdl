@@ -7,11 +7,10 @@ import shutil
 import os
 import threading
 import time
-import traceback
-from ttk import Label
 
 from autohdl import build, hdlGlobals
 from autohdl.hdlLogger import logging
+from autohdl.hdlGlobals import aldecPath
 
 # get all logging handlers
 # get StreamHandler
@@ -55,7 +54,7 @@ def isModified(src, dst):
 def syncRepo(move=False):
   # cwd = <dsnName>/script
 #  alog.debug('Wazzzup!')
-  rootPathAldec = '../aldec/src/'
+  rootPathAldec = aldecPath+'/src/'
   rootPathDsn = '../'
   syncDirs = [d for d in os.listdir(rootPathAldec)
           if d not in ['.svn', '.git'] and d in os.listdir(rootPathDsn)]
@@ -142,7 +141,7 @@ def testBenchF(testBench):
 
 
 def updateDeps(files):
-  files = [os.path.abspath('../aldec'+f[7:-1]) for f in files]
+  files = [os.path.abspath(aldecPath+f[7:-1]) for f in files]
   testBench = [i for i in files if '\\aldec\\src\\TestBench\\' in i]
   testBenchF(testBench)
   files = [i for i in files if '\\aldec\\src\\' not in i and '\\aldec\\src\\src\\' not in i]
@@ -152,7 +151,7 @@ def updateDeps(files):
 
 def synchBuild():
   # relative to dsn/script dsn/aldec/config.cfg
-  config = os.path.abspath('../aldec/compile.cfg')
+  config = os.path.abspath(aldecPath+'/compile.cfg')
   timestamp = None
   files = set()
   while True:
@@ -189,7 +188,7 @@ c.start()
 
 
 aldec = sys.argv[2] #toolchain.getPath(iTag = 'avhdl_gui')
-subprocess.call(aldec + ' ../aldec/wsp.aws')
+subprocess.call([aldec, aldecPath +'/wsp.aws'])
 moveInRepo()
 
 sys.exit()

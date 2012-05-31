@@ -2,6 +2,7 @@ import hashlib
 import os
 
 import autohdl.lib.yaml as yaml
+from autohdl.hdlGlobals import buildFilePath
 
 
 from hdlLogger import log_call, logging
@@ -77,7 +78,7 @@ def _toAbsolute(content, file):
 
 
 @log_call
-def load(file = '../resource/build.yaml', _cache = {}, cacheEnable = True):
+def load(file = buildFilePath, _cache = {}, cacheEnable = True):
   path = os.path.abspath(file)
   if cacheEnable and _cache.get(path):
     return _cache.get(path)
@@ -110,7 +111,7 @@ def isModified(content, file):
     return True
 
 @log_call
-def dump(content, file = '../resource/build.yaml'):
+def dump(content, file = buildFilePath):
   #todo: compare old & new shas in parsed/build_sha
   path = os.path.abspath(file)
   _toRelative(content, path)
@@ -175,7 +176,7 @@ def updateDeps(files):
     dep = []
   log.debug('files ' + '\n'.join(files))
   log.debug('dep ' + '\n'.join(dep))
-  files = [os.path.relpath(i, '../resource') for i in files
+  files = [os.path.relpath(i, buildFilePath) for i in files
            if os.path.abspath(i) not in dep]
   build['dep'] = files + dep
   dump(build)

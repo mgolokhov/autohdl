@@ -60,7 +60,7 @@ def files(iPrj):
     virtFolder = os.path.dirname(i).replace('\\', '/').split(rootPath)[1]
     virtFolder = virtFolder.replace('/', '\\').rstrip('/src')
     ass = len(virtFolder.split('\\')) + 1 # counts repo dir
-    l.append('repo\\' + virtFolder +'/..'*ass + '/../script/' + os.path.relpath(i) + '=-1')
+    l.append('repo\\' + virtFolder +'/..'*ass + '/../../script/' + os.path.relpath(i) + '=-1')
   repo = l
 
 

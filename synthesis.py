@@ -3,10 +3,8 @@ import shutil
 import subprocess
 import time
 
-from autohdl import structure
 from autohdl import toolchain
-from autohdl import build
-from autohdl import hdlGlobals
+from autohdl.hdlGlobals import synthesisPath
 
 import logging
 from autohdl.hdlLogger import log_call
@@ -32,7 +30,7 @@ def setParams(iPrj):
                           package=package,
                           technology=technology,
                           topModule=iPrj['top'],
-                          netlist=iPrj['pathSynthesis']+'/'+iPrj['top']+'.edf',
+                          netlist=iPrj['top']+'.edf',
                           src_files=iPrj['srcFiles'],
                           includePath=getIncludePath(iPrj))
   f = open(iPrj['pathScript'], 'w')
@@ -51,10 +49,11 @@ def setSrc(iPrj):
   
 @log_call  
 def extend(prj):
+  #TODO: convert all to abspath
   prj['pathTool']      = toolchain.Tool().get(prj['mode'])
-  prj['pathSynthesis'] = '../synthesis'
+  prj['pathSynthesis'] = synthesisPath
   prj['pathScript']    = prj['pathSynthesis']+ '/synthesis.prj'
-  prj['pathLog']       = prj['pathSynthesis'] + '/' + prj['top'] + '.srr'
+  prj['pathLog']       = prj['top'] + '.srr'
   prj['pathWas']       = os.getcwd().replace('\\','/')
 
   try:
@@ -118,7 +117,7 @@ def run_synplify_batch(iPrj):
   run = '"%s" %s %s %s %s' % (iPrj['pathTool'],
                 '-product synplify_premier',
                 '-licensetype synplifypremier',
-                '-batch', iPrj['pathScript'])
+                '-batch','synthesis.prj')
   subprocess.Popen(run, env = xilinx_env.get())
   loge = ''
   for i in range(13):
@@ -132,7 +131,7 @@ def run_synplify_batch(iPrj):
       break
 
   if not loge:
-    log.error('Cant start synthesis see ../synthesis/stdout.log')
+    log.error('Cant start synthesis see '+synthesisPath+'/stdout.log')
     return
 
   done = False

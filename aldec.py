@@ -9,8 +9,7 @@ from autohdl import build
 from autohdl import hdlGlobals
 from autohdl import template_avhdl_adf
 from autohdl import toolchain
-import sys
-
+from autohdl.hdlGlobals import aldecPath
 
 @log_call
 def extend(config):
@@ -28,7 +27,7 @@ def extend(config):
   config['allSrc'] = allSrc
 
 
-  mainSrcUncopied = structure.search(iPath = '../aldec/src',
+  mainSrcUncopied = structure.search(iPath = aldecPath+'/src',
                                      iOnly = hdlGlobals.verilogFileExtRe+hdlGlobals.vhdlFileExtRe,
                                      iIgnore = hdlGlobals.ignoreRepoFiles)
   config['srcUncopied'] = mainSrcUncopied
@@ -36,12 +35,13 @@ def extend(config):
   config['TestBenchSrc'] = structure.search(iPath='../TestBench', iIgnore = hdlGlobals.ignoreRepoFiles)
   
 
-  config['netlistSrc'] = structure.search(iPath = '../aldec/src',
+  config['netlistSrc'] = structure.search(iPath = aldecPath+'/src',
                                         iOnly = ['\.sedif', '\.edn', '\.edf', '\.edif', '\.ngc' ])
 
   config['filesToCompile'] = config['mainSrc'] + config['depSrc'] + config['TestBenchSrc'] + mainSrcUncopied
 
-  #TODO: bugaga
+  #TODO: refactor me
+  #add cores src (ignore other folders) to project navigator
   path = os.path.abspath(os.getcwd())
   pathAsList = path.replace('\\', '/').split('/')
   if pathAsList[-3] == 'cores':
@@ -67,14 +67,14 @@ def extend(config):
 @log_call
 def gen_aws(iPrj):
   content = '[Designs]\n{dsn}=./{dsn}.adf'.format(dsn=iPrj['dsnName'])
-  with open('../aldec/wsp.aws', 'w') as f:
+  with open(aldecPath+'/wsp.aws', 'w') as f:
     f.write(content)
 
 
 @log_call
 def gen_adf(iPrj):
   adf = template_avhdl_adf.generate(iPrj = iPrj)
-  with open('../aldec/{dsn}.adf'.format(dsn=iPrj['dsnName']), 'w') as f:
+  with open(aldecPath+'/{dsn}.adf'.format(dsn=iPrj['dsnName']), 'w') as f:
     f.write(adf)
 
 
@@ -84,7 +84,7 @@ def gen_compile_cfg(iFiles, iRepoSrc):
   iFiles = list(filesSet)
   iRepoSrc = list(set(iRepoSrc)-filesSet)
   src = [] 
-  start = os.path.dirname('../aldec/compile.cfg')
+  start = os.path.dirname(aldecPath+'/compile.cfg')
   for i in iFiles:
     if os.path.splitext(i)[1] not in hdlGlobals.srcFileTypes:
       continue
@@ -106,16 +106,16 @@ def gen_compile_cfg(iFiles, iRepoSrc):
     src.append(res)
 
   content = '\n'.join(src)
-  f = open('../aldec/compile.cfg', 'w')
+  f = open(aldecPath+'/compile.cfg', 'w')
   f.write(content)
   f.close()
   
 
 @log_call
 def cleanAldec():
-  if not {'aldec', 'script', 'src'}.issubset(os.listdir(os.getcwd()+'/..')):
+  if not {'resource', 'script', 'src', 'TestBench'}.issubset(os.listdir(os.getcwd()+'/..')):
     return
-  cl = structure.search(iPath = '../aldec', iIgnore = ['/implement/', '/synthesis/', '/src/'])
+  cl = structure.search(iPath = aldecPath, iIgnore = ['/implement/', '/synthesis/', '/src/'])
   for i in cl:
     if os.path.isdir(i):
       shutil.rmtree(i)
@@ -129,13 +129,13 @@ def copyNetlists():
                               iOnly = ['\.sedif', '\.edn', '\.edf', '\.edif', '\.ngc' ],
                               iIgnore = ['\.git', '\.svn', '/aldec/'])
   for i in netLists:
-    shutil.copyfile(i, '../aldec/src/'+os.path.split(i)[1])
+    shutil.copyfile(i, aldecPath+'/src/'+os.path.split(i)[1])
 
 @log_call
 def genPredefined():
   predef = structure.gPredefined + ['dep']
   for i in predef:
-    folder = '../aldec/src/'+i
+    folder = aldecPath+'/src/'+i
     if not os.path.exists(folder):
       os.makedirs(folder)
 

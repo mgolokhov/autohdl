@@ -6,6 +6,7 @@ import sys
 from autohdl import hdlGlobals
 from autohdl import toolchain
 from autohdl import structure
+from autohdl.hdlGlobals import synthesisPath, implementPath
 
 
 from hdlLogger import log_call, logging
@@ -17,7 +18,7 @@ def bit2mcs(config):
   try:
     if config['size']:
       proc = '{tool} -u 0 {top} -s {size} -w'.format(tool = toolchain.Tool().get('ise_promgen'),
-                                                     top = '../implement/'+config['top']+'.bit',
+                                                     top = config['top']+'.bit',
                                                      size = config['size'])
       subprocess.check_call(proc)
     else:
@@ -43,8 +44,8 @@ def clean(path):
 
 @log_call
 def run(config):
-  implPath = os.path.abspath('../implement')+'/'
-  synPath = os.path.abspath('../synthesis')+'/'
+  implPath = os.path.abspath(implementPath)+'/'
+  synPath = os.path.abspath(synthesisPath)+'/'
   clean(implPath)
   top = structure.search(synPath, iOnly = [config['top']+'\.edf'])
   if top:

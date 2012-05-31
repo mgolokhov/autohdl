@@ -6,3 +6,10 @@ verilogFileExtRe = ['\.'+i+'$' for i in verilogFileExt]
 vhdlFileExt = 'vhd;vhdl;vhi;vhm;vhn;vho;vhq;vhs;tvhd;vht'.split(';')
 vhdlFileExtRe = ['\.'+i+'$' for i in vhdlFileExt]
 srcFileTypes = ['.v', '.sv', '.vhd', '.vhdl']
+
+# start point directory is always dsn_name/script
+buildFilePath = '../resource/build.yaml'
+parsedCachePath = '../.hdl/parsed'
+aldecPath = '../.hdl/aldec'
+synthesisPath = '../.hdl/synthesis'
+implementPath = '../.hdl/implement'

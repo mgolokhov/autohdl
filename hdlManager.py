@@ -5,7 +5,7 @@ import os
 import pprint
 import sys
 
-from autohdl import instance, hdlGlobals
+from autohdl.hdlGlobals import implementPath
 from autohdl import structure
 from autohdl import build
 from autohdl import git
@@ -206,8 +206,8 @@ def kungfu(**configScript):
 
   if config['upload']:
     #TODO: refactor
-    webdav.upload_fw('../implement/{0}.bit'.format(config['top']), conf = config)
-    webdav.upload_fw('../implement/{0}.mcs'.format(config['top']))
+    webdav.upload_fw('{0}/{1}.bit'.format(implementPath, config['top']), conf = config)
+    webdav.upload_fw('{0}/{1}.mcs'.format(implementPath, config['top']))
     git.synchWithBuild(config)
 
 
