@@ -1,3 +1,4 @@
+from Tkinter import Tk
 import copy
 import hashlib
 import subprocess
@@ -6,6 +7,8 @@ import shutil
 import os
 import threading
 import time
+import traceback
+from ttk import Label
 
 from autohdl import build, hdlGlobals
 from autohdl.hdlLogger import logging
@@ -87,10 +90,7 @@ def moveInRepo():
 
 def parse(content):
   d = set()
-#  lines = content.splitlines()
   files = [i for i in content.splitlines() if '[file:' in i or 'Enabled' in i]
-#  alog.info('\n'.join(files))
-#  time.sleep(5)
   for i, l in enumerate(files):
     if l == 'Enabled=1':
       d.add(files[i-1])
@@ -99,8 +99,52 @@ def parse(content):
   return d
 
 
+
+
+def testBenchF(testBench):
+  try:
+    fi = [i for i in testBench if os.path.splitext(i)[1] == '.v']
+    with open(fi[0]) as f:
+      context = f.read()
+    res = []
+    rst = None
+    for i in ['iRst', 'rst', 'RST', 'Rst', 'reset', 'Reset']:
+      if i in context:
+        rst = i
+    clk = None
+    for i in ['iClk', 'clk', 'Clk', 'Clock', 'clock']:
+      if i in context:
+        clk = i
+    for i in context.splitlines():
+      if '`timescale' in i:
+        res.append('`timescale 1ns/1ns')
+      elif 'initial' in i:
+        if clk:
+          res.append(('initial begin\n'
+                     '    {clk} = 0;\n'
+                     '    forever #1ns {clk} = !{clk};\n'
+                     'end\n').format(clk=clk))
+        if rst:
+          res.append(('initial begin\n'
+                   '    {rst} = 1;\n'
+                   '    #33ns {rst} = 0;\n'
+                   'end').format(rst = rst))
+      elif '$monitor' in i:
+        pass
+      else:
+        res.append(i)
+      with open(fi[0], 'w') as f:
+        f.write('\n'.join(res))
+
+  except Exception as e:
+    pass
+
+
+
 def updateDeps(files):
   files = [os.path.abspath('../aldec'+f[7:-1]) for f in files]
+  testBench = [i for i in files if '\\aldec\\src\\TestBench\\' in i]
+  testBenchF(testBench)
   files = [i for i in files if '\\aldec\\src\\' not in i and '\\aldec\\src\\src\\' not in i]
   files = [i for i in files if os.path.splitext(i)[1] in hdlGlobals.srcFileTypes]
   build.updateDeps(files)
