@@ -3,6 +3,8 @@ import hashlib
 import shutil
 import sys
 
+
+from autohdl.hdlGlobals import parsedCachePath, buildFilePath
 try:
   from lib import yaml
   from hdlLogger import logging
@@ -13,7 +15,7 @@ except ImportError:
   from ..pkg_info import getVersion
 
 
-CACHE_PATH = '../resource/parsed'
+CACHE_PATH = os.path.abspath(parsedCachePath)
 CACHE_LOAD = True
 CACHE_DUMP = True
 
@@ -57,7 +59,7 @@ def refreshCache(_once=[]):
     return
   _once.append(True)
   try:
-    with open('../resource/build.yaml') as f:
+    with open(buildFilePath) as f:
       h = hashlib.sha1()
       h.update(f.read())
       shaNew = h.hexdigest()
@@ -71,7 +73,7 @@ def refreshCache(_once=[]):
             return True
     except IOError:
       if not os.path.exists(CACHE_PATH):
-        os.mkdir(CACHE_PATH)
+        os.makedirs(CACHE_PATH)
       with open(sha_build, 'w') as f:
         f.write(shaNew)
         return True
