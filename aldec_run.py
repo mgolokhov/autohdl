@@ -143,9 +143,9 @@ def testBenchF(testBench):
 def updateDeps(files):
   files = [os.path.abspath(aldecPath+f[7:-1]) for f in files]
   testBench = [i for i in files if '\\aldec\\src\\TestBench\\' in i]
-  testBenchF(testBench)
+#  testBenchF(testBench)
   files = [i for i in files if '\\aldec\\src\\' not in i and '\\aldec\\src\\src\\' not in i]
-  files = [i for i in files if os.path.splitext(i)[1] in hdlGlobals.srcFileTypes]
+  files = [i for i in files if os.path.splitext(i)[1] in hdlGlobals.hdlFileExt]
   build.updateDeps(files)
 
 

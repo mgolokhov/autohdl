@@ -1,4 +1,5 @@
 import os
+import pprint
 import shutil
 import subprocess
 
@@ -21,22 +22,21 @@ def extend(config):
   config['dsnName'] = os.path.split(config['rootPath'])[1]
   
   allSrc = []
-  ignore = hdlGlobals.ignore
   for i in ['../src', '../TestBench', '../script', '../resource']:
-    allSrc += structure.search(iPath = i, iIgnore = ignore)
+    allSrc += structure.search(directory = i, ignoreDir = hdlGlobals.ignoreRepoDir)
   config['allSrc'] = allSrc
 
 
-  mainSrcUncopied = structure.search(iPath = aldecPath+'/src',
-                                     iOnly = hdlGlobals.verilogFileExtRe+hdlGlobals.vhdlFileExtRe,
-                                     iIgnore = hdlGlobals.ignoreRepoFiles)
+  mainSrcUncopied = structure.search(directory = aldecPath+'/src',
+                                     onlyExt = hdlGlobals.hdlFileExt,
+                                     ignoreDir = hdlGlobals.ignoreRepoDir)
   config['srcUncopied'] = mainSrcUncopied
 
-  config['TestBenchSrc'] = structure.search(iPath='../TestBench', iIgnore = hdlGlobals.ignoreRepoFiles)
+  config['TestBenchSrc'] = structure.search(directory='../TestBench', ignoreDir = hdlGlobals.ignoreRepoDir)
   
 
-  config['netlistSrc'] = structure.search(iPath = aldecPath+'/src',
-                                        iOnly = ['\.sedif', '\.edn', '\.edf', '\.edif', '\.ngc' ])
+  config['netlistSrc'] = structure.search(directory = aldecPath + '/src',
+                                          onlyExt = '.sedif .edn .edf .edif .ngc'.split())
 
   config['filesToCompile'] = config['mainSrc'] + config['depSrc'] + config['TestBenchSrc'] + mainSrcUncopied
 
@@ -86,7 +86,7 @@ def gen_compile_cfg(iFiles, iRepoSrc):
   src = [] 
   start = os.path.dirname(aldecPath+'/compile.cfg')
   for i in iFiles:
-    if os.path.splitext(i)[1] not in hdlGlobals.srcFileTypes:
+    if os.path.splitext(i)[1] not in hdlGlobals.hdlFileExt:
       continue
     path = os.path.abspath(i)
     try:
@@ -96,7 +96,7 @@ def gen_compile_cfg(iFiles, iRepoSrc):
     src.append(res)
 
   for i in iRepoSrc:
-    if i not in hdlGlobals.srcFileTypes:
+    if i not in hdlGlobals.hdlFileExt:
       continue
     path = os.path.abspath(i)
     try:
@@ -115,7 +115,7 @@ def gen_compile_cfg(iFiles, iRepoSrc):
 def cleanAldec():
   if not {'resource', 'script', 'src', 'TestBench'}.issubset(os.listdir(os.getcwd()+'/..')):
     return
-  cl = structure.search(iPath = aldecPath, iIgnore = ['/implement/', '/synthesis/', '/src/'])
+  cl = structure.search(directory = aldecPath, ignoreDir = ['implement', 'synthesis', 'src'])
   for i in cl:
     if os.path.isdir(i):
       shutil.rmtree(i)
@@ -125,15 +125,15 @@ def cleanAldec():
 
 @log_call
 def copyNetlists():
-  netLists = structure.search(iPath = '../src',
-                              iOnly = ['\.sedif', '\.edn', '\.edf', '\.edif', '\.ngc' ],
-                              iIgnore = ['\.git', '\.svn', '/aldec/'])
+  netLists = structure.search(directory = '../src',
+                              onlyExt = '.sedif .edn .edf .edif .ngc'.split(),
+                              ignoreDir = ['.git', '.svn', 'aldec'])
   for i in netLists:
     shutil.copyfile(i, aldecPath+'/src/'+os.path.split(i)[1])
 
 @log_call
 def genPredefined():
-  predef = structure.gPredefined + ['dep']
+  predef = hdlGlobals.predefDirs + ['dep']
   for i in predef:
     folder = aldecPath+'/src/'+i
     if not os.path.exists(folder):

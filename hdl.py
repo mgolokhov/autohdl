@@ -51,9 +51,11 @@ def main():
     elif args.edit == 'toolchain':
       subprocess.Popen('notepad {}/Lib/site-packages/autohdl_cfg/toolchain.yaml'.format(sys.prefix))
   else:
-    dsn = structure.Design(iName = args.name)
+#    dsn = structure.Design(iName = args.name)
+    dsn = structure.generate(path = args.name)
     git.initialize(args.name if args.name else '.')
     print dsn
+
 
 if __name__ == '__main__':
   main()

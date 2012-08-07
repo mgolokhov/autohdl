@@ -1,3 +1,4 @@
+import glob
 import os
 import shutil
 import subprocess
@@ -7,9 +8,11 @@ from autohdl import hdlGlobals
 from autohdl import toolchain
 from autohdl import structure
 from autohdl.hdlGlobals import synthesisPath, implementPath
-
+import time
 
 from hdlLogger import log_call, logging
+from autohdl import progressBar
+
 log = logging.getLogger(__name__)
 
 
@@ -44,17 +47,22 @@ def clean(path):
 
 @log_call
 def run(config):
+  log.info("Implementation stage...")
   implPath = os.path.abspath(implementPath)+'/'
   synPath = os.path.abspath(synthesisPath)+'/'
   clean(implPath)
-  top = structure.search(synPath, iOnly = [config['top']+'\.edf'])
-  if top:
-    top = top[0]
-  else:
+  top = os.path.join(synPath, config['top']+'.edf')
+  progressBar.run()
+  cnt = 50
+  while not os.path.exists(top) or not cnt:
+    cnt -= 1
+    time.sleep(1)
+  progressBar.stop()
+  if not cnt:
     log.error('Cant find netlist, try sythesis step first.')
-    sys.exit()
+    sys.exit(1)
     
-  ucfSymplicity = structure.search(synPath, iOnly=['\.ucf'], iIgnore=hdlGlobals.ignoreRepoFiles)
+  ucfSymplicity = structure.search(synPath, onlyExt = '.ucf', ignoreDir = hdlGlobals.ignoreRepoDir)
   ucf = ucfSymplicity[0] or config['ucf']
 
   shutil.copyfile(ucf, implPath + config['top']+'.ucf')

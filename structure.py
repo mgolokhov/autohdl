@@ -1,8 +1,7 @@
-import pprint
 import re
 import os
 import shutil
-import sys
+from collections import namedtuple
 
 from autohdl import instance
 from autohdl import hdlGlobals
@@ -11,211 +10,117 @@ from autohdl import progressBar
 from hdlLogger import log_call, logging
 log = logging.getLogger(__name__)
 
-
-class StructureException(Exception):
-  def __init__(self, iString):
-    self.string = iString
-  def __str__(self):
-    return self.string
-
-
-gPredefined = ['src', 'TestBench', 'resource', 'script']
-
-
-class Design(object):
-  def __init__(self, iName = '', iPath = '.', iGen = True, iInit = True):
-    path = os.path.abspath(iPath).replace('\\','/')
+def generate(path = ''):
+  """
+  Could be
+  empty
+  simple name
+  path
+  """
+  root = os.path.abspath(path)
+  if not os.path.exists(root):
+    os.makedirs(root)
+  log.info('Design root: '+ root)
+  for i in hdlGlobals.predefDirs:
+    path = os.path.join(root,i)
     if not os.path.exists(path):
-      log.error('Wrong rootPath ' + path)
-    if iName:
-      self._pathRoot = path+'/'+iName
-      self._name     = iName
-    else:
-      self._pathRoot = path
-      self._name     = path.split('/')[-1]
+      os.mkdir(path)
 
-    self._filesMain  = []
-    self._dirsMain   = [] # BUGAGA: do i really need?
-    self._filesDep   = []
-    
-    if iGen:
-      self.genPredef()
-    if iInit:
-      self.init()
+  pathData = os.path.join(os.path.dirname(__file__), 'data')
+  Copy = namedtuple('Copy', ['src', 'dst'])
+  listToCopy = (
+    Copy(os.path.join(pathData,'build.yaml'), os.path.join(root, 'script', 'build.yaml')),
+    Copy(os.path.join(pathData,'run_avhdl.bat'), os.path.join(root,'script', 'run_avhdl.bat')),
+    Copy(os.path.join(pathData,'kungfu.py'), os.path.join(root, 'script', 'kungfu.py'))
+    )
+  for i in listToCopy:
+    if not os.path.exists(i.dst):
+      shutil.copy(i.src, i.dst)
+  return get(root)
 
 
-  @property
-  def name(self):
-    return self._name
-  
-  @property
-  def pathRoot(self):
-    return self._pathRoot
+def get(path = '', ignore = ('.git', '.svn')):
+  root = os.path.abspath(path)
+  return tree(directory = root, ignore = ignore)
 
-  @property
-  def filesMain(self):
-    return self._filesMain
 
-  @filesMain.setter
-  def filesMain(self, value):
-    self._filesMain = value
-
-  @property
-  def filesDep(self):
-    return self._filesDep
-  
-  @filesDep.setter
-  def filesDep(self, value):
-    self._filesDep = value
-  
-  def init(self):
-    self.initFilesMain()
-    self.initFilesDep()
-
-  def initFilesMain(self):
-    pass
-#    ext = build.getSrcExtensions(iTag = 'synthesis_ext', iBuildFile = self.pathRoot)
-#    only = ['/src/.*?\.'+i+'$' for i in ext]
-#    self._filesMain = search(iPath = self.pathRoot, iOnly = only) 
-  
-  def initFilesDep(self):
-    pass
-#    ext = build.getSrcExtensions(iTag = 'synthesis_ext', iBuildFile = self.pathRoot)
-#    only = ['\.'+i+'$' for i in ext]
-#    self._filesDep = getDepSrc(iSrc = self.filesMain, iOnly = only)
-  
-  def __str__(self):
-    structure = []
-    for d in os.listdir(self.pathRoot):
-      if d in gPredefined:
-        structure.append('\t' + d)
-#      if d not in gPredefined:
-#        structure.append(d+' -external')
-#        continue
-
-        for root, dirs, files in os.walk(d):
-          for d in dirs:
-            adirectory = os.path.join(root, d)
-            if filter(iFiles = adirectory, iIgnore = hdlGlobals.ignore):
-              structure.append('\t\t' + d)
-          for f in files:
-            afile = os.path.join(root, f)
-            if filter(iFiles = [afile], iIgnore = hdlGlobals.ignore):
-              structure.append('\t\t' + f)
-
-    return \
-    'Design name: '       + self.name +\
-    '\nRoot path:\n\t' + self.pathRoot +\
-    '\nStructure:\n'    + '\n'.join(structure) +\
-    '\nfileMain:\n\t' + '\n\t'.join(self.filesMain) +\
-    '\nfileDep:\n\t'  + '\n\t'.join(self.filesDep)
-    
-
-  pathData = os.path.dirname(__file__)
-  
-  @log_call
-  def _copyFile(self, iDestination):
-    pathDestination = os.path.join(self._pathRoot, iDestination)
-    pathSource = os.path.join(self.pathData, 'data', os.path.split(iDestination)[1])
-    if not os.path.exists(pathDestination):
-      shutil.copyfile(pathSource, pathDestination)
-  
-  
-  @log_call
-  def _copyFiles(self):
-    """
-    Copy data files to predefined destinations
-    """
-    log.debug('def _copyFiles')
-
-    listToCopy = [
-      'script/kungfu.py',
-      'script/run_avhdl.bat',
-      'resource/build.yaml',
-      ]
-    for l in listToCopy:
-      self._copyFile(iDestination = l)
-
-  
-  def genPredef(self):
-    """
-    Generates predefined structure
-    """
-    for d in gPredefined:
-      create = '%s/%s' % (self._pathRoot, d)
-      if not os.path.exists(create):
-        os.makedirs(create)
-    self._copyFiles()
-    log.info('Predefined generation done! PathRoot: '+self.pathRoot)
-   
-#
-#############################################################
-#
-
-@log_call
-def filter(iFiles, iIgnore = [], iOnly = []):
-  """
-  Precondition:
-    iFiles should be a list even if there is one file;
-    iIgnore and iOnly: lists of regexp
-  """
-  if not iIgnore and not iOnly:
-    return iFiles
-  # make a list if there is one file
-  if type(iFiles) == type(''):
-    iFiles = [iFiles]
-  
-  files = iFiles[:]
-  
-  for f in iFiles:
-    log.debug('current file ' + f)
-    delete = True
-    for only in iOnly:
-      if re.search(only, f):
-        delete = False
-        break
-    if iOnly and delete:
-      log.debug('Only pattern - ignoring: ' + f)
-      files.remove(f)
+def tree(directory, padding = ' ', _res = [], ignore = []):
+  _res.append(padding[:-1] + '+-' + os.path.basename(os.path.abspath(directory)) + os.path.sep)
+  padding += ' '
+  files = os.listdir(directory)
+  count = 0
+  for file in files:
+    if file in ignore:
       continue
-    
-    for ignore in iIgnore:
-      if re.search(ignore, f):
-        if files.count(f):
-          log.debug('Ignore pattern - ignoring ' + f)
-          files.remove(f)
-        break
-  return files
+    count += 1
+    _res.append(padding + '|')
+    path = directory + os.path.sep + file
+    if os.path.isdir(path):
+      if count == len(files):
+        tree(directory= path, padding = padding + ' ')
+      else:
+        tree(directory= path, padding = padding + '|')
+    else:
+      _res.append(padding + '+-' + file)
+  return '\n'.join(_res)
 
+   
+def pathOk(path, ignore, only):
+  if ignore:
+    for ignoreItem in ignore:
+      if re.search(ignoreItem, path):
+        return False
+  if only:
+    for onlyItem in only:
+      if re.search(onlyItem, path):
+        return True
+  else:
+    return True
+
+
+def _convertToSet(arg):
+  arg = arg or set()
+  if type(arg) is str:
+    arg = [arg]
+  return set(arg)
 
 @log_call
-def search(iPath = '.', iIgnore = None, iOnly = None):
+def search(directory = '.',
+           ignoreDir = None, ignoreExt = None, onlyExt = None):
   """
-    Search files by pattern.
-    Input: path (by default current directory), ignore and only patterns (should be lists)
+    Recursively search files by pattern.
+    Input: directory - start point to search,
+           ignore and only - filter patterns for directory and files (should be lists)
     Returns list of files.
   """
-  ignore = iIgnore or []
-  only = iOnly or []
+  ignoreDir = _convertToSet(ignoreDir)
+  ignoreExt = _convertToSet(ignoreExt)
+  onlyExt = _convertToSet(onlyExt)
+
   resFiles = []
-  if os.path.isfile(iPath):
-    fullPath = (os.path.abspath(iPath)).replace('\\', '/')
-    if filter(iFiles = [fullPath], iOnly = only, iIgnore = ignore): 
-      resFiles.append(fullPath)
-  else:  
-    for root, dirs, files in os.walk(iPath):
-      for f in files:
-        fullPath = '%s/%s' % (root, f)
-        fullPath = (os.path.abspath(fullPath)).replace('\\', '/')
-        if filter(iFiles = fullPath, iOnly = only, iIgnore = ignore): 
-          resFiles.append(fullPath)
+  for root, dirs, files in os.walk(os.path.abspath(directory)):
+    for i in set(dirs) & ignoreDir:
+      log.debug( 'ignore directory: ' + i)
+      dirs.remove(i)
+    for f in files[:]:
+      log.debug( 'file: ' + f)
+      ext = os.path.splitext(f)[1]
+      if ext in ignoreExt:
+        files.remove(f)
+        log.debug( 'ignore file (ignore list) ' + f)
+      elif onlyExt and (ext not in onlyExt):
+        files.remove(f)
+        log.debug( 'ignore file (only list) ' + f)
+      else:
+        log.debug( 'add file ' + f)
+        resFiles.append(os.path.join(root, f))
   return resFiles
 ########################################################################
 @log_call
 def setMainSrc(config):
   config['mainSrc'] = search('../src',
-                             iOnly=hdlGlobals.verilogFileExtRe,
-                             iIgnore=hdlGlobals.ignoreRepoFiles)
+                             onlyExt=hdlGlobals.hdlFileExt,
+                             ignoreDir=hdlGlobals.ignoreRepoDir)
   config['mainSrcParsed'] = instance.get_instances(config['mainSrc'])
 
 def setSrc(config):
@@ -241,5 +146,10 @@ def setDepSrc(config):
   allSrcFiles = {os.path.abspath(val['path']).replace('\\', '/') for val in parsed.values()}
   config['depSrc'] = list(allSrcFiles - set(config['mainSrc']))
 
-  
 
+if __name__ == '__main__':
+  res = []
+  res += [search(directory=i) for i in ['verilog', 'programmator']]
+#  print '\n'.join(res)
+
+  print res

@@ -8,6 +8,8 @@ from autohdl.hdlGlobals import synthesisPath
 
 import logging
 from autohdl.hdlLogger import log_call
+import sys
+
 log = logging.getLogger(__name__)
 
 
@@ -43,7 +45,8 @@ def setSrc(iPrj):
   srcMain = iPrj['mainSrc']
   srcDep = iPrj['depSrc'] or []
   ucf = [iPrj['ucf']] or []
-  srcFiles =  srcMain + srcDep + ucf
+  #TODO: got duplicates, guess some bugs in structure
+  srcFiles =  set([i.replace('\\', '/') for i in srcMain + srcDep + ucf])
   iPrj['srcFiles'] = '\n'.join(['add_file "{0}"'.format(i) for i in srcFiles])
 
   
@@ -95,17 +98,19 @@ def parseLog(iPrj, iSilent = False):
     ignoreWarnings = res.count('Initial value is not supported on state machine state')
     warnings = warningsAll - ignoreWarnings
     time.sleep(1)
+
+    log.info('See logfile: '+logFile)
     if errors:
       log.error('Synthesis ended with errors! Num: '+str(errors))
+      sys.exit(1)
     elif warnings:
       log.warning('Synthesis ended with warnings! Num: '+str(warnings))
     else:
       log.info('Errors: '+str(errors)+'; Warnings: '+ str(warnings))
-      
+
     if errors or (not iSilent and warnings):
       subprocess.Popen(['notepad', logFile])
-    log.info('See logfile: '+logFile)
-    
+
   return logFile 
 
 
@@ -140,6 +145,8 @@ def run_synplify_batch(iPrj):
     res = loge.readline()
     if res.find('Mapper successful!') != -1:
       done = True
+    if '@E' in res:
+      done = True
     if res.endswith('\n'):
       print res
     elif done:
@@ -172,7 +179,7 @@ def runTool(iPrj, iSilent):
 
 @log_call
 def run(config):
-  logging.info('Synthesis stage')
+  logging.info('Synthesis stage...')
   # changing current location to synthesis directory
   runTool(extend(config), iSilent = True)
   log.info('Synthesis done!')

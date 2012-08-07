@@ -1,6 +1,8 @@
 import os
+from autohdl.hdlGlobals import aldecPath
 
 # every func should return a string
+import pprint
 
 
 def synth_tool(iPrj):
@@ -55,13 +57,27 @@ def files(iPrj):
 
   rootPath = iPrj['repoPath']+'/'
   l = []
-  # relative path to aldec/src/virtualDirectory
+  # relative path to
+  # repo_root/prj/.hdl/aldec/src + virtual_folders
   for i in iPrj['repoSrc']:
     virtFolder = os.path.dirname(i).replace('\\', '/').split(rootPath)[1]
     virtFolder = virtFolder.replace('/', '\\').rstrip('/src')
-    ass = len(virtFolder.split('\\')) + 1 # counts repo dir
-    l.append('repo\\' + virtFolder +'/..'*ass + '/../../script/' + os.path.relpath(i) + '=-1')
+    ass = len(virtFolder.split('\\')) # counts virtual folders
+    l.append('repo\\' + virtFolder +'/..'*ass + '/../../../script/' + os.path.relpath(i) + '=-1')
   repo = l
+
+#  TestBenchUtils = []
+#  if iPrj.get('TestBenchUtils'):
+#    pprint.pprint(iPrj['TestBenchUtils'])
+#    print 'root: ', os.path.dirname(rootPath)
+#    for i in iPrj['TestBenchUtils']:
+#      virtFolder = os.path.dirname(i).split(os.path.dirname(rootPath)+'/')[1]
+#      virtFolder = virtFolder.replace('/', '\\')+'/'
+#      ass = len(virtFolder.split('\\'))
+#      print virtFolder
+#      print i
+#      print virtFolder + '/../'*ass + os.path.relpath(i, start=aldecPath+'/src') + '=-1'
+#      TestBenchUtils.append(virtFolder + '..\\'*ass + os.path.relpath(i, start=aldecPath+'/src') + '=-1')
 
 
   netlist = []
