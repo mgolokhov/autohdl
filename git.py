@@ -1,5 +1,6 @@
 import argparse
 import os
+import shutil
 import subprocess
 import urlparse
 
@@ -7,6 +8,7 @@ from autohdl.lib.pyparsing import makeHTMLTags, SkipTo
 from autohdl import toolchain
 from autohdl import webdav
 from autohdl.hdlLogger import logging
+from autohdl.hdlGlobals import implementPath
 import autohdl.doc as doc
 
 
@@ -21,7 +23,7 @@ def initialize(path = '.'):
     gitignore = path+'/.gitignore'
     if not os.path.exists(gitignore):
       with open(gitignore, 'w') as f:
-        f.write('aldec/*\nimplement/*\nsynthesis/*\nresource/parsed/*\nprogrammator/*\n')
+        f.write('.hdl/*\n')
     pathWas = os.getcwd()
     os.chdir(path)
     print subprocess.check_output('{} add {}'.format(gitPath, path))
@@ -87,8 +89,16 @@ def clone(config):
       subprocess.call('{} clone http://{}/{} -o webdav'.format(gitPath, config['host'], repo))
     os.chdir('..')
 
+def backupFirmware(config):
+  for i in ['.bit', '.mcs']:
+    firmware = os.path.join(implementPath, config.get('top')+i)
+    print firmware
+    if os.path.exists(firmware):
+      shutil.copy(firmware, os.path.join('..', 'resource', config.get('top')+i))
+
 
 def synchWithBuild(config):
+  backupFirmware(config)
   gitPath = toolchain.Tool().get('git_batch')
   res = subprocess.check_output('{} status'.format(gitPath))
   if 'working directory clean' in res:

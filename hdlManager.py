@@ -59,7 +59,7 @@ def setValidTop(arguments, config):
   if validateTop(arguments.top, config):
     config['top'] = arguments.top
     alog.info('Using top module name from arguments list')
-  elif validateTop(config['top'], config):
+  elif validateTop(config.get('top'), config):
     alog.info('Using top module name from script')
   elif topAsScriptName and validateTop(topAsScriptName, config):
     config['top'] = topAsScriptName
@@ -178,6 +178,7 @@ def kungfu(**configScript):
   setValidTop(arguments, config)
   setValidUcf(config)
   setUpload(arguments, config)
+  config['dsnName'] = os.path.basename(os.path.dirname(os.getcwd()))
   config['mode'] = 'synplify_gui' if arguments.syn == 'gui' else 'synplify_batch'
   if arguments.mcs and arguments.mcs != 'config': config['size'] = arguments.mcs
 
@@ -206,8 +207,8 @@ def kungfu(**configScript):
 
   if config['upload']:
     #TODO: refactor
-    webdav.upload_fw('{0}/{1}.bit'.format(implementPath, config['top']), conf = config)
-    webdav.upload_fw('{0}/{1}.mcs'.format(implementPath, config['top']))
+    webdav.upload_fw('{0}/{1}.bit'.format(implementPath, config['top']), config = config)
+    webdav.upload_fw('{0}/{1}.mcs'.format(implementPath, config['top']), config = config)
     git.synchWithBuild(config)
 
 

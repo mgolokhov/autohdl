@@ -29,7 +29,7 @@ def generate(path = ''):
   pathData = os.path.join(os.path.dirname(__file__), 'data')
   Copy = namedtuple('Copy', ['src', 'dst'])
   listToCopy = (
-    Copy(os.path.join(pathData,'build.yaml'), os.path.join(root, 'script', 'build.yaml')),
+    Copy(os.path.join(pathData,'build.yaml'), os.path.join(root, 'resource', 'build.yaml')),
     Copy(os.path.join(pathData,'run_avhdl.bat'), os.path.join(root,'script', 'run_avhdl.bat')),
     Copy(os.path.join(pathData,'kungfu.py'), os.path.join(root, 'script', 'kungfu.py'))
     )
@@ -143,7 +143,7 @@ def setDepSrc(config):
       break
 
   config['parsed'] = parsed
-  allSrcFiles = {os.path.abspath(val['path']).replace('\\', '/') for val in parsed.values()}
+  allSrcFiles = {os.path.abspath(val['path']) for val in parsed.values()}
   config['depSrc'] = list(allSrcFiles - set(config['mainSrc']))
 
 

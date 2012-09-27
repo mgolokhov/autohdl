@@ -129,10 +129,10 @@ def formBaseInfo(conf):
   return content.decode(sys.stdin.encoding or 'utf-8').encode('utf-8')
 
 
-def upload_fw(file, host = 'cs.scircus.ru', path = '/test/distout/rtl', _cache = {}, conf = ''):
+def upload_fw(file, host = 'cs.scircus.ru', path = '/test/distout/rtl', _cache = {}, config = ''):
   # dsn_name/implement/file
   client = connect(host)
-  dsn_name = os.path.abspath(file).replace('\\', '/').split('/')[-3]
+  dsn_name = config['dsnName']
   root, ext = os.path.splitext(os.path.basename(file))
   key = dsn_name+root
   name = _cache.get(key)
@@ -148,12 +148,12 @@ def upload_fw(file, host = 'cs.scircus.ru', path = '/test/distout/rtl', _cache =
     print 'Uploading folder: ', folder,
     print client.mkcol(folder)
     buildNum = getBuildVer(client, folder, root+'_build_')+1
-    conf['gitMessage'] = 'build_{} '.format(buildNum)
+    config['gitMessage'] = 'build_{} '.format(buildNum)
     name = '{path}/{dsn}/{dsn}_{root}_build_{num}'.format(
         path=path, dsn=dsn_name, root=root, num=buildNum)
 
     dst = name + '_info'
-    info = formBaseInfo(conf)
+    info = formBaseInfo(config)
     print 'Uploading info: ', dst,
     print client.put(dst, info)
 
