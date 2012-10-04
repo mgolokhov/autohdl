@@ -1,5 +1,6 @@
 import argparse
 import copy
+import glob
 import logging
 import os
 import pprint
@@ -42,8 +43,12 @@ def getFullPathToUcf(iUcf):
     return False
   if os.path.exists(iUcf):
     return os.path.abspath(iUcf).replace('\\', '/')
-  pattern = iUcf if os.path.splitext(iUcf)[1] == '.ucf' else iUcf+'\.ucf'
-  ucfFiles = structure.search(iPath='../src', iOnly = [pattern])
+  if os.path.splitext(iUcf)[1] == '.ucf':
+    ucfFiles = glob.glob(iUcf)
+#  pattern = iUcf if os.path.splitext(iUcf)[1] == '.ucf' else iUcf+'.ucf'
+  else:
+    ucfFiles = structure.search(directory='../src', onlyExt = ['.ucf'])
+  print ucfFiles
   if ucfFiles:
    return ucfFiles[0].replace('\\', '/')
 
