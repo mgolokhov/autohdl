@@ -65,13 +65,17 @@ def run(config):
   ucfSymplicity = structure.search(synPath, onlyExt = '.ucf', ignoreDir = hdlGlobals.ignoreRepoDir)
   ucf = ucfSymplicity[0] or config['ucf']
 
-  shutil.copyfile(ucf, implPath + config['top']+'.ucf')
-  shutil.copyfile(top, implPath + config['top']+'.edf')
   for i in config.get('depNetlist', []):
     shutil.copyfile(i, implPath + os.path.split(i)[1])
-  
+  shutil.copyfile(ucf, implPath + config['top']+'.ucf')
+  shutil.copyfile(top, implPath + config['top']+'.edf')
+
   
   os.chdir(implPath)
+  while not os.path.exists(config['top']+'.edf'):
+    print 'cant find file: ', config['top']
+    time.sleep(0.1)
+
   try:
     subprocess.check_call(('{xflow} -implement balanced.opt'
                            ' -config bitgen.opt {netlist}.edf').format(xflow=toolchain.Tool().get('ise_xflow'),
