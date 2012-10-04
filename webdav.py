@@ -61,9 +61,20 @@ def askAuth():
 
 def dump_netrc(host, username, password):
   path = os.environ['USERPROFILE']+'/_netrc'
-  data = 'machine {0}\nlogin {1}\npassword {2}\n'.format(host, username, password)
-  with open(path, 'w') as f:
-    f.write(data)
+  addNew = False
+  try:
+    with open(path, 'r') as f:
+      context = f.read()
+      for i in [host, username, password]:
+        if i not in context:
+          addNew = True
+  except IOError as e:
+    log.debug(e)
+    addNew = True
+  if addNew:
+    data = 'machine {0}\nlogin {1}\npassword {2}\n'.format(host, username, password)
+    with open(path, 'w') as f:
+      f.write(data)
 
 
 def authenticate(host = 'cs.scircus.ru'):
@@ -81,7 +92,6 @@ def authenticate(host = 'cs.scircus.ru'):
       username, password = askAuth()
       state = 'check'
     elif state == 'dump':
-      #TODO: constant rewriting
       dumpAuth(path, username, password)
       dump_netrc(host, username, password)
       return username, password
