@@ -19,15 +19,15 @@ def initialize(path = '.'):
   gitPath = toolchain.Tool().get('git_batch')
   if gitPath:
     path = os.path.abspath(path)
-    print subprocess.check_output('{} init {}'.format(gitPath, path))
+    subprocess.call('{} init {}'.format(gitPath, path))
     gitignore = path+'/.gitignore'
     if not os.path.exists(gitignore):
       with open(gitignore, 'w') as f:
         f.write('.hdl/*\n')
     pathWas = os.getcwd()
     os.chdir(path)
-    print subprocess.check_output('{} add {}'.format(gitPath, path))
-    print subprocess.check_output('{} commit -m "initial commit"'.format(gitPath))
+    subprocess.call('{} add {}'.format(gitPath, path))
+    subprocess.call('{} commit -m "initial commit"'.format(gitPath))
     os.chdir(pathWas)
 
 
@@ -100,17 +100,22 @@ def backupFirmware(config):
 def synchWithBuild(config):
   backupFirmware(config)
   gitPath = toolchain.Tool().get('git_batch')
-  res = subprocess.check_output('{} status'.format(gitPath))
-  if 'working directory clean' in res:
+  res = subprocess.Popen('{} status'.format(gitPath),
+                         stdout=subprocess.PIPE,
+                         stderr=subprocess.STDOUT)
+  if 'working directory clean' in res.stdout.read():
     return
-  res = subprocess.check_output('{} branch'.format(gitPath))
-  if ' develop\n' in res:
-    print subprocess.check_output('{} checkout develop'.format(gitPath))
+  res = subprocess.Popen('{} branch'.format(gitPath),
+                         stdout=subprocess.PIPE,
+                         stderr=subprocess.STDOUT)
+
+  if ' develop\n' in res.stdout.read():
+    subprocess.call('{} checkout develop'.format(gitPath))
   else:
-    print subprocess.check_output('{} checkout -b develop'.format(gitPath))
-  print subprocess.check_output('{} add ../.'.format(gitPath))
+    subprocess.call('{} checkout -b develop'.format(gitPath))
+  subprocess.call('{} add ../.'.format(gitPath))
   #TODO: unicode
-  print subprocess.check_output('{} commit -m "{}"'.format(gitPath, config.get('gitMessage')))
+  subprocess.call('{} commit -m "{}"'.format(gitPath, config.get('gitMessage')))
 
 
 def getGitRoot(path):
