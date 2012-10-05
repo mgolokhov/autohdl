@@ -176,7 +176,7 @@ def updateDeps(files):
     dep = []
   log.debug('files ' + '\n'.join(files))
   log.debug('dep ' + '\n'.join(dep))
-  files = [os.path.relpath(i, buildFilePath) for i in files
+  files = [os.path.relpath(i, os.path.dirname(buildFilePath)) for i in files
            if os.path.abspath(i) not in dep]
   build['dep'] = files + dep
   dump(build)
