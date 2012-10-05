@@ -152,22 +152,22 @@ def updateDeps(files):
 def synchBuild():
   # relative to dsn/script dsn/aldec/config.cfg
   config = os.path.abspath(aldecPath+'/compile.cfg')
-  timestamp = None
   files = set()
+  shaOld = None
   while True:
     try:
-      timestampNew = os.stat(config).st_mtime
-      if timestamp != timestampNew:
-#        alog.debug("new time "+str(timestamp))
-        with open(config) as f:
-          content = f.read()
-        timestamp = timestampNew
-        filesNew = parse(content)
-        added = filesNew - files
-        if files and added:
-          alog.debug('Added: '+ str(added))
-          updateDeps(added)
-        files = copy.copy(filesNew)
+      with open(config) as f:
+        content = f.read()
+        h = hashlib.sha1()
+        h.update(content)
+        shaNew = h.hexdigest()
+        if shaNew != shaOld:
+          filesNew = parse(content)
+          added = filesNew - files
+          if files and added:
+            alog.debug('Added: '+ str(added))
+            updateDeps(added)
+          files = copy.copy(filesNew)
     except (IOError, WindowsError) as e:
       alog.error('Cant open file: '+config)
       alog.exception(e)
