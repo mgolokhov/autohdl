@@ -112,6 +112,16 @@ def files_data(iPrj):
   return filesData
 
 
+def defineMacro(iPrj):
+  macros = iPrj.get('AldecMacros')
+  if macros:
+    return '[DefineMacro]\nGlobal='+' '.join(macros)+'\n'
+  else:
+    return ''
+
+
+
+
 def generate(iPrj):
   template = ('\n'
   '[Project]\n'
@@ -293,6 +303,12 @@ def generate(iPrj):
   
   '[LocalVerilogDirs]\n'
   +'{LocalVerilogDirs}\n'.format(LocalVerilogDirs=include_path(iPrj)) +
+
+  defineMacro(iPrj) +
+
+
+
+
   
   '[Groups]\n'
   'src=1\n'
