@@ -1,64 +1,40 @@
 import os
-import shutil
 import sys
-from distutils.core import setup, Command
+import shutil
+from setuptools import setup, find_packages
 
-from log_server import shutdownLogServer
+
+
+
+
+if os.path.exists('AutoHDL.egg-info'):
+  shutil.rmtree('AutoHDL.egg-info')
+
+sys.path.append('autohdl')
 import pkg_info
 import progressBar
+from log_server import shutdownLogServer
+from distribute_setup import use_setuptools
+use_setuptools()
 
 
 
-os.chdir('..')
+progressBar.run()
+shutdownLogServer()
+progressBar.stop()
 
 
-class Uninstall(Command):
-  description = 'uninstall previous version'
-  user_options = []
-  def initialize_options(self):
-    self.cwd = None
-  def finalize_options(self):
-    self.cwd = os.getcwd()
-  def run(self):
-    path = sys.prefix + '/Lib/site-packages/autohdl'
-    if os.path.exists(path):
-      shutil.rmtree(path)
+setup(name='AutoHDL',
+      version=pkg_info.getVersion(),
+      description='Automatization Utilities for HDL projects',
+      author='Maxim Golokhov',
+      author_email='hexwer@gmail.com',
+      platforms=['win32'],
+      packages=find_packages(exclude=('autohdl.test',
+                                      'autohdl.drafts')),
+      scripts=['autohdl/hdl.py',
+               'autohdl/hdl.bat'],
+      include_package_data=True,
+      install_requires=['tinydav', 'pyyaml', 'decorator', 'pyparsing'],
+)
 
-
-class ShutdownLogServer(Command):
-  description = 'Shutdown log server'
-  user_options = []
-  def initialize_options(self):
-    self.cwd = None
-  def finalize_options(self):
-    self.cwd = os.getcwd()
-  def run(self):
-    progressBar.run()
-    shutdownLogServer()
-    progressBar.stop()
-
-def getDataTree(iPath):
-  res = []
-  for root, dirs, files in os.walk(iPath):
-    for f in files:
-      res.append(os.path.join(root,f).replace('autohdl/', ''))
-  return res
-
-
-setup(name         = 'AutoHDL',
-      version      = pkg_info.getVersion(),
-      description  = 'Automatization Utilities',
-      author       = 'Max Golohov',
-      author_email = 'hex_wer@mail.ru',
-      platforms    = ['win32'],
-      packages     = ['autohdl',
-                      'autohdl.programmator',
-                      'autohdl.verilog',
-                      'autohdl.lib',
-                      'autohdl.lib.yaml',
-                      'autohdl.lib.tinydav'],
-      package_data = {'autohdl': ['data/*']+getDataTree('autohdl/doc')+['lib/djtgcfg.exe']},
-      # + getDataTree('autohdl/test/fake_repo_gold') + getDataTree('autohdl/test/fake_repo')},
-      data_files   = [('', ['autohdl/hdl.py'])],
-      cmdclass     = {'uninstall': Uninstall, 'shutdownlog': ShutdownLogServer},
-     )

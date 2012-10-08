@@ -1,5 +1,7 @@
+AutoHDL.egg-info/*
 *.pyc
-aaadraft.py
-aaadraft2.py
+drafts/*
 .idea/*
 verilog/in/tmp/*
+build/*
+dist/*

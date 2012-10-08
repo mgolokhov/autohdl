@@ -1,0 +1,3 @@
+include autohdl/lib/djtgcfg.exe
+recursive-include autohdl/data *
+recursive-include autohdl/doc/_build/html *

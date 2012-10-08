@@ -1,0 +1,9 @@
+file_path: in\func\cmi_recv_packet.v
+includes:
+  paths: []
+parsed:
+  cmi_recv_packet:
+    instances: !!set {crc_6: null}
+    path: in\func\cmi_recv_packet.v
+sha: 23d91a116e35fdf30b95c1f48aeade9cea26c1df
+version: 2.7.417
