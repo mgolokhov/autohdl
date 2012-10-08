@@ -2,6 +2,6 @@ AutoHDL.egg-info/*
 *.pyc
 drafts/*
 .idea/*
-verilog/in/tmp/*
+autohdl/test/verilog/in/tmp/*
 build/*
 dist/*

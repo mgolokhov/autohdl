@@ -5,7 +5,7 @@ from autohdl.verilog import cache
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))+'/../..')
 from autohdl.verilog import get_instances
-import lib.yaml as yaml
+import yaml
 
 
 class FuncTest(unittest.TestCase):
