@@ -20,7 +20,7 @@ FirmWare = namedtuple('Firmware', 'name uri date size')
 
 class PLogic():
   def __init__(self, iQueue, oQueue = None):
-    self.digilent = sys.prefix + '/Lib/site-packages/autohdl/lib/djtgcfg.exe'
+    self.digilent = os.path.dirname(__file__)+'/../lib/djtgcfg.exe'
     self.username = None
     self.password = None
     self.url = None
@@ -32,7 +32,6 @@ class PLogic():
     self.folders = None
     self.alias = None
     self.devices = None
-#    self.impact = r'c:\Xilinx\13.3\ISE_DS\ISE\bin\nt\impact.exe'
     self.impact = toolchain.Tool().get('ise_impact')
     self.output = ''
     self.cable = None # digilent vs xilinx

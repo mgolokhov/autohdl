@@ -108,7 +108,11 @@ class Application(Frame):
     self.progress.grid(column=0, row=3, sticky='e,w')
 
   def _filter(self, *args):
-    res = ' '.join([i for i in self.prg.firmwares if self.afilter.get() in i])
+    res = sorted(self.prg.firmwares,
+                 key=lambda k: time.strptime(self.prg.firmwares[k].date, '%a, %d %b %Y %H:%M:%S %Z'),
+                 reverse =True)
+    res = ' '.join([i for i in res 
+	    if self.afilter.get() in i and os.path.splitext(i)[1] in [".bit",".mcs"]])
     self.list_val.set(res)
 
 
@@ -276,5 +280,9 @@ def run_debug():
   app.mainloop()
 
 
+def run_another_proc():
+  subprocess.Popen('python {}/programmator.py'.format(os.path.dirname(__file__)))
+
+
 if __name__ == '__main__':
-  run_debug()
+  run()
