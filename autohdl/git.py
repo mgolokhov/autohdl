@@ -11,6 +11,7 @@ import webdav
 from autohdl.hdlLogger import logging
 from autohdl.hdlGlobals import implementPath
 import autohdl.doc as doc
+from autohdl.hdlGlobals import autohdlRoot
 
 
 def initialize(path = '.'):
@@ -24,7 +25,7 @@ def initialize(path = '.'):
     gitignore = path+'/.gitignore'
     if not os.path.exists(gitignore):
       with open(gitignore, 'w') as f:
-        f.write('.hdl/*\n')
+        f.write('{}/*\n'.format(autohdlRoot))
     pathWas = os.getcwd()
     os.chdir(path)
     subprocess.call('{} add {}'.format(gitPath, path))
@@ -97,6 +98,14 @@ def backupFirmware(config):
     if os.path.exists(firmware):
       shutil.copy(firmware, os.path.join('..', 'resource', config.get('top')+i))
 
+def updateGitignore():
+  if os.path.exists('../.gitignore'):
+    with open('../.gitignore', 'r') as f:
+      c = f.read()
+    with open('../.gitignore', 'a') as f:
+      if autohdlRoot not in c:
+        f.write('{}/*\n'.format(autohdlRoot))
+
 
 def synchWithBuild(config):
   backupFirmware(config)
@@ -106,6 +115,7 @@ def synchWithBuild(config):
                          stderr=subprocess.STDOUT)
   if 'working directory clean' in res.stdout.read():
     return
+  updateGitignore()
   res = subprocess.Popen('{} branch'.format(gitPath),
                          stdout=subprocess.PIPE,
                          stderr=subprocess.STDOUT)

@@ -49,7 +49,9 @@ def getFullPathToUcf(iUcf):
     ucfFiles = structure.search(directory='../src', onlyExt = ['.ucf'])
   print ucfFiles
   if ucfFiles:
-   return ucfFiles[0].replace('\\', '/')
+    for i in ucfFiles:
+      if iUcf == os.path.splitext(os.path.basename(i))[0]:
+        return i.replace('\\', '/')
 
 
 @log_call
@@ -63,11 +65,11 @@ def setValidTop(arguments, config):
   if validateTop(arguments.top, config):
     config['top'] = arguments.top
     alog.info('Using top module name from arguments list')
-  elif validateTop(config.get('top'), config):
-    alog.info('Using top module name from script')
   elif topAsScriptName and validateTop(topAsScriptName, config):
     config['top'] = topAsScriptName
     alog.info('Using top module name same as script name')
+  elif validateTop(config.get('top'), config):
+    alog.info('Using top module name from merged configs (build.yaml and script)')
   else:
     top = build.load().get('top')
     if validateTop(top, config):
@@ -86,11 +88,13 @@ def setValidUcf(config):
     alog.info('Using ucf file from script')
     return
 
-  ucfNameAsTop = getFullPathToUcf(config['top'])
-  if ucfNameAsTop:
-    config['ucf'] = ucfNameAsTop
-    alog.info('Using ucf name same as top module')
-    return
+  top = config.get('top')
+  if top:
+    ucfNameAsTop = getFullPathToUcf(top)
+    if ucfNameAsTop:
+      config['ucf'] = ucfNameAsTop
+      alog.info('Using ucf name same as top module')
+      return
 
   ucfFromBuild = getFullPathToUcf(build.load().get('ucf'))
   if ucfFromBuild:
@@ -127,7 +131,6 @@ def mergeConfig(configScript, configBuild):
   """
   depInScript = configScript.pop('dep', []) or []
   configBuild.update(configScript)
-
   if depInScript:
     configBuild['dep'] = depInScript + (configBuild.get('dep', []) or [])
   return configBuild
@@ -151,7 +154,7 @@ def printInfo(config):
                 'upload     : {upload}\n'
                  + '#'*40 +
                 '').format(device = config['device'],
-                           top = config['top'],
+                           top = config.get('top'),
                            ucf = config['ucf'],
                            size = config['size'],
                            upload = config['upload']))

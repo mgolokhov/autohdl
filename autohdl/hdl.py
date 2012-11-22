@@ -8,10 +8,13 @@ alog = logging.getLogger(__name__)
 
 import autohdl.build as build
 import autohdl.structure as structure
+import autohdl.toolchain as toolchain
 import autohdl.git as git
 import autohdl.hdlManager as hdlManager
 import autohdl.pkg_info as pkg_info
 import autohdl.doc as doc
+from autohdl.hdlGlobals import programmatorPath
+import autohdl.programmator.programmator as prog
 import sys
 
 def main():
@@ -26,10 +29,11 @@ def main():
 
   if args.prog:
     if os.path.basename(os.getcwd()) == 'script':
-      if not os.path.exists('../programmator'):
-        os.mkdir('../programmator')
-      os.chdir('../programmator')
-    subprocess.Popen('python {}/Lib/site-packages/autohdl/programmator/programmator.py'.format(sys.prefix))
+      if not os.path.exists(programmatorPath):
+        os.mkdir(programmatorPath)
+      os.chdir(programmatorPath)
+    prog.run_another_proc()
+    toolchain.Tool().get('ise_impact')
     sys.exit()
 
   if args.version:

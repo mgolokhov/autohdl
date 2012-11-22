@@ -41,9 +41,12 @@ def ucf(iPrj):
 
 
 def include_path(iPrj):
-  incl_path = iPrj['build'].get('include_path')
+  incl_path = iPrj.get('include_path')
+  print incl_path
   if not incl_path:
     return ''
+  elif type(incl_path) is str:
+    incl_path = [incl_path]
   counter = 'Count={0}'.format(len(incl_path))
   inclDir = ['IncludeDir{0}={1}'.format(i, path) for i, path in enumerate(incl_path)]
   return '{0}\n{1}'.format(counter, '\n'.join(inclDir))

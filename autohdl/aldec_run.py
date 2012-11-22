@@ -1,4 +1,3 @@
-from Tkinter import Tk
 import copy
 import hashlib
 import subprocess
@@ -12,12 +11,6 @@ from autohdl import build, hdlGlobals
 from autohdl.hdlLogger import logging
 from autohdl.hdlGlobals import aldecPath
 
-# get all logging handlers
-# get StreamHandler
-# reconfigure debug level
-
-lll = logging.getLogger()
-#alog = [i for i in lll.handlers if type(i) is logging.StreamHandler][0]
 
 alog = logging.getLogger(__name__)
 alog.setLevel(logging.DEBUG)
@@ -26,11 +19,6 @@ consoleHandler.setLevel(logging.DEBUG)
 consoleFormatter = logging.Formatter("%(levelname)s:%(message)s")
 consoleHandler.setFormatter(consoleFormatter)
 alog.addHandler(consoleHandler)
-print 'print'
-alog.debug('debug')
-alog.info('info')
-alog.warning('warning')
-alog.error('error')
 
 
 def calcSha(afile):
@@ -38,7 +26,6 @@ def calcSha(afile):
     h = hashlib.sha1()
     h.update(f.read())
     return h.hexdigest()
-
 
 
 def isModified(src, dst):
@@ -52,22 +39,22 @@ def isModified(src, dst):
 
 
 def syncRepo(move=False):
-  # cwd = <dsnName>/script
+# cwd = <dsnName>/script
 #  alog.debug('Wazzzup!')
-  rootPathAldec = aldecPath+'/src/'
+  rootPathAldec = aldecPath + '/src/'
   rootPathDsn = '../'
   syncDirs = [d for d in os.listdir(rootPathAldec)
-          if d not in ['.svn', '.git'] and d in os.listdir(rootPathDsn)]
+              if d not in ['.svn', '.git'] and d in os.listdir(rootPathDsn)]
   for dir in syncDirs:
-    for root, dirs, files in os.walk(rootPathAldec+dir):
+    for root, dirs, files in os.walk(rootPathAldec + dir):
       try:
         dirs[:] = [d for d in dirs if d not in ['.svn', '.git']]
         pathDsn = root.replace(rootPathAldec, rootPathDsn)
         if not os.path.exists(pathDsn):
           os.makedirs(pathDsn)
         for f in files:
-          src = os.path.abspath(root+'/'+f)
-          dst = os.path.abspath(pathDsn+'/'+f)
+          src = os.path.abspath(root + '/' + f)
+          dst = os.path.abspath(pathDsn + '/' + f)
           if move:
             alog.info('Move src={0} dst={1}'.format(src, dst))
             shutil.move(src, dst)
@@ -77,6 +64,7 @@ def syncRepo(move=False):
       except Exception as e:
         alog.exception(e)
 
+
 def copyInRepo():
   while True:
     syncRepo()
@@ -84,7 +72,7 @@ def copyInRepo():
 
 
 def moveInRepo():
-  syncRepo(move = True)
+  syncRepo(move=True)
 
 
 def parse(content):
@@ -92,12 +80,10 @@ def parse(content):
   files = [i for i in content.splitlines() if '[file:' in i or 'Enabled' in i]
   for i, l in enumerate(files):
     if l == 'Enabled=1':
-      d.add(files[i-1])
+      d.add(files[i - 1])
     elif l == 'Enabled=0':
-      alog.debug(str(files[i-1]))
+      alog.debug(str(files[i - 1]))
   return d
-
-
 
 
 def testBenchF(testBench):
@@ -120,14 +106,14 @@ def testBenchF(testBench):
       elif 'initial' in i:
         if clk:
           res.append(('initial begin\n'
-                     '    {clk} = 0;\n'
-                     '    forever #1ns {clk} = !{clk};\n'
-                     'end\n').format(clk=clk))
+                      '    {clk} = 0;\n'
+                      '    forever #1ns {clk} = !{clk};\n'
+                      'end\n').format(clk=clk))
         if rst:
           res.append(('initial begin\n'
-                   '    {rst} = 1;\n'
-                   '    #33ns {rst} = 0;\n'
-                   'end').format(rst = rst))
+                      '    {rst} = 1;\n'
+                      '    #33ns {rst} = 0;\n'
+                      'end').format(rst=rst))
       elif '$monitor' in i:
         pass
       else:
@@ -139,19 +125,21 @@ def testBenchF(testBench):
     pass
 
 
-
 def updateDeps(files):
-  files = [os.path.abspath(aldecPath+f[7:-1]) for f in files]
+  files = [os.path.abspath(aldecPath + f[7:-1]) for f in files]
   testBench = [i for i in files if '\\aldec\\src\\TestBench\\' in i]
-#  testBenchF(testBench)
-  files = [i for i in files if '\\aldec\\src\\' not in i and '\\aldec\\src\\src\\' not in i]
+  #  testBenchF(testBench)
+  files = [i for i in files
+           if ('\\aldec\\src\\' not in i
+               and '\\aldec\\src\\src\\' not in i
+               and 'TestBenchUtils' not in i)]
   files = [i for i in files if os.path.splitext(i)[1] in hdlGlobals.hdlFileExt]
   build.updateDeps(files)
 
 
 def synchBuild():
   # relative to dsn/script dsn/aldec/config.cfg
-  config = os.path.abspath(aldecPath+'/compile.cfg')
+  config = os.path.abspath(aldecPath + '/compile.cfg')
   files = set()
   shaOld = None
   while True:
@@ -165,14 +153,13 @@ def synchBuild():
           filesNew = parse(content)
           added = filesNew - files
           if files and added:
-            alog.debug('Added: '+ str(added))
+            alog.debug('Added: ' + str(added))
             updateDeps(added)
           files = copy.copy(filesNew)
     except (IOError, WindowsError) as e:
-      alog.error('Cant open file: '+config)
+      alog.error('Cant open file: ' + config)
       alog.exception(e)
     time.sleep(1)
-
 
 
 alog.debug(str(sys.argv))
@@ -186,9 +173,8 @@ c = threading.Thread(target=synchBuild)
 c.setDaemon(1)
 c.start()
 
-
 aldec = sys.argv[2] #toolchain.getPath(iTag = 'avhdl_gui')
-subprocess.call([aldec, aldecPath +'/wsp.aws'])
+subprocess.call([aldec, aldecPath + '/wsp.aws'])
 moveInRepo()
 
 sys.exit()

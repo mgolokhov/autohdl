@@ -22,6 +22,7 @@ class Tool(object):
                                'batch' : 'xtclsh.exe',
                                'xflow' : 'xflow.exe',
                                'promgen': 'promgen.exe',
+                               'wrapper': 'settings??.bat',
                                'path'  : ['/Xilinx/']},
                  'synplify' : {'gui'   : 'synplify_premier.exe',
                                'batch' : 'synplify_premier.exe',

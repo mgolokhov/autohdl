@@ -53,11 +53,11 @@ def run(config):
   top = os.path.join(synPath, config['top']+'.edf')
   progressBar.run()
   cnt = 50
-  while not os.path.exists(top) or not cnt:
+  while not os.path.exists(top) and cnt > 0:
     cnt -= 1
     time.sleep(1)
   progressBar.stop()
-  if not cnt:
+  if cnt == 0:
     log.error('Cant find netlist, try sythesis step first.')
     sys.exit(1)
     
@@ -74,7 +74,7 @@ def run(config):
   while not os.path.exists(config['top']+'.edf'):
     print 'cant find file: ', config['top']
     time.sleep(0.1)
-
+  time.sleep(3)
   try:
     subprocess.check_call(('{xflow} -implement balanced.opt'
                            ' -config bitgen.opt {netlist}.edf').format(xflow=toolchain.Tool().get('ise_xflow'),

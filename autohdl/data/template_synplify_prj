@@ -11,6 +11,7 @@ set_option -speed_grade -5
 set_option -default_enum_encoding default
 set_option -symbolic_fsm_compiler true
 set_option -resource_sharing true
+set_option -hdl_define -set {synMacros}
 
 #map options
 set_option -top_module "{topModule}"

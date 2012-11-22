@@ -8,8 +8,8 @@ from autohdl import build
 from autohdl.hdlLogger import log_call, logging
 
 
+from autohdl.hdlLogger import log_call, logging
 log = logging.getLogger(__name__)
-
 
 #    `define                  no macro func
 #    `else                    +
@@ -192,7 +192,9 @@ class Preprocessor(object):
     res = re.search(r'`include\s+"(.+?)"', iLine)
     if res:
       inclFile = res.group(1)
-      searchPaths = build.load().get('include_path', '.')
+      searchPaths = build.load().get('include_path')
+      if not searchPaths:
+        searchPaths = []
       if type(searchPaths) is not list:
         searchPaths = [searchPaths]
       searchPaths += [os.path.dirname(self.path)]

@@ -10,7 +10,8 @@ import time
 import os
 import subprocess
 from autohdl.programmator.model import PLogic
-
+import json
+from urlparse import urlparse
 
 
 class Application(Frame):
@@ -32,8 +33,15 @@ class Application(Frame):
     Label(fr1, text = "Server:").grid(column=0, row=0)
 
 
-    entry = Entry(fr1, width=50, textvariable=self.serverPath)
+    entry = Combobox(fr1, width=50, textvariable=self.serverPath)
+    self.serverPath.set('http://cs.scircus.ru/test/distout/rtl/intercom/')
+    entry['values'] = (
+        'http://cs.scircus.ru/test/distout/rtl/intercom',
+                    'http://cs.scircus.ru/test/distout/rtl/autohdl_programmator_test/',
+        )
     entry.grid(column=1, row=0, sticky='e,w')
+    entry.bind('<<ComboboxSelected>>', self.refreshList)
+    entry.bind('<Return>', self.refreshList)
 
 
     button = Button(fr1, text = "Refresh")
@@ -111,8 +119,8 @@ class Application(Frame):
     res = sorted(self.prg.firmwares,
                  key=lambda k: time.strptime(self.prg.firmwares[k].date, '%a, %d %b %Y %H:%M:%S %Z'),
                  reverse =True)
-    res = ' '.join([i for i in res 
-	    if self.afilter.get() in i and os.path.splitext(i)[1] in [".bit",".mcs"]])
+    res = ' '.join([i for i in res
+      if self.afilter.get() in i and os.path.splitext(i)[1] in [".bit",".mcs"]])
     self.list_val.set(res)
 
 
@@ -203,7 +211,8 @@ class Application(Frame):
     e.grid(column=1,row=0)
     Label(self.win, text='Password:').grid(column=0,row=1)
     Entry(self.win, textvariable=self.password, show="*").grid(column=1,row=1)
-    Button(self.win, text='OK', command=self.login_submit).grid(column=0,row=2, columnspan=2)
+    Button(self.win, text='OK', command=self.login_submit).grid(column=1,row=2)
+    Checkbutton(self.win, text='save', variable=self.save_auth).grid(column=0,row=2)
     self.win.bind('<Return>', self.login_submit)
     e.focus_set()
 
@@ -214,11 +223,44 @@ class Application(Frame):
       self.userOld, self.pswdOld, self.pathOld = self.user.get(), self.password.get(), self.serverPath.get()
       return True
 
+  def auth_dump(self, d):
+  #check {host{user,password}}
+    if os.path.exists('auth'):
+      f = open('auth')
+      dd = json.load(f)
+      f.close()
+      if d.keys():
+        host = d.keys()[0]
+        if host in dd.keys() and d[host] != dd[host]:
+          dd.update(d)
+          f = open('auth', 'w')
+          f.write(json.dumps(dd))
+          f.close()
+    else:
+      f = open('auth', 'w')
+      f.write(json.dumps(d))
+      f.close()
+
+  def auth_load(self, hostname):
+    if os.path.exists('auth'):
+      f = open('auth')
+      d = json.load(f)
+      f.close()
+      return d[hostname]
+    return {}
+
   def login_submit(self, *args):
     self.logAction('Authentication')
     self.progress.start()
     self.win.destroy()
+    hostname = urlparse(self.serverPath.get()).hostname
     if self.isNewData():
+      #load user pass
+      if not self.user.get() and not self.password.get():
+        d = self.auth_load(hostname)
+        if d:
+          self.user.set(d.get('user'))
+          self.password.set(d.get('password'))
       self.queueToPLogic.put((self.user.get(), self.password.get(), self.serverPath.get()))
       while self.queueFromPLogic.empty():
         self.update()
@@ -228,6 +270,10 @@ class Application(Frame):
       self.logAction("Authorization Required")
       self.login()
     else:
+      if self.save_auth.get() == 1:
+        self.auth_dump({hostname:{'user':self.user.get(),
+                                  'password':self.password.get()}
+                 })
       self.updateList()
       return
 
@@ -238,7 +284,7 @@ class Application(Frame):
     self.grid(sticky=N+S+E+W)
 
     top = self.winfo_toplevel()
-    top.title('AutoHDL progammator v0.1')
+    top.title('AutoHDL progammator v0.2')
     top.rowconfigure(0, weight=1)
     top.columnconfigure(0, weight=1)
     self.rowconfigure(0, weight =1)
@@ -253,11 +299,9 @@ class Application(Frame):
     self.userOld = None
     self.pswdOld = None
     self.pathOld = None
-    self.user.set("mgolokhov")
     self.password = StringVar()
+    self.save_auth = IntVar()
     self.serverPath = StringVar()
-    self.serverPath.set('http://cs.scircus.ru/test/distout/rtl/autohdl_programmator_test/')
-#    self.serverPath.set('http://cs.scircus.ru/test/distout/rtl/')
     t = threading.Thread(target=self.prg.updateFirmwaresList)
     t.setDaemon(True)
     t.start()
@@ -286,3 +330,4 @@ def run_another_proc():
 
 if __name__ == '__main__':
   run()
+

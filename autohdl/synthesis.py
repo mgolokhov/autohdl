@@ -26,6 +26,13 @@ def setParams(iPrj):
   package = device[-5:]
   family = iPrj.get('family')
   technology = family.split()[1] # e.g. 'Xilinx11x SPARTAN3E'
+  synMacros = iPrj.get('SynMacros')# TODO: if you get None?
+  print '-'*10, synMacros
+  if synMacros:
+    synMacros = ' '.join(synMacros)
+  else:
+    synMacros = ""
+
   iPrj['scriptContent'] = iPrj['scriptContent'].format(
                           device=device,
                           part=part,
@@ -34,6 +41,7 @@ def setParams(iPrj):
                           topModule=iPrj['top'],
                           netlist=iPrj['top']+'.edf',
                           src_files=iPrj['srcFiles'],
+                          synMacros=synMacros,
                           includePath=getIncludePath(iPrj))
   f = open(iPrj['pathScript'], 'w')
   f.write(iPrj['scriptContent'])
@@ -157,7 +165,7 @@ def run_synplify_batch(iPrj):
 
 @log_call
 def run_synplify_gui(iPrj):
-  subprocess.check_call([iPrj['pathTool'], iPrj['pathScript']], env = xilinx_env.get())
+  subprocess.check_call([iPrj['pathTool'], 'synthesis.prj'], env = xilinx_env.get())
 
 @log_call
 def runTool(iPrj, iSilent):
