@@ -7,7 +7,6 @@ import subprocess
 import urllib2
 from urlparse import urlparse
 from autohdl import toolchain
-from lxml.etree import HTML, ElementTree
 import sys
 import time
 
@@ -83,22 +82,30 @@ class PLogic():
     if "Authorization Required" in data:
       self.authenticated = False
       return
+    import xml.etree.ElementTree as ET
+    root = ET.fromstring(data)
 
-    data_elements = HTML(data)
-    xml_etree = ElementTree(data_elements)
-    all_response_elements = xml_etree.findall("//response")
-    self.folders = []
-    for response in all_response_elements:
-      resp_tree = ElementTree(response)
-      if resp_tree.find('//collection') is None:
-        uri = resp_tree.find("//href").text
-        getcontentlength = getattr(resp_tree.find('//getcontentlength'), 'text', None)
-        getlastmodified = getattr(resp_tree.find('//getlastmodified'), 'text', None)
-        name = os.path.basename(uri)
-        self.firmwares[name] = FirmWare(name,url.scheme+'://'+url.netloc+uri,getlastmodified,getcontentlength)
-      else:
-        self.folders.append(resp_tree.find("//href").text)
-
+    for child in root:
+      fwFile = None
+      fwDate = None
+      fwName = None
+      fwSize = None
+      for child2 in child:
+        if 'href' in child2.tag:
+          fwFile = child2.text
+          fwName = os.path.basename(fwFile)
+        if 'propstat' in child2.tag:
+          for child3 in child2:
+            if 'prop' in child3.tag:
+              for child4 in child3:
+                if 'getlastmodified' in child4.tag:
+                  fwDate = child4.text
+                if 'getcontentlength' in child4.tag:
+                  fwSize = child4.text
+      self.firmwares[fwName] = FirmWare(fwName,
+                                        url.scheme+'://'+url.netloc+fwFile,
+                                        fwDate,
+                                        fwSize)
 
 
   def updateFirmwaresList(self):

@@ -35,6 +35,6 @@ setup(name='AutoHDL',
       scripts=['autohdl/hdl.py',
                'autohdl/hdl.bat'],
       include_package_data=True,
-      install_requires=['tinydav', 'pyyaml', 'decorator', 'pyparsing', 'lxml==2.3'],
+      install_requires=['tinydav', 'pyyaml', 'decorator', 'pyparsing'],
 )
 
