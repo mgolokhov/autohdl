@@ -25,7 +25,7 @@ progressBar.stop()
 
 
 setup(name='AutoHDL',
-      version=pkg_info.getVersion(),
+      version=pkg_info.getIncVersion(),
       description='Automatization Utilities for HDL projects',
       author='Maxim Golokhov',
       author_email='hexwer@gmail.com',
