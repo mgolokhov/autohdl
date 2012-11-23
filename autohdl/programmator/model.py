@@ -31,7 +31,7 @@ class PLogic():
     self.folders = None
     self.alias = None
     self.devices = None
-    self.impact = toolchain.Tool().get('ise_impact')
+    self.impact = None # toolchain.Tool().get('ise_impact')
     self.output = ''
     self.cable = None # digilent vs xilinx
 
@@ -233,6 +233,7 @@ class PLogic():
 
 
   def initialize(self):
+    self.impact = toolchain.Tool().get('ise_impact')
     if not self.tryDigilent():
       if self.impact:
         self.tryImpact()

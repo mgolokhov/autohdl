@@ -1,6 +1,7 @@
 from Queue import Queue
 from Tkinter import *
 from collections import namedtuple
+import netrc
 import threading
 from tkFileDialog import askdirectory
 from tkFont import Font
@@ -35,10 +36,9 @@ class Application(Frame):
 
     entry = Combobox(fr1, width=50, textvariable=self.serverPath)
     self.serverPath.set('http://cs.scircus.ru/test/distout/rtl/intercom/')
-    entry['values'] = (
-        'http://cs.scircus.ru/test/distout/rtl/intercom',
-                    'http://cs.scircus.ru/test/distout/rtl/autohdl_programmator_test/',
-        )
+    entry['values'] = ('http://cs.scircus.ru/test/distout/rtl/intercom',
+                       'http://cs.scircus.ru/test/distout/rtl/autohdl_programmator_test/',
+      )
     entry.grid(column=1, row=0, sticky='e,w')
     entry.bind('<<ComboboxSelected>>', self.refreshList)
     entry.bind('<Return>', self.refreshList)
@@ -223,31 +223,42 @@ class Application(Frame):
       self.userOld, self.pswdOld, self.pathOld = self.user.get(), self.password.get(), self.serverPath.get()
       return True
 
-  def auth_dump(self, d):
-  #check {host{user,password}}
-    if os.path.exists('auth'):
-      f = open('auth')
-      dd = json.load(f)
-      f.close()
-      if d.keys():
-        host = d.keys()[0]
-        if host in dd.keys() and d[host] != dd[host]:
-          dd.update(d)
-          f = open('auth', 'w')
-          f.write(json.dumps(dd))
-          f.close()
-    else:
-      f = open('auth', 'w')
-      f.write(json.dumps(d))
-      f.close()
+  def auth_dump(self, host, user, password):
+    #check {host{user,password}}
+    content = None
+    try:
+      _netrc = netrc.netrc(self.getNetrcPath())
+      u, _, p = _netrc.hosts[host] # no host -> KeyError
+      if user != u or password != p:
+        raise KeyError
+    except IOError:
+      content = 'machine {host}\n'\
+                'login {user}\n'\
+                'password {password}'.format(host=host,
+                                             user=user,
+                                             password=password)
+    except KeyError:
+      _netrc.hosts.update({host:(user, None, password)})
+      content = str(_netrc).replace("'",'')
+    try:
+      with open(self.getNetrcPath(), 'w') as f:
+        f.write(content)
+    except IOError:
+      self.logAction('Cant save data to '+self.getNetrcPath())
+
+
+  def getNetrcPath(self):
+    home = os.path.expanduser('~')
+    return os.path.join(home,'_netrc')
 
   def auth_load(self, hostname):
-    if os.path.exists('auth'):
-      f = open('auth')
-      d = json.load(f)
-      f.close()
-      return d[hostname]
-    return {}
+    res = {}
+    try:
+      res = netrc.netrc(self.getNetrcPath()).hosts
+    except IOError:
+      pass
+    return  res.get(hostname)
+
 
   def login_submit(self, *args):
     self.logAction('Authentication')
@@ -259,8 +270,8 @@ class Application(Frame):
       if not self.user.get() and not self.password.get():
         d = self.auth_load(hostname)
         if d:
-          self.user.set(d.get('user'))
-          self.password.set(d.get('password'))
+          self.user.set(d[0])
+          self.password.set(d[2])
       self.queueToPLogic.put((self.user.get(), self.password.get(), self.serverPath.get()))
       while self.queueFromPLogic.empty():
         self.update()
@@ -271,9 +282,10 @@ class Application(Frame):
       self.login()
     else:
       if self.save_auth.get() == 1:
-        self.auth_dump({hostname:{'user':self.user.get(),
-                                  'password':self.password.get()}
-                 })
+        self.auth_dump(host=hostname,
+                       user=self.user.get(),
+                       password=self.password.get()
+            )
       self.updateList()
       return
 
@@ -284,7 +296,7 @@ class Application(Frame):
     self.grid(sticky=N+S+E+W)
 
     top = self.winfo_toplevel()
-    top.title('AutoHDL progammator v0.2')
+    top.title('AutoHDL progammator v0.3')
     top.rowconfigure(0, weight=1)
     top.columnconfigure(0, weight=1)
     self.rowconfigure(0, weight =1)
