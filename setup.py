@@ -4,24 +4,25 @@ import shutil
 from setuptools import setup, find_packages
 
 
+def clean_tmp_files():
+  if os.path.exists('AutoHDL.egg-info'):
+    shutil.rmtree('AutoHDL.egg-info')
+
+  files_to_clean = [i for i in os.listdir('autohdl') if os.path.splitext(i)[1] == '.pyc']
+  for i in files_to_clean:
+    os.remove(os.path.join('autohdl',i))
 
 
-
-if os.path.exists('AutoHDL.egg-info'):
-  shutil.rmtree('AutoHDL.egg-info')
-
-sys.path.append('autohdl')
-import pkg_info
-import progressBar
-from log_server import shutdownLogServer
+clean_tmp_files()
 from distribute_setup import use_setuptools
 use_setuptools()
 
+sys.path.append('autohdl')
+import pkg_info
+import procHandler
 
+procHandler.killAll()
 
-progressBar.run()
-shutdownLogServer()
-progressBar.stop()
 
 
 setup(name='AutoHDL',
