@@ -47,7 +47,6 @@ def getFullPathToUcf(iUcf):
 #  pattern = iUcf if os.path.splitext(iUcf)[1] == '.ucf' else iUcf+'.ucf'
   else:
     ucfFiles = structure.search(directory='../src', onlyExt = ['.ucf'])
-  print ucfFiles
   if ucfFiles:
     for i in ucfFiles:
       if iUcf == os.path.splitext(os.path.basename(i))[0]:
@@ -147,17 +146,21 @@ def printInfo(config):
   alog.info(('Main design settings:\n'
                  + '#'*40 +
                 '\n'
-                'device     : {device}\n'
+                'technology : {technology}\n'
+                'part       : {part}\n'
+                'package    : {package}\n'
                 'top module : {top}\n'
                 'ucf        : {ucf}\n'
                 'PROM size  : {size} kilobytes\n'
                 'upload     : {upload}\n'
                  + '#'*40 +
-                '').format(device = config['device'],
+                '').format(technology = config.get('technology'),
+                           part = config.get('part'),
+                           package = config.get('package'),
                            top = config.get('top'),
-                           ucf = config['ucf'],
-                           size = config['size'],
-                           upload = config['upload']))
+                           ucf = config.get('ucf'),
+                           size = config.get('size'),
+                           upload = config.get('upload')))
 
 
 @log_call
@@ -213,10 +216,11 @@ def kungfu(**configScript):
     implement.run(config)
 
   if config['upload']:
+    print 'to it manually by git push'
     #TODO: refactor
     webdav.upload_fw('{0}/{1}.bit'.format(implementPath, config['top']), config = config)
     webdav.upload_fw('{0}/{1}.mcs'.format(implementPath, config['top']), config = config)
-    git.synchWithBuild(config)
+#    git.synchWithBuild(config)
 
 
 if __name__ == '__main__':

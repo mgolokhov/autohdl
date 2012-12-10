@@ -1,7 +1,17 @@
 # All comments will be deleted after first edit
 
-family     : Xilinx11x SPARTAN3E
-device     : 3s250etq144  # DCS2
+# DCS2
+technology: Spartan3e
+part: xc3s250e
+package: tq144
+speed_grade: -5
+
+# nexys3
+#technology: Spartan6
+#part: XC6SLX16
+#package: CSG324
+#speed_grade: -2
+
 #device     : 3s250epq208  # ctrl_v3
 #device     : 3s250evq100  # ctrl_v4
 #device     : 3s1200efg320 # nexys2

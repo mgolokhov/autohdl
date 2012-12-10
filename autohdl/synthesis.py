@@ -9,6 +9,7 @@ from autohdl.hdlGlobals import synthesisPath
 import logging
 from autohdl.hdlLogger import log_call
 import sys
+from autohdl import progressBar
 
 log = logging.getLogger(__name__)
 
@@ -21,11 +22,11 @@ def getIncludePath(iPrj):
 
 @log_call
 def setParams(iPrj):
-  device = iPrj.get('device')
-  part = 'xc' + device[:-5]
-  package = device[-5:]
-  family = iPrj.get('family')
-  technology = family.split()[1] # e.g. 'Xilinx11x SPARTAN3E'
+#  device = iPrj.get('device')
+#  part = 'xc' + device[:-5]
+#  package = device[-5:]
+#  family = iPrj.get('family')
+#  technology = family.split()[1] # e.g. 'Xilinx11x SPARTAN3E'
   synMacros = iPrj.get('SynMacros')# TODO: if you get None?
   print '-'*10, synMacros
   if synMacros:
@@ -34,10 +35,11 @@ def setParams(iPrj):
     synMacros = ""
 
   iPrj['scriptContent'] = iPrj['scriptContent'].format(
-                          device=device,
-                          part=part,
-                          package=package,
-                          technology=technology,
+#                          device=device,
+                          part=iPrj.get('part'),
+                          package=iPrj.get('package'),
+                          technology=iPrj.get('technology'),
+                          speed_grade=iPrj.get('speed_grade'),
                           topModule=iPrj['top'],
                           netlist=iPrj['top']+'.edf',
                           src_files=iPrj['srcFiles'],
@@ -102,66 +104,62 @@ def parseLog(iPrj, iSilent = False):
   if os.path.exists(logFile):
     f = open(logFile, 'r')
     res = f.read()
-    errors = res.count('@E:')
-    warningsAll = res.count('@W:')
-    ignoreWarnings = res.count('Initial value is not supported on state machine state')
-    warnings = warningsAll - ignoreWarnings
-    time.sleep(1)
-
     log.info('See logfile: '+logFile)
-    if errors:
-      log.error('Synthesis ended with errors! Num: '+str(errors))
-      sys.exit(1)
-    elif warnings:
-      log.warning('Synthesis ended with warnings! Num: '+str(warnings))
-    else:
-      log.info('Errors: '+str(errors)+'; Warnings: '+ str(warnings))
-
-    if errors or (not iSilent and warnings):
-      subprocess.Popen(['notepad', logFile])
+    log.info('Errors: {e}; Warnings: {w}'.format(
+        e=res.count('@E:'),
+        w=res.count('@W')
+      ))
 
   return logFile
 
 
-@log_call
-def run_synplify_batch(iPrj):
-  run = '"%s" %s %s %s %s' % (iPrj['pathTool'],
-                '-product synplify_premier',
-                '-licensetype synplifypremier',
-                '-batch','synthesis.prj')
-  subprocess.Popen(run, env = xilinx_env.get())
+
+import threading
+logging_synthesis_done = False
+
+def logging_synthesis(iPrj):
   loge = ''
-  for i in range(13):
-    time.sleep(3)
+  for i in range(20):
+    time.sleep(1)
     try:
       loge = open(iPrj['pathLog'], 'r')
+      break
     except IOError as e:
       log.debug(e)
-      continue
-    if loge:
-      break
 
   if not loge:
     log.error('Cant start synthesis see '+synthesisPath+'/stdout.log')
-    return
+    sys.exit(1)
 
-  done = False
   while True:
     where = loge.tell()
     res = loge.readline()
-    if res.find('Mapper successful!') != -1:
-      done = True
-    if '@E' in res:
-      done = True
     if res.endswith('\n'):
       print res
-    elif done:
+    elif logging_synthesis_done:
       break
     else:
+      for dots in range(4):
+        print '.' * dots,
+        time.sleep(0.2)
+        print '\r', ' ' * dots, '\r',
       loge.seek(where)
-      time.sleep(1)
 
   loge.close()
+
+@log_call
+def run_synplify_batch(iPrj):
+  run = '"%s" %s %s %s %s' % (iPrj['pathTool'],
+                              '-product synplify_premier',
+                              '-licensetype synplifypremier',
+                              '-batch','synthesis.prj')
+  p = threading.Thread(target=logging_synthesis, args=(iPrj,))
+  p.setDaemon(1)
+  p.start()
+  subprocess.call(run, env = xilinx_env.get())
+  global logging_synthesis_done
+  logging_synthesis_done = True
+
 
 @log_call
 def run_synplify_gui(iPrj):

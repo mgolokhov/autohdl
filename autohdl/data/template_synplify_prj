@@ -5,7 +5,7 @@
 set_option -technology {technology}
 set_option -part {part}
 set_option -package {package}
-set_option -speed_grade -5
+set_option -speed_grade {speed_grade}
 
 #compilation/mapping options
 set_option -default_enum_encoding default

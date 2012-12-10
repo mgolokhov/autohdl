@@ -129,6 +129,21 @@ def synchWithBuild(config):
   subprocess.call('{} commit -m "{}"'.format(gitPath, config.get('gitMessage')))
 
 
+def synchWithBuild2(config):
+  """integration with bitbucket"""
+  backupFirmware(config)
+  cwd_was = os.getcwd()
+  git_root_dir = subprocess.check_output('git rev-parse --show-toplevel')
+  os.chdir(git_root_dir)
+  try:
+    print subprocess.check_output('git add -A')
+    print subprocess.check_output('git commit')
+    print subprocess.check_output('git push all')
+  except:
+    os.chdir(cwd_was)
+    raise
+
+
 def getGitRoot(path):
   pathWas = os.path.abspath(path)
   path = pathWas

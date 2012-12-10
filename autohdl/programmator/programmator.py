@@ -35,10 +35,12 @@ class Application(Frame):
 
 
     entry = Combobox(fr1, width=50, textvariable=self.serverPath)
-    self.serverPath.set('http://cs.scircus.ru/test/distout/rtl/intercom/')
-    entry['values'] = ('http://cs.scircus.ru/test/distout/rtl/intercom',
+#    self.serverPath.set('http://cs.scircus.ru/test/distout/rtl/intercom/')
+    entry['values'] = ('https://bitbucket.org/mgolokhov/intercom',
+                       'http://cs.scircus.ru/test/distout/rtl/intercom',
                        'http://cs.scircus.ru/test/distout/rtl/autohdl_programmator_test/',
-      )
+                      )
+    entry.current(0)
     entry.grid(column=1, row=0, sticky='e,w')
     entry.bind('<<ComboboxSelected>>', self.refreshList)
     entry.bind('<Return>', self.refreshList)
@@ -265,6 +267,9 @@ class Application(Frame):
     self.progress.start()
     self.win.destroy()
     hostname = urlparse(self.serverPath.get()).hostname
+    if 'bitbucket.org' in hostname:
+      self.logAction('not implemented')
+      return
     if self.isNewData():
       #load user pass
       if not self.user.get() and not self.password.get():
