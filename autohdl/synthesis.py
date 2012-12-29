@@ -22,11 +22,6 @@ def getIncludePath(iPrj):
 
 @log_call
 def setParams(iPrj):
-#  device = iPrj.get('device')
-#  part = 'xc' + device[:-5]
-#  package = device[-5:]
-#  family = iPrj.get('family')
-#  technology = family.split()[1] # e.g. 'Xilinx11x SPARTAN3E'
   synMacros = iPrj.get('SynMacros')# TODO: if you get None?
   print '-'*10, synMacros
   if synMacros:
@@ -156,8 +151,14 @@ def run_synplify_batch(iPrj):
   p = threading.Thread(target=logging_synthesis, args=(iPrj,))
   p.setDaemon(1)
   p.start()
-  subprocess.call(run, env = xilinx_env.get())
   global logging_synthesis_done
+  try:
+    subprocess.check_call(run, env = xilinx_env.get())
+  except subprocess.CalledProcessError:
+    print 'Synthesis error'
+    logging_synthesis_done = True
+    sys.exit(1)
+
   logging_synthesis_done = True
 
 

@@ -181,6 +181,7 @@ def kungfu(**configScript):
   parser.add_argument('-impl', action = 'store_true', help = 'implementation step')
   parser.add_argument('-mcs', nargs = '?', const = 'config', help = 'generate .mcs from .bit file')
   parser.add_argument('-upload', action = 'store_true', help = 'upload firmware to WebDav server')
+  parser.add_argument('-git_mes', help = 'git message')
   parser.add_argument('-d', action = 'store_true', help = 'debug flag')
   arguments = parser.parse_args()
 
@@ -215,12 +216,11 @@ def kungfu(**configScript):
     synthesis.run(config)
     implement.run(config)
 
-  if config['upload']:
-    print 'to it manually by git push'
-    #TODO: refactor
-    webdav.upload_fw('{0}/{1}.bit'.format(implementPath, config['top']), config = config)
-    webdav.upload_fw('{0}/{1}.mcs'.format(implementPath, config['top']), config = config)
-#    git.synchWithBuild(config)
+  if arguments.upload:
+    config['git_mes'] = arguments.git_mes
+    git.push_firmware(config)
+    webdav.upload_fw(config = config)
+    pprint.pprint(config)
 
 
 if __name__ == '__main__':

@@ -1,5 +1,6 @@
 import base64
 import os
+import pprint
 import socket
 import sys
 import getpass
@@ -104,75 +105,38 @@ def exists(path, client):
   except HTTPUserError:
     sys.exit()
 
-
-def getBuildVer(client, folder, root_build):
-  """
-  Get build version
-  """
-  response = client.propfind('/{}/'.format(folder), depth=1)
-  anchorStart, anchorEnd = makeHTMLTags('D:href')
-  anchor = anchorStart + SkipTo(anchorEnd).setResultsName('body') + anchorEnd
-  fwList = {os.path.basename(tokens.body) for tokens in anchor.searchString(response.content)}
-  try:
-    # get rid of extensions
-    fwList = [os.path.splitext(i)[0] for i in fwList if root_build in i]
-    allBuilds = []
-    for i in fwList:
-      try:
-        # ripping only build versions
-        allBuilds.append(int(i.split(root_build)[1]))
-      except Exception:
-        continue
-    buildNum = max(allBuilds)
-  except Exception as e:
-    buildNum = 0
-  return buildNum
-
-
-def formBaseInfo(conf):
-  b = conf or build.load()
-  comment = raw_input('Add some comment: ')
-#  conf['gitMessage'] += comment
-  content = 'encoding: utf-8\ncomment: {}\ndevice: {}\nPROM size: {} kilobytes\nspi: {}'.format(
-                            comment, b.get('device'), b.get('size'), b.get('spi'))
-  print content
-  conf['gitMessage'] += comment.decode(sys.stdin.encoding or 'utf-8').encode('utf-8')
-  return content.decode(sys.stdin.encoding or 'utf-8').encode('utf-8')
-
-
-def upload_fw(file, host = 'cs.scircus.ru', path = '/test/distout/rtl', _cache = {}, config = ''):
+def upload_fw(config):
   # dsn_name/implement/file
-  client = connect(host)
+  client = connect(config['host'])
   dsn_name = config['dsnName']
-  root, ext = os.path.splitext(os.path.basename(file))
-  key = dsn_name+root
-  name = _cache.get(key)
-#  content = getContent(file)
-  try:
-    with open(file, 'rb') as f:
-      content = f.read()
-  except IOError:
-    print 'Cant open file ' + os.path.abspath(file)
-    return
-  if not name:
-    folder = path+'/'+dsn_name
+  for i in ['firmware_bit', 'firmware_mcs']:
+    firmware = config.get(i)
+    if not firmware:
+      continue
+    try:
+      with open(firmware, 'rb') as f:
+        content = f.read()
+    except IOError:
+      print 'Cant open file ' + os.path.abspath(firmware)
+      continue
+
+    root, ext = os.path.splitext(os.path.basename(firmware))
+    name = os.path.basename(root)
+    folder = config['webdavBuildPath']+'/'+dsn_name
     print 'Uploading folder: ', folder,
     print client.mkcol(folder)
-    buildNum = getBuildVer(client, folder, root+'_build_')+1
-    config['gitMessage'] = 'build_{} '.format(buildNum)
-    name = '{path}/{dsn}/{dsn}_{root}_build_{num}'.format(
-        path=path, dsn=dsn_name, root=root, num=buildNum)
+    path = '{folder}/{name}_new'.format(folder=folder,
+                                        name=name,
+                                        )
 
-    dst = name + '_info'
-    info = formBaseInfo(config)
+    dst = path + '_info'
+    info = config['git_mes']
     print 'Uploading info: ', dst,
     print client.put(dst, info)
 
-    _cache.update({key:name})
-
-  dst = name + ext
-  print 'Uploading file: ', dst,
-  print client.put(dst, content)
+    dst = path + ext
+    print 'Uploading file: ', dst,
+    print client.put(dst, content)
 
 
 

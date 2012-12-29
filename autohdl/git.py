@@ -1,10 +1,13 @@
 import argparse
 import os
+import pprint
+import re
 import shutil
 import subprocess
 import urlparse
 
 from pyparsing import makeHTMLTags, SkipTo
+import sys
 
 from autohdl import toolchain
 import webdav
@@ -91,12 +94,15 @@ def clone(config):
       subprocess.call('{} clone http://{}/{} -o webdav'.format(gitPath, config['host'], repo))
     os.chdir('..')
 
-def backupFirmware(config):
-  for i in ['.bit', '.mcs']:
-    firmware = os.path.join(implementPath, config.get('top')+i)
-    print firmware
-    if os.path.exists(firmware):
-      shutil.copy(firmware, os.path.join('..', 'resource', config.get('top')+i))
+def get_last_build_num(top):
+  p = subprocess.Popen('git log -1 --grep="{top}_build_" --all'.format(top=top),
+                        stderr=subprocess.PIPE,
+                        stdout=subprocess.PIPE)
+  out, err = p.communicate()
+  res = re.search(r'\w*_build_(\d+):', out+err)
+  num = int(res.group(1)) if res else 0
+  return num
+
 
 def updateGitignore():
   if os.path.exists('../.gitignore'):
@@ -108,7 +114,7 @@ def updateGitignore():
 
 
 def synchWithBuild(config):
-  backupFirmware(config)
+#  backupFirmware(config)
   gitPath = toolchain.Tool().get('git_batch')
   res = subprocess.Popen('{} status'.format(gitPath),
                          stdout=subprocess.PIPE,
@@ -129,19 +135,70 @@ def synchWithBuild(config):
   subprocess.call('{} commit -m "{}"'.format(gitPath, config.get('gitMessage')))
 
 
-def synchWithBuild2(config):
+def _popen(prog, shell=True):
+  p = subprocess.Popen(prog,
+                       shell=shell,
+                       stderr=subprocess.PIPE,
+                       stdout=subprocess.PIPE
+  )
+  out, err = p.communicate()
+  return p, out, err
+
+def valid_firmware(config):
+  ver = get_last_build_num(config['top'])
+  folder = os.path.abspath(os.path.join('..', 'resource'))
+  for fw in os.listdir(folder):
+    name, e = os.path.splitext(fw)
+    for valid_ext in ['.bit', '.mcs']:
+      if (config['top'] in name
+          and valid_ext == e
+          and ver < int(name.split('_build_')[1])):
+        config['firmware_{ext}'.format(ext=valid_ext[1:])] = os.path.join(folder, fw)
+  if config.get('firmware_git') or config.get('firmware_mcs'):
+    return True
+  else:
+    print 'Old version of firmware, nothing to upload'
+    return False
+
+
+def push_firmware(config):
   """integration with bitbucket"""
-  backupFirmware(config)
+  if not valid_firmware(config):
+    return
   cwd_was = os.getcwd()
   git_root_dir = subprocess.check_output('git rev-parse --show-toplevel')
+  git_root_dir = git_root_dir.strip().strip('\n')
   os.chdir(git_root_dir)
   try:
-    print subprocess.check_output('git add -A')
-    print subprocess.check_output('git commit')
-    print subprocess.check_output('git push all')
-  except:
+    p, out, err = _popen('git status -s')
+    print out+err
+    mes = config.get('git_mes') or raw_input('add comment :\n')
+    mes = '{comment}; \\\n'\
+          'technology: {technology}; part: {part}; package: {package}; ' \
+          'PROM size: {size} kilobytes; spi: {spi}'.format(comment=mes,
+                                                           technology=config.get('technology'),
+                                                           part=config.get('part'),
+                                                           package=config.get('package'),
+                                                           size=config.get('size'),
+                                                           spi=config.get('spi'),
+                                                           )
+    config['git_mes'] = mes
+    print 'ass '*10
+    print mes
+    p, out, err = _popen('git add -A')
+    print out+err
+    mes = mes.decode(sys.stdin.encoding).encode('cp1251')
+    dsn = os.path.basename(os.getcwd())
+    top = config.get('top')
+    ver = get_last_build_num(top)+1
+    config['firmware_name'] = '{dsn}_{top}_build_{ver}'.format(dsn=dsn, top=top, ver=ver)
+    p, out, err = _popen('git commit -m"{firmware_name}: {mes}"'.format(firmware_name=config['firmware_name'],
+                                                                        mes=mes))
+    print out+err
+    p, out, err = _popen('git push --all', shell=False)
+    print out+err
+  finally:
     os.chdir(cwd_was)
-    raise
 
 
 def getGitRoot(path):

@@ -11,6 +11,7 @@ import time
 
 from autohdl.hdlLogger import log_call, logging
 from autohdl import progressBar
+from autohdl import git
 
 log = logging.getLogger(__name__)
 
@@ -43,6 +44,29 @@ def clean(path):
     os.makedirs(path)
 
 
+def copy_firmware(config):
+  firmware_ext = ['.bit', '.mcs']
+  dest_dir = os.path.join('..', 'resource')
+  for i in os.listdir(dest_dir):
+    if os.path.splitext(i)[1] in firmware_ext:
+      print 'removing ', os.path.join(dest_dir, i)
+      os.remove(os.path.join(dest_dir, i))
+
+  for i in firmware_ext:
+    src_abs_path = os.path.join(implementPath, config.get('top')+i)
+    if os.path.exists(src_abs_path):
+      # get latest version for this top git.get_last_build_num(top)
+      dest = '{dsn}_{top}_build_{ver}{ext}'.format(
+        dsn = os.path.basename(os.path.abspath('..')),
+        top = config.get('top'),
+        ver = git.get_last_build_num(config.get('top'))+1,
+        ext = i
+      )
+      dest_abs_path = os.path.join(dest_dir, dest)
+      print 'copying', dest_abs_path
+      shutil.copy(src_abs_path, dest_abs_path)
+
+
 
 @log_call
 def run(config):
@@ -69,7 +93,8 @@ def run(config):
   shutil.copyfile(ucf, implPath + config['top']+'.ucf')
   shutil.copyfile(top, implPath + config['top']+'.edf')
 
-  
+
+  cwd_was = os.getcwd()
   os.chdir(implPath)
   while not os.path.exists(config['top']+'.edf'):
     print 'cant find file: ', config['top']
@@ -79,11 +104,12 @@ def run(config):
     subprocess.check_call(('{xflow} -implement balanced.opt'
                            ' -config bitgen.opt {netlist}.edf').format(xflow=toolchain.Tool().get('ise_xflow'),
                                                                        netlist=config['top']))
+    bit2mcs(config)
   except subprocess.CalledProcessError as e:
     log.error(e)
     sys.exit()
-
-  bit2mcs(config)
-    
+  finally:
+    os.chdir(cwd_was)
+  copy_firmware(config)
   log.info('Implementation done')
 
