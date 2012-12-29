@@ -1,241 +1,160 @@
-import base64
-from collections import namedtuple
-import httplib
+import locale
+import netrc
+from netrc import NetrcParseError
 import os
-import re
+import shutil
 import subprocess
-import urllib2
 from urlparse import urlparse
-from autohdl import toolchain
+
+#from autohdl.hdlLogger import  logging
+#log = logging.getLogger(__name__)
+
+import requests
 import sys
-import time
 
-from autohdl.hdlLogger import log_call, logging
-log = logging.getLogger(__name__)
+BB_API = 'https://api.bitbucket.org/1.0/user/repositories'
+BB_HOST = 'bitbucket.org'
 
+class Data():
+#  def log_action(self, *args):
+#    pass
 
-FirmWare = namedtuple('Firmware', 'name uri date size')
+  def __init__(self, log_action, queue):
+    self.log_action = log_action
+    self.queue = queue
 
-
-class PLogic():
-  def __init__(self, iQueue, oQueue = None):
-    self.digilent = os.path.dirname(__file__)+'/../lib/djtgcfg.exe'
-    self.username = None
+    self.user = None
     self.password = None
-    self.url = None
-    self.authenticated = False
-    self.iQueue = iQueue
-    self.oQueue = oQueue
-    self.firmwares = {}
-    self.newData = False
-    self.folders = None
-    self.alias = None
-    self.devices = None
-    self.impact = None # toolchain.Tool().get('ise_impact')
-    self.output = ''
-    self.cable = None # digilent vs xilinx
+    self.save_password = None
 
+    # load repo list
+    self.repos = ('https://bitbucket.org/mgolokhov/autohdl_programmator_test',
+                  'https://bitbucket.org/mgolokhov/testfirmware',
+                  'https://bitbucket.org/mgolokhov/testprog',
+                  'dump/repo')
+    self.current_repo = None
 
-  def authenticate(self):
-    if not self.iQueue.empty():
-      user, pswd, path = self.iQueue.get()
-      if (user, pswd, path) == (self.username, self.password, self.url):
+    self.firmwares = ''
+    self.current_firmware = None
+    self.cwd = os.getcwd()
+    self.autohdl_dir = os.path.join(os.path.expanduser('~'), 'autohdl')
+
+  def authenticate(self, auth_as_other_user=False):
+    u, _, p = self.auth_load(BB_HOST)
+    res = requests.get(url = BB_API, auth=(u, p))
+    if auth_as_other_user or res.status_code != 200:
+      res = requests.get(url = BB_API, auth=(self.user, self.password))
+      print res
+      if res.status_code != 200:
+        self.log_action('Authentication required. Status code: {}'.format(res.status_code))
         return
-      self.username, self.password, self.url = user, pswd, (path if path[-1] == '/' else path+'/')
-      self.newData = True
-      self.firmwares = {}
-#      print self.username, self.password, self.url
-
-      url = urlparse(self.url)
-      conn = httplib.HTTPConnection(url.netloc)
-      base64string = base64.encodestring('%s:%s' % (self.username, self.password))[:-1]
-      authheader =  "Basic %s" % base64string
-      headers = { "Authorization": authheader}
-      conn.request(method='HEAD', url=url.path, headers=headers)
-      res = conn.getresponse()
-      conn.close()
-      if res.status == 200: # ok
-        self.authenticated = True
       else:
-        self.authenticated = False
+        self.log_action('Authenticated as "{}" OK'.format(self.user))
+    else:
+      self.log_action('Authenticated as "{}" OK'.format(u))
+    current_repo_name = os.path.basename(urlparse(self.current_repo).path)
+    for i in res.json:
+      if current_repo_name == i['name']:
+        self.log_action('Permissions to read "{}" OK'.format(current_repo_name))
+        if self.save_password:
+          self.auth_dump(BB_HOST, self.user, self.password)
+        return True
+    self.log_action('Permissions to read "{}" DENIED'.format(current_repo_name))
+    return
 
+  def _popen(self, prog):
+    p = subprocess.Popen(prog.encode(locale.getpreferredencoding()),
+                         shell=True,
+                         stderr=subprocess.PIPE,
+                         stdout=subprocess.PIPE
+    )
+    out, err = p.communicate()
+    out = unicode(out, encoding='utf-8')
+    err = unicode(err, encoding='utf-8')
+    return p, out, err
 
-  def getFirmwares(self):
-#    print 'refreshing'
-    url = urlparse(self.url)
-    params =  '<?xml version="1.0" encoding="utf-8" ?>\n' +\
-              '<D:propfind xmlns:D="DAV:">\n'+\
-              '<D:allprop/>\n' +\
-              '</D:propfind>'
-    base64string = base64.encodestring('%s:%s' % (self.username, self.password))[:-1]
-    authheader =  "Basic %s" % base64string
-    headers = {
-      "Content-Type" :  "application/xml; charset=\"utf-8\"",
-      "Authorization": authheader,
-      "Depth" : "1"}
-    conn = httplib.HTTPConnection(url.netloc)
-    conn.request("PROPFIND", url.path, params, headers)
-    response = conn.getresponse()
-    data = response.read()
-    conn.close()
-
-    if "Authorization Required" in data:
-      self.authenticated = False
+  def get_firmwares(self):
+    # git clone current_repo
+    # git log --all --grep "_build_" --format="%s"
+    # return list
+    current_repo_name = os.path.basename(urlparse(self.current_repo).path)
+    if not os.path.exists(self.autohdl_dir):
+      os.makedirs(self.autohdl_dir)
+    current_repo_location = os.path.join(self.autohdl_dir, current_repo_name)
+    p, out, err = self._popen('git clone {}.git {}'.format(self.current_repo,
+                                                           current_repo_location))
+    self.log_action('')
+    os.chdir(current_repo_location)
+    p, out, err = self._popen('git pull --all'.format(self.current_repo))
+    self.log_action('')
+    if 'fatal' in err:
+      print err
       return
-    import xml.etree.ElementTree as ET
-    root = ET.fromstring(data)
-
-    for child in root:
-      fwFile = None
-      fwDate = None
-      fwName = None
-      fwSize = None
-      for child2 in child:
-        if 'href' in child2.tag:
-          fwFile = child2.text
-          fwName = os.path.basename(fwFile)
-        if 'propstat' in child2.tag:
-          for child3 in child2:
-            if 'prop' in child3.tag:
-              for child4 in child3:
-                if 'getlastmodified' in child4.tag:
-                  fwDate = child4.text
-                if 'getcontentlength' in child4.tag:
-                  fwSize = child4.text
-      self.firmwares[fwName] = FirmWare(fwName,
-                                        url.scheme+'://'+url.netloc+fwFile,
-                                        fwDate,
-                                        fwSize)
-
-
-  def updateFirmwaresList(self):
-    while True:
-      if not self.iQueue.empty():
-#        print 'queue'
-        self.authenticate()
-        self.getFirmwares()
-        self.oQueue.put('Data updated')
-      elif self.authenticated:
-#        print 'get'
-        self.getFirmwares()
-      time.sleep(.2)
+    p, out, err = self._popen('git log --all --grep="_build_" --format="%s"')
+    self.log_action('')
+    if 'fatal' in err:
+      print err
+      return
+    self.firmwares = out.splitlines()
+    self.queue.put(self.firmwares)
+    return self.firmwares
 
 
 
-  def downloadFirmware(self, firmware):
-    url = self.firmwares[firmware].uri
-    request = urllib2.Request(url)
-    base64string = base64.encodestring('%s:%s' % (self.username, self.password)).replace('\n', '')
-    request.add_header("Authorization", "Basic %s" % base64string)
-    file_name = url.split('/')[-1]
-    u = urllib2.urlopen(request)
-    f = open(file_name, 'wb')
-    f.write(u.read())
-    f.close()
+  def download_firmware(self, firmware):
+    # git log --all --grep "current_firmware" --format="%h"
+    # git checkout %h => dsn/resource/build_name.bit
+    self.current_firmware = firmware
+    p, out, err = self._popen(u'git log --all --grep "{}" --format="%h_#$@_%s"'.format(self.current_firmware))
+    self.log_action('')
+    sha, message = out.strip().split('_#$@_')
+    p, out, err = self._popen('git checkout {}'.format(sha))
+    self.log_action('')
+    current_repo_name = os.path.basename(urlparse(self.current_repo).path)
+    firmware_dir = os.path.join(self.autohdl_dir, current_repo_name, 'resource')
+    firmware_ext = ['.bit', '.mcs']
+    for f in os.listdir(firmware_dir):
+      if os.path.splitext(f)[1] in firmware_ext:
+        src = os.path.join(firmware_dir, f)
+        dest = os.path.join(self.cwd, f)
+        shutil.copy(src, dest)
+        self.log_action('Saved as {}'.format(dest))
 
 
-  def getFirmwareinfo(self, firmware):
-    file = os.path.splitext(firmware)[0]+'_info'
-    url = urlparse(self.firmwares[file].uri)
-    uri = url.path
-    host = url.netloc
-    params =  ''
-    base64string = base64.encodestring('%s:%s' % (self.username, self.password))[:-1]
-    authheader =  "Basic %s" % base64string
-    headers = {"Authorization": authheader}
-
-    conn = httplib.HTTPConnection(host)
-    conn.request("GET", uri, params, headers)
-    response = conn.getresponse()
-    data = response.read()
-    conn.close()
-    r = re.findall('spi:\s*(\w+)', data)
-    if r:
-      self.spiDevice = r[0]
-    return data
-
-  @log_call
-  def program(self, fw_name, board_name, chip_idx):
-    log.debug('Cable type: '+self.cable)
-    if self.cable == 'digilent':
-      p = subprocess.Popen("{}" \
-                           " prog -d {} " \
-                           "-f {} " \
-                           "-i {}".format(self.digilent, self.alias, fw_name, str(chip_idx)),
-                           stdin = subprocess.PIPE,
-                           stdout = subprocess.PIPE
-      )
-      p.stdin.write('Y\n')
-      self.output = p.stdout.read()
-    elif self.cable == 'xilinx':
-      if chip_idx == 0:
-        with open('init.bat', 'w') as f:
-          f.write('setMode -bs\n'
-                  'setCable -p auto\n'
-                  'identify\n'
-                  'assignFile -p 1 -file {}\n' \
-                  'program -p 1\n' \
-                  'quit'.format(fw_name))
-        p = subprocess.Popen(self.impact+' -batch init.bat',
-                             stdout=subprocess.PIPE,
-                             stderr=subprocess.PIPE)
-  
-        self.output = p.stdout.read()
-        res =  p.stderr.read()
-        self.output += res
-      elif chip_idx == 1:
-        with open('init.bat', 'w') as f:
-          f.write('setMode -bs\n'
-                  'setCable -p auto\n'
-                  'identify\n'
-                  'attachflash -position 1 -spi "{}"\n'
-                  'assignfiletoattachedflash -position 1 -file {}\n'\
-                  'Program -p 1 -spionly -e -v -loadfpga\n'\
-                  'quit'.format(self.spiDevice, fw_name))
-        p = subprocess.Popen(self.impact+' -batch init.bat',
-                             stdout=subprocess.PIPE,
-                             stderr=subprocess.PIPE)
-
-        self.output = p.stdout.read()
-        res =  p.stderr.read()
-        self.output += res
-    return self.output
-
-  def tryDigilent(self):
-    self.output = '\nTrying digilent\n'
-    resEnum = subprocess.check_output('{} enum'.format(self.digilent))
-    self.output += resEnum
-    it = iter(resEnum.splitlines())
-    aliases = [i.split()[-1] for i in it if 'Device: 'in i and 'Not accessible' not in it.next()]
-    if aliases:
-      self.alias = aliases[0]
-      resInit = subprocess.check_output('{} init -d {}'.format(self.digilent, aliases[0]))
-      self.output += resInit
-      self.devices = [i.split()[-1] for i in resInit.splitlines() if 'Device 0:' in i or 'Device 1' in i]
-      self.cable = 'digilent'
-      return True #devices found
-
-  def tryImpact(self):
-    self.output += '\nTrying impact\n'
-    with open('init.bat', 'w') as f:
-      f.write('setMode -bs\nsetCable -p auto\nidentify\nquit')
-    p = subprocess.Popen(self.impact+' -batch init.bat',
-                         stdout=subprocess.PIPE,
-                         stderr=subprocess.PIPE)
-
-    self.output += p.stdout.read()
-    res =  p.stderr.read()
-    self.output += res
-    if 'Cable connection failed' not in self.output:
-      self.devices = re.findall('Added Device (\w+) successfully', res)
-      self.cable = 'xilinx'
-      self.devices += [self.spiDevice]
+  def auth_dump(self, host, user, password):
+    #check {host{user,password}}
+    content = None
+    try:
+      _netrc = netrc.netrc(self.get_netrc_path())
+      u, _, p = _netrc.hosts[host] # no host -> KeyError
+      if user != u or password != p:
+        raise KeyError
+      print 'no need auth_dump'
+      return
+    except (IOError, netrc.NetrcParseError):
+      content = 'machine {host}\n'\
+                'login {user}\n'\
+                'password {password}'.format(host=host,
+                                             user=user,
+                                             password=password)
+    except KeyError:
+      _netrc.hosts.update({host:(user, None, password)})
+      content = str(_netrc).replace("'",'')
+    try:
+      with open(self.get_netrc_path(), 'w') as f:
+        f.write(content)
+    except IOError:
+      self.log_action('Cant save data to '+self.get_netrc_path())
 
 
-  def initialize(self):
-    self.impact = toolchain.Tool().get('ise_impact')
-    if not self.tryDigilent():
-      if self.impact:
-        self.tryImpact()
-    self.oQueue.put('Done')
-    return self.output
+  def get_netrc_path(self):
+    home = os.path.expanduser('~')
+    return os.path.join(home,'_netrc')
+
+  def auth_load(self, hostname):
+    res = {}
+    try:
+      res = netrc.netrc(self.get_netrc_path()).hosts
+    except (IOError, netrc.NetrcParseError):
+      pass
+    return  res.get(hostname, (None, None, None))

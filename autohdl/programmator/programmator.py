@@ -1,74 +1,157 @@
-from Queue import Queue
+import Queue
 from Tkinter import *
-from collections import namedtuple
-import netrc
+from threading import Thread
 import threading
+from ttk import *
 from tkFileDialog import askdirectory
 from tkFont import Font
-from ttk import *
-
-import time
 import os
-import subprocess
-from autohdl.programmator.model import PLogic
-import json
-from urlparse import urlparse
+import time
+
+import model
+
+from dialog_ import Dialog
+
+
+class MyDialog(Dialog):
+
+  def body(self, master):
+    Label(master, text="User:").grid(row=0, sticky='w')
+    Label(master, text="Password:").grid(row=1, sticky='w')
+
+    self.entry_user = Entry(master)
+    self.entry_password = Entry(master, show="*")
+    self.entry_user.grid(row=0, column=1)
+    self.entry_password.grid(row=1, column=1)
+
+    self.save_password = BooleanVar()
+    Checkbutton(master,
+                text='save (caution: in plain text)',
+                variable=self.save_password).grid(row=2, columnspan=2)
+    self.result = None, None, None
+    return self.entry_user # initial focus
+
+  def apply(self):
+    self.result = (self.entry_user.get(),
+                   self.entry_password.get(),
+                   self.save_password.get())
+
 
 
 class Application(Frame):
-  def logAction(self, arg):
-    self.text2.insert(END, str(arg)+'\n')
-    self.text2.yview(END)
+  def log_action(self, arg):
+    if arg:
+      if not isinstance(arg, basestring):
+        arg = str(arg)
+      if type(arg) is not unicode:
+        arg = unicode(arg, encoding='utf-8')
+      self.text2.insert(END, arg + '\n')
+      self.text2.yview(END)
+#    self.update()
+    self.update_idletasks()
 
-  def globalHotkeys(self):
-    self.bind_all('<F5>', self.refreshList)
-    self.bind_all('<Control-a>', self.initDeviceHandle)
-    self.bind_all('<Control-s>', self.progDevice0Handle)
-    self.bind_all('<Control-d>', self.progDevice1Handle)
+  def global_hotkeys(self):
+    self.bind_all('<F5>', self.refresh_firmwares)
 
-  def createWidgets(self):
+  def auth_current_repo(self, auth_as_other_user=False):
+    self.data.current_repo = self.entry_repo.get()
+    while not self.data.authenticate(auth_as_other_user=auth_as_other_user):
+      d = MyDialog(self, title='login')
+      if d.give_up:
+        return
+      self.data.user, self.data.password, self.data.save_password = d.result
+    return True
+
+  def refresh_listbox(self):
+    try:
+      if not self.queue.empty():
+        self.listbox.delete(0, END)
+        for i in self.queue.get(0):
+          self.listbox.insert(END, i)
+    except Queue.Empty:
+      pass
+    self.after(100, self.refresh_listbox)
+
+  def refresh_firmwares(self, event=None):
+    if not self.auth_current_repo():
+      return
+    t = threading.Thread(target=self.data.get_firmwares)
+    t.setDaemon(1)
+    t.start()
+
+  def browse_handle(self):
+    d = askdirectory()
+    if d:
+      os.chdir(d)
+      self.data.cwd = d
+      self.working_dir.set(d)
+      self.log_action('Changed working folder to ' + d)
+
+  def filter_handle(self, event=None):
+    filtered = [i for i in self.data.firmwares if self.afilter.get() in i]
+    self.listbox.delete(0, END)
+    for i in filtered:
+      self.listbox.insert(END, i)
+
+  def info_handle(self, event=None):
+    res = self.listbox.get(self.listbox.curselection()).split(':')[1]
+    self.log_action('Comment message:\n'+res)
+    self.data.download_firmware(self.listbox.get(self.listbox.curselection()))
+
+  def auto_refresh_handle(self, event=None):
+    self.update()
+    if self.auto_refresh.get():
+      self.refresh_firmwares()
+      self.data.download_firmware(self.listbox.get(0))
+      self.auto_refresher_id = self.after(5000, self.auto_refresh_handle)
+    else:
+      self.after_cancel(self.auto_refresher_id)
+
+  def create_widgets(self):
     fr1 = Frame(self)
     fr1.grid(column=0, row=0, sticky='e,w')
     fr1.columnconfigure(1, weight=1)
 
     Label(fr1, text = "Server:").grid(column=0, row=0)
 
-
-    entry = Combobox(fr1, width=50, textvariable=self.serverPath)
-#    self.serverPath.set('http://cs.scircus.ru/test/distout/rtl/intercom/')
-    entry['values'] = ('https://bitbucket.org/mgolokhov/intercom',
-                       'http://cs.scircus.ru/test/distout/rtl/intercom',
-                       'http://cs.scircus.ru/test/distout/rtl/autohdl_programmator_test/',
-                      )
-    entry.current(0)
-    entry.grid(column=1, row=0, sticky='e,w')
-    entry.bind('<<ComboboxSelected>>', self.refreshList)
-    entry.bind('<Return>', self.refreshList)
-
+    self.entry_repo = Combobox(fr1, width=50, textvariable=self.data.current_repo)
+    self.entry_repo['values'] = self.data.repos
+    self.entry_repo.current(0)
+    self.entry_repo.grid(column=1, row=0, sticky='e,w')
+    self.entry_repo.bind('<<ComboboxSelected>>', self.refresh_firmwares)
+    self.entry_repo.bind('<Return>', self.refresh_firmwares)
 
     button = Button(fr1, text = "Refresh")
-    button["command"] = self.refreshList
+    button["command"] = self.refresh_firmwares
     button.grid(column=2, row=0)
 
-
-    Label(fr1, text="Working folder:").grid(column=0, row=1)
-
-    self.workingDir = StringVar()
-    self.workingDir.set(os.getcwd())
-    entry = Entry(fr1, width=50, textvariable=self.workingDir, state=DISABLED)
+    Label(fr1, text="CWD:").grid(column=0, row=1)
+    self.working_dir = StringVar()
+    self.working_dir.set(os.getcwd())
+    entry = Entry(fr1, width=50, textvariable=self.working_dir, state=DISABLED)
     entry.grid(column=1, row=1, sticky='e,w')
 
-    button = Button(fr1, text = "Browse", command=self.browseHandle)
+    button = Button(fr1, text = "Browse", command=self.browse_handle)
     button.grid(column=2, row=1)
 
-    Label(fr1, text="Filter:").grid(column=0, row=2)
+    self.auto_refresh = IntVar()
+    checkbutton = Checkbutton(fr1)
+    checkbutton['text'] = 'Automatically refresh and save latest firmware in current working directory (CWD)'
+    checkbutton['variable'] = self.auto_refresh
+    checkbutton['command'] = self.auto_refresh_handle
+    checkbutton.grid(column=1, row=2, columnspan=1, sticky='w')
+
+    button = Button(fr1, text='Login as')
+    button['command'] = lambda: self.auth_current_repo(auth_as_other_user=True)
+    button.grid(column=2, row=2)
+
     self.afilter = StringVar()
     entry = Entry(fr1, textvariable=self.afilter)
-    entry.grid(column=1, row=2, sticky='e,w')
-    entry.bind('<KeyRelease>', self._filter)
+    entry.grid(column=0, columnspan=3, row=3, sticky='e,w', padx=5, pady=1)
+    entry.bind('<KeyRelease>', self.filter_handle)
 
     fr2 = Frame(self)
-    fr2.grid(column=0, row=1, sticky=E+W, padx=5, pady=5)
+    fr2.grid(column=0, row=1, sticky=E+W)
     fr2.columnconfigure(0, weight=1)
 
     self.list_val = StringVar()
@@ -81,24 +164,10 @@ class Application(Frame):
                             selectmode = SINGLE,
                             listvariable = self.list_val,
                             yscrollcommand=yScroll.set)
-    self.listbox.grid(row=0, column=0, sticky=E+W+N+S)
+    self.listbox.grid(row=0, column=0, sticky=E+W+N+S, padx=5, pady=2)
     yScroll["command"] = self.listbox.yview
-    self.listbox.bind("<<ListboxSelect>>", self.info)
+    self.listbox.bind("<<ListboxSelect>>", self.info_handle)
 
-
-    fr3 = Frame(fr2)
-    fr3.grid(column=2, row=0)
-
-    button = Button(fr3, text = "Initialize Device", command=self.initDeviceHandle)
-    button.grid(column=0, row=0)
-
-    self.button1 = Button(fr3, text = "Program device 0", state=DISABLED)
-    self.button1['command'] = self.progDevice0Handle
-    self.button1.grid(column=0, row=1)
-
-    self.button2 = Button(fr3, text = "Program device 1", state=DISABLED)
-    self.button2['command'] = self.progDevice1Handle
-    self.button2.grid(column=0, row=2)
 
     fr4 = Frame(self)
     fr4.grid(column=0, row=2)
@@ -106,194 +175,12 @@ class Application(Frame):
     yScroll.grid(column=1, row=0, sticky=N+S)
 
     self.text2 = Text(fr4, font=Font( family="Helvetica", size=9 ), yscrollcommand=yScroll.set)
-    self.text2.grid(column=0,row=0, sticky='s,e,n,w', padx=5, pady=5)
+    self.text2.grid(column=0,row=0, sticky='s,e,n,w', padx=5, pady=2)
     yScroll["command"] = self.text2.yview
-    self.text2.insert(END, "Valid hot keys:\n"
-                           "Refresh: F5;\n"
-                           "Initialize Device: ctrl+a;\n"
-                           "Program Device 0: ctrl+s;\n"
-                           "Program Device 1: ctrl+d;\n\n")
+    self.text2.insert(END, "Valid shortcuts: Refresh- F5\n\n")
 
     self.progress = Progressbar(self, orient = "horizontal", length = 200, mode = "determinate")
     self.progress.grid(column=0, row=3, sticky='e,w')
-
-  def _filter(self, *args):
-    res = sorted(self.prg.firmwares,
-                 key=lambda k: time.strptime(self.prg.firmwares[k].date, '%a, %d %b %Y %H:%M:%S %Z'),
-                 reverse =True)
-    res = ' '.join([i for i in res
-      if self.afilter.get() in i and os.path.splitext(i)[1] in [".bit",".mcs"]])
-    self.list_val.set(res)
-
-
-  def browseHandle(self):
-    d = askdirectory()
-    if d:
-      os.chdir(d)
-      self.workingDir.set(d)
-      self.logAction('Changed working folder to ' + d)
-
-
-  def info(self, *event):
-    if self.listbox.curselection():
-      file = self.listbox.get(self.listbox.curselection()[0])
-      info = self.prg.getFirmwareinfo(file)
-      self.logAction('\nFirmware info:\n'+info)
-
-
-  def initDeviceHandle(self, *args):
-    self.logAction('Initializing devices...')
-    self.progress.start()
-    t = threading.Thread(target=self.prg.initialize)
-    t.setDaemon(True)
-    t.start()
-    while self.queueFromPLogic.empty():
-      self.update()
-      time.sleep(.2)
-    self.queueFromPLogic.get()
-    self.logAction(self.prg.output)
-    self.progress.stop()
-
-#    self.logAction(self.prg.initialize())
-    devices = self.prg.devices
-    if devices:
-      self.button1['text'] = 'Program ' + devices[0]
-      self.button1['state'] = NORMAL
-      if len(devices) == 2:
-        self.button2['text'] = 'Program ' + devices[1]
-        self.button2['state'] = NORMAL
-
-  def progDevice0Handle(self, *args):
-    self.program(0)
-
-
-  def progDevice1Handle(self, *args):
-    self.program(1)
-
-  def program(self, index):
-    if self.prg.cable:
-      self.logAction('programming')
-      if self.listbox.curselection():
-        file = self.listbox.get(self.listbox.curselection()[0])
-        self.prg.downloadFirmware(file)
-        self.logAction(self.prg.program(file, self.alias, index))
-      else:
-        self.logAction('Firmware is not selected')
-    else:
-      self.logAction('Device is not initialized')
-
-
-  def updateList(self):
-    self.logAction("Logged in")
-    res = sorted(self.prg.firmwares,
-                 key=lambda k: time.strptime(self.prg.firmwares[k].date, '%a, %d %b %Y %H:%M:%S %Z'),
-                 reverse =True)
-    self.list_val.set(' '.join([i for i in res if os.path.splitext(i)[1] in ['.bit', '.mcs']]))
-    size = self.listbox.size()
-    if size:
-      self.listbox.select_clear(0, size)
-      self.listbox.see(0)
-      self.listbox.select_set(0)
-      self.info()
-    else:
-      self.logAction('Found folders: '+'\n'.join(self.prg.folders))
-    self.progress.stop()
-
-  def refreshList(self, *args):
-    self.logAction('Refreshing firmwares list')
-    self.win = Toplevel()
-    self.login_submit()
-
-
-  def login(self, *args):
-    self.win = Toplevel()
-    self.win.title("Login")
-    Label(self.win, text="User:").grid(column=0,row=0)
-    e = Entry(self.win, textvariable= self.user)
-    e.grid(column=1,row=0)
-    Label(self.win, text='Password:').grid(column=0,row=1)
-    Entry(self.win, textvariable=self.password, show="*").grid(column=1,row=1)
-    Button(self.win, text='OK', command=self.login_submit).grid(column=1,row=2)
-    Checkbutton(self.win, text='save', variable=self.save_auth).grid(column=0,row=2)
-    self.win.bind('<Return>', self.login_submit)
-    e.focus_set()
-
-
-  def isNewData(self):
-    if (self.userOld, self.pswdOld, self.pathOld) !=\
-       (self.user.get(), self.password.get(), self.serverPath.get()):
-      self.userOld, self.pswdOld, self.pathOld = self.user.get(), self.password.get(), self.serverPath.get()
-      return True
-
-  def auth_dump(self, host, user, password):
-    #check {host{user,password}}
-    content = None
-    try:
-      _netrc = netrc.netrc(self.getNetrcPath())
-      u, _, p = _netrc.hosts[host] # no host -> KeyError
-      if user != u or password != p:
-        raise KeyError
-    except IOError:
-      content = 'machine {host}\n'\
-                'login {user}\n'\
-                'password {password}'.format(host=host,
-                                             user=user,
-                                             password=password)
-    except KeyError:
-      _netrc.hosts.update({host:(user, None, password)})
-      content = str(_netrc).replace("'",'')
-    try:
-      with open(self.getNetrcPath(), 'w') as f:
-        f.write(content)
-    except IOError:
-      self.logAction('Cant save data to '+self.getNetrcPath())
-
-
-  def getNetrcPath(self):
-    home = os.path.expanduser('~')
-    return os.path.join(home,'_netrc')
-
-  def auth_load(self, hostname):
-    res = {}
-    try:
-      res = netrc.netrc(self.getNetrcPath()).hosts
-    except IOError:
-      pass
-    return  res.get(hostname)
-
-
-  def login_submit(self, *args):
-    self.logAction('Authentication')
-    self.progress.start()
-    self.win.destroy()
-    hostname = urlparse(self.serverPath.get()).hostname
-    if 'bitbucket.org' in hostname:
-      self.logAction('not implemented')
-      return
-    if self.isNewData():
-      #load user pass
-      if not self.user.get() and not self.password.get():
-        d = self.auth_load(hostname)
-        if d:
-          self.user.set(d[0])
-          self.password.set(d[2])
-      self.queueToPLogic.put((self.user.get(), self.password.get(), self.serverPath.get()))
-      while self.queueFromPLogic.empty():
-        self.update()
-        time.sleep(.2)
-      self.queueFromPLogic.get()
-    if not self.prg.authenticated:
-      self.logAction("Authorization Required")
-      self.login()
-    else:
-      if self.save_auth.get() == 1:
-        self.auth_dump(host=hostname,
-                       user=self.user.get(),
-                       password=self.password.get()
-            )
-      self.updateList()
-      return
-
 
 
   def __init__(self, master=None):
@@ -301,29 +188,14 @@ class Application(Frame):
     self.grid(sticky=N+S+E+W)
 
     top = self.winfo_toplevel()
-    top.title('AutoHDL progammator v0.3')
-    top.rowconfigure(0, weight=1)
-    top.columnconfigure(0, weight=1)
-    self.rowconfigure(0, weight =1)
-    self.columnconfigure(0, weight=1)
+    top.title('AutoHDL progammator v0.4')
+    top.resizable(width=FALSE, height=FALSE)
 
-
-    self.queueToPLogic = Queue()
-    self.queueFromPLogic = Queue()
-    self.prg = PLogic(iQueue=self.queueToPLogic, oQueue=self.queueFromPLogic)
-    self.alias = None
-    self.user = StringVar()
-    self.userOld = None
-    self.pswdOld = None
-    self.pathOld = None
-    self.password = StringVar()
-    self.save_auth = IntVar()
-    self.serverPath = StringVar()
-    t = threading.Thread(target=self.prg.updateFirmwaresList)
-    t.setDaemon(True)
-    t.start()
-    self.createWidgets()
-    self.globalHotkeys()
+    self.queue = Queue.Queue()
+    self.data = model.Data(log_action=self.log_action, queue=self.queue)
+    self.create_widgets()
+    self.global_hotkeys()
+    self.refresh_listbox()
 
 
 
@@ -333,18 +205,7 @@ def run():
   app.mainloop()
 
 
-def run_debug():
-  root = Tk()
-  app = Application(master=root)
-  app.prg.firmwares = 'qwer1 qwer2 qwer3 dfsd gfgf'.split()
-  app.list_val.set('qwer1 qwer2 qwer3')
-  app.mainloop()
-
-
-def run_another_proc():
-  subprocess.Popen('python {}/programmator.py'.format(os.path.dirname(__file__)))
-
-
 if __name__ == '__main__':
+  os.chdir('d:/00')
   run()
 
