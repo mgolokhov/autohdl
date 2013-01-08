@@ -5,36 +5,34 @@ import unittest
 from autohdl.test import utils
 
 try:
-  sys.path.insert(0, '..')
-  from autohdl.aldec import *
-  from autohdl.hdlLogger import *
+    sys.path.insert(0, '..')
+    from autohdl.aldec import *
+    from autohdl.hdlLogger import *
 except ImportError:
-  import autohdl.test.utils
-  from autohdl.aldec import *
-  from autohdl.hdlLogger import *
-  
+    import autohdl.test.utils
+    from autohdl.aldec import *
+    from autohdl.hdlLogger import *
+
 
 class Tests(unittest.TestCase):
-  
-  def setUp(self):
-    if not os.path.exists('tmp_test_dir'):
-      os.mkdir('tmp_test_dir')
+    def setUp(self):
+        if not os.path.exists('tmp_test_dir'):
+            os.mkdir('tmp_test_dir')
 
-  def tearDown(self):
-    if os.path.exists('tmp_test_dir'):
-       shutil.rmtree('tmp_test_dir')
-      
-      
-  def test_gen(self):
-    dsnName = 'noName'
-    dsnPath = os.getcwd().replace('\\','/')+'tmp_test_dir/dir1/dir2/dsn1'
-    utils.mkFakeRepo(iPath = 'tmp_test_dir')
-    os.chdir('tmp_test_dir/dir1/dir2/dsn1/script')
-#    gen(iTopModule = '', iDsnName = dsnName)
-    tb(iTopModule = 'dsn1_m1', iPrjName = dsnName, iClean = True)
-    
-    
-    
+    def tearDown(self):
+        if os.path.exists('tmp_test_dir'):
+            shutil.rmtree('tmp_test_dir')
+
+
+    def test_gen(self):
+        dsnName = 'noName'
+        dsnPath = os.getcwd().replace('\\', '/') + 'tmp_test_dir/dir1/dir2/dsn1'
+        utils.mkFakeRepo(iPath='tmp_test_dir')
+        os.chdir('tmp_test_dir/dir1/dir2/dsn1/script')
+        #    gen(iTopModule = '', iDsnName = dsnName)
+        tb(iTopModule='dsn1_m1', iPrjName=dsnName, iClean=True)
+
+
 if __name__ == '__main__':
-  logging.disable(logging.ERROR)
-  unittest.main()
+    logging.disable(logging.ERROR)
+    unittest.main()

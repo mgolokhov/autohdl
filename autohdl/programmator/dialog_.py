@@ -2,96 +2,92 @@ from Tkinter import *
 from ttk import *
 
 class Dialog(Toplevel):
+    def __init__(self, parent, title=None):
+        Toplevel.__init__(self, parent)
+        self.transient(parent)
 
-  def __init__(self, parent, title = None):
+        if title:
+            self.title(title)
 
-    Toplevel.__init__(self, parent)
-    self.transient(parent)
+        self.parent = parent
 
-    if title:
-      self.title(title)
+        self.result = None
+        self.give_up = False
 
-    self.parent = parent
+        body = Frame(self)
+        self.initial_focus = self.body(body)
+        body.pack(padx=5, pady=5)
 
-    self.result = None
-    self.give_up = False
+        self.buttonbox()
 
-    body = Frame(self)
-    self.initial_focus = self.body(body)
-    body.pack(padx=5, pady=5)
+        self.grab_set()
 
-    self.buttonbox()
+        if not self.initial_focus:
+            self.initial_focus = self
 
-    self.grab_set()
+        self.protocol("WM_DELETE_WINDOW", self.clean_up)
 
-    if not self.initial_focus:
-      self.initial_focus = self
+        self.geometry("+%d+%d" % (parent.winfo_rootx() + 50,
+                                  parent.winfo_rooty() + 50))
 
-    self.protocol("WM_DELETE_WINDOW", self.clean_up)
+        self.initial_focus.focus_set()
 
-    self.geometry("+%d+%d" % (parent.winfo_rootx()+50,
-                              parent.winfo_rooty()+50))
+        self.wait_window(self)
 
-    self.initial_focus.focus_set()
+    #
+    # construction hooks
 
-    self.wait_window(self)
+    def body(self, master):
+        # create dialog.py body.  return widget that should have
+        # initial focus.  this method should be overridden
 
-  #
-  # construction hooks
+        pass
 
-  def body(self, master):
-    # create dialog.py body.  return widget that should have
-    # initial focus.  this method should be overridden
+    def buttonbox(self):
+        # add standard button box. override if you don't want the
+        # standard buttons
 
-    pass
+        box = Frame(self)
 
-  def buttonbox(self):
-    # add standard button box. override if you don't want the
-    # standard buttons
+        w = Button(box, text="OK", width=10, command=self.ok, default=ACTIVE)
+        w.pack(side=LEFT, padx=5, pady=5)
+        w = Button(box, text="Cancel", width=10, command=self.cancel)
+        w.pack(side=LEFT, padx=5, pady=5)
 
-    box = Frame(self)
+        self.bind("<Return>", self.ok)
+        self.bind("<Escape>", self.cancel)
 
-    w = Button(box, text="OK", width=10, command=self.ok, default=ACTIVE)
-    w.pack(side=LEFT, padx=5, pady=5)
-    w = Button(box, text="Cancel", width=10, command=self.cancel)
-    w.pack(side=LEFT, padx=5, pady=5)
+        box.pack()
 
-    self.bind("<Return>", self.ok)
-    self.bind("<Escape>", self.cancel)
+    #
+    # standard button semantics
 
-    box.pack()
+    def ok(self, event=None):
+        if not self.validate():
+            self.initial_focus.focus_set() # put focus back
+            return
 
-  #
-  # standard button semantics
+        self.withdraw()
+        self.update_idletasks()
 
-  def ok(self, event=None):
+        self.apply()
 
-    if not self.validate():
-      self.initial_focus.focus_set() # put focus back
-      return
+        self.clean_up()
 
-    self.withdraw()
-    self.update_idletasks()
+    def clean_up(self, event=None):
+        # put focus back to the parent window
+        self.parent.focus_set()
+        self.destroy()
 
-    self.apply()
+    def cancel(self, event=None):
+        self.give_up = True
+        self.clean_up()
 
-    self.clean_up()
+        #
+    # command hooks
 
-  def clean_up(self, event=None):
-    # put focus back to the parent window
-    self.parent.focus_set()
-    self.destroy()
+    def validate(self):
+        return 1 # override
 
-  def cancel(self, event=None):
-    self.give_up = True
-    self.clean_up()
-  #
-  # command hooks
-
-  def validate(self):
-
-    return 1 # override
-
-  def apply(self):
-
-    pass # override
+    def apply(self):
+        pass # override

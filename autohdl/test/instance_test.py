@@ -9,20 +9,21 @@ sys.path.insert(0, '.')
 from autohdl.instance import *
 
 from autohdl.hdlLogger import  logging
+
 log = logging.getLogger(__name__)
 
 
 class Test(unittest.TestCase):
-  def setUp(self):
-    if not os.path.exists('tmp_test_dir'):
-      os.mkdir('tmp_test_dir')
-  
-  def tearDown(self):
-    if os.path.exists('tmp_test_dir'):
-      shutil.rmtree('tmp_test_dir')
-  
-  def test_removeComments(self):
-    t = '''
+    def setUp(self):
+        if not os.path.exists('tmp_test_dir'):
+            os.mkdir('tmp_test_dir')
+
+    def tearDown(self):
+        if os.path.exists('tmp_test_dir'):
+            shutil.rmtree('tmp_test_dir')
+
+    def test_removeComments(self):
+        t = '''
     that one is fake "certainly//"? // but me
     first comment
     /*comment*/
@@ -37,7 +38,7 @@ class Test(unittest.TestCase):
     may and that one "nope" //comment
     multi fake "/*not me*/"
     '''
-    expected = '''
+        expected = '''
     that one is fake "certainly//"? 
     first comment
     
@@ -50,11 +51,11 @@ class Test(unittest.TestCase):
     that one is fake "certainly//"?
     may and that one "nope" 
     multi fake "/*not me*/"
-    '''   
-    self.assertMultiLineEqual(expected, removeComments(t)) 
-    
-  def test_removeComments2(self):
-    t = '''\
+    '''
+        self.assertMultiLineEqual(expected, removeComments(t))
+
+    def test_removeComments2(self):
+        t = '''\
     module ctrl_v2_kiortest
     (
     // Global Inputs
@@ -72,7 +73,7 @@ class Test(unittest.TestCase):
     input  [1:0]  box_in, // Box input signals
     output  [1:0]  box_out,// Box multiplexers signals    
     '''
-    expected = '''\
+        expected = '''\
     module ctrl_v2_kiortest
     (
     
@@ -90,15 +91,15 @@ class Test(unittest.TestCase):
     input  [1:0]  box_in, 
     output  [1:0]  box_out,
     '''
-    self.assertMultiLineEqual(expected, removeComments(t))
-    
-  def test_removeComments3(self):
-    t = '''input rst_in, // \tAsynch reset; Active-low;'''
-    expected = '''input rst_in, '''
-    self.assertMultiLineEqual(expected, removeComments(t))
-    
-  def test_removeFunc(self):
-    t = '''
+        self.assertMultiLineEqual(expected, removeComments(t))
+
+    def test_removeComments3(self):
+        t = '''input rst_in, // \tAsynch reset; Active-low;'''
+        expected = '''input rst_in, '''
+        self.assertMultiLineEqual(expected, removeComments(t))
+
+    def test_removeFunc(self):
+        t = '''
     module simple_function();
     
     function  myfunction;
@@ -140,8 +141,8 @@ class Test(unittest.TestCase):
     endfunction
     endmodule
     '''
-    
-    expected = '''
+
+        expected = '''
     module simple_function();
     
        
@@ -154,12 +155,12 @@ class Test(unittest.TestCase):
        and_more
        endmodule
     '''
-    
-    self.assertMultiLineEqual(expected, removeFunc(t))
 
-    
-  def test_getInstances(self):
-    t = '''
+        self.assertMultiLineEqual(expected, removeFunc(t))
+
+
+    def test_getInstances(self):
+        t = '''
     module add1(
     input a,
     output b);
@@ -168,10 +169,10 @@ class Test(unittest.TestCase):
     inst2 nameInst(d,f);
     endmodule
     '''
-    expected = {'add1': ['inst1', 'inst2']}
-    self.assertDictEqual(expected, getInstances(t))
+        expected = {'add1': ['inst1', 'inst2']}
+        self.assertDictEqual(expected, getInstances(t))
 
-    t = '''module name();
+        t = '''module name();
     module2_1 inst2_1 (.in2_1a(in1_1[0]), .in2_1b(in1_1[1]), .out2_1(out2_1));
     module2_2 inst2_1 (
     .in2_1a(in1_1[0]),
@@ -180,11 +181,10 @@ class Test(unittest.TestCase):
      );
     endmodule
     '''
-    expected = {'name':['module2_1', 'module2_2']}
-    self.assertDictEqual(expected, getInstances(t))
+        expected = {'name': ['module2_1', 'module2_2']}
+        self.assertDictEqual(expected, getInstances(t))
 
-
-    t = '''
+        t = '''
     module add1(
     input a,
     output b);
@@ -207,59 +207,59 @@ class Test(unittest.TestCase):
     .i2(i2)); 
     endmodule
     '''
-    expected = {'add1': ['inst1', 'inst2', 'inst4', 'inst5', 'inst3', 'inst6']}
-    self.assertDictEqual(expected, getInstances(t))
+        expected = {'add1': ['inst1', 'inst2', 'inst4', 'inst5', 'inst3', 'inst6']}
+        self.assertDictEqual(expected, getInstances(t))
 
 
-  def test_parseFiles(self):
-      pathCur = os.getcwd().replace('\\', '/')+'/tmp_test_dir'
-      f2 = '''
+    def test_parseFiles(self):
+        pathCur = os.getcwd().replace('\\', '/') + '/tmp_test_dir'
+        f2 = '''
       module inst1 (input a, output b);
       endmodule
       '''
-      path_f2 = pathCur+'/f2'
-      f = open(path_f2, 'w')
-      f.write(f2)
-      f.close()
-      expectedParsed = {'inst1': [path_f2]}
-      
-      f3 = '''
+        path_f2 = pathCur + '/f2'
+        f = open(path_f2, 'w')
+        f.write(f2)
+        f.close()
+        expectedParsed = {'inst1': [path_f2]}
+
+        f3 = '''
       module inst2 (input a, output b);
       inst3 name1(a,b);
       inst4 name2(c,d);
       inst3 name3(e,f);
       endmodule
       '''
-      path_f3 = pathCur+'/f3'
-      f = open(path_f3, 'w')
-      f.write(f3)
-      f.close() 
-      expectedParsed.update({'inst2': [path_f3, 'inst3', 'inst4']})
-            
-      parsed = parseFiles([path_f2, 'fake_path', path_f3])
-      self.assertDictEqual(expectedParsed, parsed)
-      
-  def test_instTreeDep(self):
-    parsed = {'top':['path_top', 'inst1', 'inst2'],
-              'inst3': ['path_inst3', 'inst1'],
-              'inst1': ['path_inst1', 'inst11']
-              }
-    top = {'top':['path_top', 'inst1', 'inst2']}
-    
-    expectedDep = [{'top': ['path_top', 'inst1', 'inst2']},
-                   {'inst1': ['path_inst1', 'inst11']}
-                  ]
-    expectedUndef = {'inst11':'path_inst1',
-                     'inst2':'path_top'
-                    }
-    dep, undef = instTreeDep(iTop = top, iSrc = parsed)
-    self.assertListEqual(expectedDep, dep)
-    self.assertDictEqual(expectedUndef, undef)
-  
-  def test_analyze(self):
-      pathCur = os.getcwd().replace('\\', '/')+'/tmp_test_dir'
-  
-      f1 = '''
+        path_f3 = pathCur + '/f3'
+        f = open(path_f3, 'w')
+        f.write(f3)
+        f.close()
+        expectedParsed.update({'inst2': [path_f3, 'inst3', 'inst4']})
+
+        parsed = parseFiles([path_f2, 'fake_path', path_f3])
+        self.assertDictEqual(expectedParsed, parsed)
+
+    def test_instTreeDep(self):
+        parsed = {'top': ['path_top', 'inst1', 'inst2'],
+                  'inst3': ['path_inst3', 'inst1'],
+                  'inst1': ['path_inst1', 'inst11']
+        }
+        top = {'top': ['path_top', 'inst1', 'inst2']}
+
+        expectedDep = [{'top': ['path_top', 'inst1', 'inst2']},
+                       {'inst1': ['path_inst1', 'inst11']}
+        ]
+        expectedUndef = {'inst11': 'path_inst1',
+                         'inst2': 'path_top'
+        }
+        dep, undef = instTreeDep(iTop=top, iSrc=parsed)
+        self.assertListEqual(expectedDep, dep)
+        self.assertDictEqual(expectedUndef, undef)
+
+    def test_analyze(self):
+        pathCur = os.getcwd().replace('\\', '/') + '/tmp_test_dir'
+
+        f1 = '''
       module add1(input a,output b);
       inst1 name (d,f);
       endmodule
@@ -268,128 +268,127 @@ class Test(unittest.TestCase):
       inst2 name(d,f);
       endmodule
       '''
-      path_f1 = pathCur+'/f1'
-      f = open(path_f1, 'w')
-      f.write(f1)
-      f.close()
-      expectedParsed = {'add1': [path_f1, 'inst1'],
-                        'add2': [path_f1, 'inst2']
-                        }
-      
-      f2 = '''
+        path_f1 = pathCur + '/f1'
+        f = open(path_f1, 'w')
+        f.write(f1)
+        f.close()
+        expectedParsed = {'add1': [path_f1, 'inst1'],
+                          'add2': [path_f1, 'inst2']
+        }
+
+        f2 = '''
       module inst1 (input a, output b);
       endmodule
       '''
-      path_f2 = pathCur+'/f2'
-      f = open(path_f2, 'w')
-      f.write(f2)
-      f.close()
-      expectedParsed.update({'inst1': [path_f2]})
-                          
-      
-      f3 = '''
+        path_f2 = pathCur + '/f2'
+        f = open(path_f2, 'w')
+        f.write(f2)
+        f.close()
+        expectedParsed.update({'inst1': [path_f2]})
+
+        f3 = '''
       module inst2 (input a, output b);
       inst3 name1(a,b);
       inst4 name2(c,d);
       inst3 name3(e,f);
       endmodule
       '''
-      path_f3 = pathCur+'/f3'
-      f = open(path_f3, 'w')
-      f.write(f3)
-      f.close() 
-      expectedParsed.update({'inst2': [path_f3, 'inst3', 'inst4']})
-  
-      expectedUndef = {'inst3':path_f3, 'inst4':path_f3}
+        path_f3 = pathCur + '/f3'
+        f = open(path_f3, 'w')
+        f.write(f3)
+        f.close()
+        expectedParsed.update({'inst2': [path_f3, 'inst3', 'inst4']})
 
-      parsed = {}
-      undef = analyze(iPathFiles = [path_f1, path_f2, path_f3],
-                      ioParsed = parsed)
-      #
-      # test first call
-      #
-      self.assertDictEqual(expectedParsed, parsed)
-      self.assertDictEqual(expectedUndef, undef)
-      #
-      # test next call
-      #
-      f4 = '''
+        expectedUndef = {'inst3': path_f3, 'inst4': path_f3}
+
+        parsed = {}
+        undef = analyze(iPathFiles=[path_f1, path_f2, path_f3],
+            ioParsed=parsed)
+        #
+        # test first call
+        #
+        self.assertDictEqual(expectedParsed, parsed)
+        self.assertDictEqual(expectedUndef, undef)
+        #
+        # test next call
+        #
+        f4 = '''
       module inst4 (input a, output b);
       inst41 name2(c,d);
       endmodule
       '''
-      path_f4 = pathCur+'/f4'
-      f = open(path_f4, 'w')
-      f.write(f4)
-      f.close() 
-      expectedParsed.update({'inst4': [path_f4, 'inst41']})
+        path_f4 = pathCur + '/f4'
+        f = open(path_f4, 'w')
+        f.write(f4)
+        f.close()
+        expectedParsed.update({'inst4': [path_f4, 'inst41']})
 
-      undef = analyze(iPathFiles = [path_f4],
-                      ioParsed = parsed,
-                      iUndefInst = undef)
-      expectedUndef = {'inst3':path_f3, 'inst41':path_f4}
-      self.assertDictEqual(expectedParsed, parsed)
-      self.assertDictEqual(expectedUndef, undef)
-      #
-      # one more call
-      #
-      f5 = '''
+        undef = analyze(iPathFiles=[path_f4],
+            ioParsed=parsed,
+            iUndefInst=undef)
+        expectedUndef = {'inst3': path_f3, 'inst41': path_f4}
+        self.assertDictEqual(expectedParsed, parsed)
+        self.assertDictEqual(expectedUndef, undef)
+        #
+        # one more call
+        #
+        f5 = '''
       module inst41 (input a, output b);
       endmodule
       '''
-      path_f5 = pathCur+'/f5'
-      f = open(path_f5, 'w')
-      f.write(f5)
-      f.close() 
-      expectedParsed.update({'inst41': [path_f5]})
+        path_f5 = pathCur + '/f5'
+        f = open(path_f5, 'w')
+        f.write(f5)
+        f.close()
+        expectedParsed.update({'inst41': [path_f5]})
 
-      f6 = '''
+        f6 = '''
       module inst3 (input a, output b);
       inst33 name33(a,b);
       endmodule
       module inst33 (input a, output b);
       endmodule
       '''
-      path_f6 = pathCur+'/f6'
-      f = open(path_f6, 'w')
-      f.write(f6)
-      f.close() 
-      expectedParsed.update({'inst3': [path_f6, 'inst33'], 'inst33': [path_f6]})
+        path_f6 = pathCur + '/f6'
+        f = open(path_f6, 'w')
+        f.write(f6)
+        f.close()
+        expectedParsed.update({'inst3': [path_f6, 'inst33'], 'inst33': [path_f6]})
 
-      # should be ignored 
-      f7 = '''
+        # should be ignored
+        f7 = '''
       module inst666 (input a, output b);
       inst666_1 name666_1(a,b);
       endmodule
       '''
-      path_f7 = pathCur+'/f7'
-      f = open(path_f7, 'w')
-      f.write(f7)
-      f.close()
+        path_f7 = pathCur + '/f7'
+        f = open(path_f7, 'w')
+        f.write(f7)
+        f.close()
 
-      undef = analyze(iPathFiles = [path_f5, path_f6, path_f7],
-                      ioParsed = parsed,
-                      iUndefInst = undef)
-      expectedUndef = {}
-      self.assertDictEqual(expectedParsed, parsed)
-      self.assertDictEqual(expectedUndef, undef)
-      
-      
-  def test_parseFile(self):
-    t = ('module dsn1_m1 (input a, output b);'+
-        'dsn1_m2 inst0 (a, b);'+
-        'core1 inst1 (a, b);'+
-        'core2 inst2 (a, b);'+
-        'endmodule')
-    f = open('tmp_test_dir/dsn1.v', 'w')
-    f.write(t)
-    f.close()
-    expected = {'dsn1_m1': ['tmp_test_dir/dsn1.v', 'dsn1_m2', 'core1', 'core2']}
-    self.assertDictEqual(expected, parseFile('tmp_test_dir/dsn1.v'))
-    
-    
-  def test_parseFile2(self):
-    t = '''\
+        undef = analyze(iPathFiles=[path_f5, path_f6, path_f7],
+            ioParsed=parsed,
+            iUndefInst=undef)
+        expectedUndef = {}
+        self.assertDictEqual(expectedParsed, parsed)
+        self.assertDictEqual(expectedUndef, undef)
+
+
+    def test_parseFile(self):
+        t = ('module dsn1_m1 (input a, output b);' +
+             'dsn1_m2 inst0 (a, b);' +
+             'core1 inst1 (a, b);' +
+             'core2 inst2 (a, b);' +
+             'endmodule')
+        f = open('tmp_test_dir/dsn1.v', 'w')
+        f.write(t)
+        f.close()
+        expected = {'dsn1_m1': ['tmp_test_dir/dsn1.v', 'dsn1_m2', 'core1', 'core2']}
+        self.assertDictEqual(expected, parseFile('tmp_test_dir/dsn1.v'))
+
+
+    def test_parseFile2(self):
+        t = '''\
     module rs232_rx #(parameter pWORDw = 8,pBitCellCnt = 434,pModulID=0,parity=0)(
       input rst,         //async reset
       input clk,         //system clock
@@ -520,15 +519,15 @@ class Test(unittest.TestCase):
        end
     endmodule
     '''
-    f = open('tmp_test_dir/dsn1.v', 'w')
-    f.write(t)
-    f.close()
-    expected = {'rs232_rx': ['tmp_test_dir/dsn1.v']}
-    self.assertDictEqual(expected, parseFile('tmp_test_dir/dsn1.v'))
-    
-    
-  def test_prepoc(self):
-    content = '''\
+        f = open('tmp_test_dir/dsn1.v', 'w')
+        f.write(t)
+        f.close()
+        expected = {'rs232_rx': ['tmp_test_dir/dsn1.v']}
+        self.assertDictEqual(expected, parseFile('tmp_test_dir/dsn1.v'))
+
+
+    def test_prepoc(self):
+        content = '''\
     bla bla
     `define someStuff real_stuff
     here should be `someStuff replacement
@@ -542,7 +541,7 @@ class Test(unittest.TestCase):
     `endif
     end of story
     '''
-    expected = '''\
+        expected = '''\
     bla bla
     `define someStuff real_stuff
     here should be real_stuff replacement
@@ -550,35 +549,32 @@ class Test(unittest.TestCase):
     in elif
     end of story
     '''
-    self.assertMultiLineEqual(expected, ProcDirectives(content).getResult())
-  
-  def test_addIncludes(self):
-    content = ('''
+        self.assertMultiLineEqual(expected, ProcDirectives(content).getResult())
+
+    def test_addIncludes(self):
+        content = ('''
     dfd
     `include "file.incl"
     ''')
-   
-   
-   
-   
+
+
 class Test2(unittest.TestCase):
-  def setUp(self):
-    if os.path.exists('tmp_test_dir'):
-      shutil.rmtree('tmp_test_dir')      
-    if not os.path.exists('tmp_test_dir'):
-      os.mkdir('tmp_test_dir')
-    shutil.copytree('data/prj4test', 'tmp_test_dir/prj4test/')
-    os.chdir('tmp_test_dir/prj4test/script')
-  
-  def tearDown(self):
-    if os.path.exists('tmp_test_dir'):
-      shutil.rmtree('tmp_test_dir')   
-      
-  def test_1(self):
-    print ParseFile('../src/top1.v').getResult()
-   
-   
-    
+    def setUp(self):
+        if os.path.exists('tmp_test_dir'):
+            shutil.rmtree('tmp_test_dir')
+        if not os.path.exists('tmp_test_dir'):
+            os.mkdir('tmp_test_dir')
+        shutil.copytree('data/prj4test', 'tmp_test_dir/prj4test/')
+        os.chdir('tmp_test_dir/prj4test/script')
+
+    def tearDown(self):
+        if os.path.exists('tmp_test_dir'):
+            shutil.rmtree('tmp_test_dir')
+
+    def test_1(self):
+        print ParseFile('../src/top1.v').getResult()
+
+
 if __name__ == '__main__':
 #  unittest.main()
 #  logging.disable(logging.ERROR)
@@ -596,6 +592,6 @@ if __name__ == '__main__':
 #           'test_parseFile',
 #           'test_parseFile2'
 #           ]
-  tests = ['test_1',]
-  suite = unittest.TestSuite(map(Test2, tests))
-  unittest.TextTestRunner(verbosity=2).run(suite)
+    tests = ['test_1', ]
+    suite = unittest.TestSuite(map(Test2, tests))
+    unittest.TextTestRunner(verbosity=2).run(suite)

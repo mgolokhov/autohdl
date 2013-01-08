@@ -1,5 +1,5 @@
 # All comments will be deleted after first edit
-
+cfg_version: 3
 # DCS2
 technology: Spartan3e
 part: xc3s250e
@@ -18,34 +18,31 @@ speed_grade: -5
 
 # Path to constraint file, could be absolute path,
 # after first run will be converted to relative.
-ucf:
+ucf: ""
 # Top module name
-top:
+top: ""
 
 # Include path searching
-include_path:
+include_path: ""
 #- ../include1;../../include2
 
 # Dependency search path list
-dep:
+dep: ""
 # add list like that
 #- path/to/inst_file1
 #- 'path\to\inst_file2'
 #- path/to/inst_dir
 
-# Uploading on server.
-# Type True to enable.
-upload:
-core:
+core: ""
 webdavSrcPath: git/hdl
 webdavBuildPath: test/distout/rtl
 host: cs.scircus.ru
 
-ignore_undefined_instances:
+ignore_undefined_instances: ""
 # add list like that
 #- name_instance_1
 #- name_instance_2
-size:
+size: ""
 #256
 #512
 

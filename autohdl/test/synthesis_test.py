@@ -5,107 +5,107 @@ import unittest
 from autohdl import structure
 
 try:
-  sys.path.insert(0, '..')
-  from autohdl.synthesis import *
-  from autohdl.hdlLogger import *
+    sys.path.insert(0, '..')
+    from autohdl.synthesis import *
+    from autohdl.hdlLogger import *
 except ImportError:
-  from autohdl.synthesis import *
-  from autohdl.hdlLogger import *
+    from autohdl.synthesis import *
+    from autohdl.hdlLogger import *
 
 class Tests(unittest.TestCase):
-  if not os.path.exists('tmp_test_dir'):
-    os.mkdir('tmp_test_dir')
-  
-  def tearDown(self):
-    if os.path.exists('tmp_test_dir'):
-      shutil.rmtree('tmp_test_dir')
-        
-  def test_mergeSrc1(self):
-    src = ['d1/f1', 'd1/f2', 'd2/f1', 'd2/f2']
-    script = ['#lets party begin',
-              'add_file "d1/f2"',
-              '# add_file  "d2/f2"',
-              'add_file "d3/f1"',
-              '# comment'
-              ]
-    
-    expectedSrc = ['d1/f1', 'd2/f1']
-    expectedScript = [
-                      '#lets party begin',
-                      'add_file "d1/f2"',
-                      '# add_file  "d2/f2"',
-                      '# add_file "d3/f1" WAS DELETED',
-                      'add_file "d1/f1"',
-                      'add_file "d2/f1"',
-                      '# comment'
-                      ]
-    merge(src, script, 'TopModule')
-    self.assertListEqual(expectedSrc, src)
-    self.assertListEqual(expectedScript, script)
-  
-  def test_synchTopModule(self):
-    script = ['really no matter']
-    num = 0;
-    line = 'does not match'
-    self.assertEqual(None, synchTopModule(script, 'topModule', num, line))
-    expectedScript = ['really no matter']
-    self.assertListEqual(expectedScript, script)
+    if not os.path.exists('tmp_test_dir'):
+        os.mkdir('tmp_test_dir')
 
-    script = ['really no matter', 'should be replaced']
-    num = 1;
-    line = ' set_option  -top_module  "zaebis"'
-    self.assertTrue(synchTopModule(script, 'topModule', num, line))
-    expectedScript = ['really no matter', 'set_option -top_module "topModule"']
-    self.assertListEqual(expectedScript, script)
-      
-  def test_synchResultFile(self):
-    script = ['really no matter']
-    num = 0;
-    line = 'does not match'
-    self.assertFalse(synchResultFile(script, 'topModule', num, line))
-    expectedScript = ['really no matter']
-    self.assertListEqual(expectedScript, script)
+    def tearDown(self):
+        if os.path.exists('tmp_test_dir'):
+            shutil.rmtree('tmp_test_dir')
 
-    script = ['really no matter', 'should be replaced']
-    num = 1;
-    line = ' project  -result_file  "zaebis"'
-    self.assertEqual(True, synchResultFile(script, 'topModule', num, line))
-#    resultFile = '%s/%s' % (os.getcwd(), '../synthesis/topModule.edf')
-#    resultFile = os.path.abspath(resultFile).replace('\\','/')
-    resultFile = '../synthesis/topModule.edf'
-    expectedScript = ['really no matter', 'project -result_file "{0}"'.format(resultFile)]
-    self.assertListEqual(expectedScript, script)
+    def test_mergeSrc1(self):
+        src = ['d1/f1', 'd1/f2', 'd2/f1', 'd2/f2']
+        script = ['#lets party begin',
+                  'add_file "d1/f2"',
+                  '# add_file  "d2/f2"',
+                  'add_file "d3/f1"',
+                  '# comment'
+        ]
 
-  def test_synchSrcFile(self):
-    src = []
-    script = []
-    num = 0
-    line = 'no match'
-    self.assertFalse(synchSrcFile(src, script, num, line))
+        expectedSrc = ['d1/f1', 'd2/f1']
+        expectedScript = [
+            '#lets party begin',
+            'add_file "d1/f2"',
+            '# add_file  "d2/f2"',
+            '# add_file "d3/f1" WAS DELETED',
+            'add_file "d1/f1"',
+            'add_file "d2/f1"',
+            '# comment'
+        ]
+        merge(src, script, 'TopModule')
+        self.assertListEqual(expectedSrc, src)
+        self.assertListEqual(expectedScript, script)
 
-    src = ['no files']
-    script = ['no care', 'replace me']
-    num = 1
-    line = 'add_file "d1/f1"'
-    self.assertTrue(synchSrcFile(src, script, num, line))
-    expectedScript = ['no care', '# add_file "d1/f1" WAS DELETED']
-    self.assertListEqual(expectedScript, script)
+    def test_synchTopModule(self):
+        script = ['really no matter']
+        num = 0;
+        line = 'does not match'
+        self.assertEqual(None, synchTopModule(script, 'topModule', num, line))
+        expectedScript = ['really no matter']
+        self.assertListEqual(expectedScript, script)
 
-    src = ['d1/f1']
-    script = ['no care', 'same']
-    num = 1
-    line = 'add_file "d1/f1"'
-    self.assertTrue(synchSrcFile(src, script, num, line))
-    expectedScript =  ['no care', 'same']
-    self.assertListEqual(expectedScript, script)
-  
-  
-  @unittest.skip("BUGAGA: unfinished")
-  def test_genScript(self):
-    if not os.path.exists('tmp_test_dir/script'):
-      os.makedirs('tmp_test_dir/script')
-    os.chdir('tmp_test_dir/script')
-    content = '''\
+        script = ['really no matter', 'should be replaced']
+        num = 1;
+        line = ' set_option  -top_module  "zaebis"'
+        self.assertTrue(synchTopModule(script, 'topModule', num, line))
+        expectedScript = ['really no matter', 'set_option -top_module "topModule"']
+        self.assertListEqual(expectedScript, script)
+
+    def test_synchResultFile(self):
+        script = ['really no matter']
+        num = 0;
+        line = 'does not match'
+        self.assertFalse(synchResultFile(script, 'topModule', num, line))
+        expectedScript = ['really no matter']
+        self.assertListEqual(expectedScript, script)
+
+        script = ['really no matter', 'should be replaced']
+        num = 1;
+        line = ' project  -result_file  "zaebis"'
+        self.assertEqual(True, synchResultFile(script, 'topModule', num, line))
+        #    resultFile = '%s/%s' % (os.getcwd(), '../synthesis/topModule.edf')
+        #    resultFile = os.path.abspath(resultFile).replace('\\','/')
+        resultFile = '../synthesis/topModule.edf'
+        expectedScript = ['really no matter', 'project -result_file "{0}"'.format(resultFile)]
+        self.assertListEqual(expectedScript, script)
+
+    def test_synchSrcFile(self):
+        src = []
+        script = []
+        num = 0
+        line = 'no match'
+        self.assertFalse(synchSrcFile(src, script, num, line))
+
+        src = ['no files']
+        script = ['no care', 'replace me']
+        num = 1
+        line = 'add_file "d1/f1"'
+        self.assertTrue(synchSrcFile(src, script, num, line))
+        expectedScript = ['no care', '# add_file "d1/f1" WAS DELETED']
+        self.assertListEqual(expectedScript, script)
+
+        src = ['d1/f1']
+        script = ['no care', 'same']
+        num = 1
+        line = 'add_file "d1/f1"'
+        self.assertTrue(synchSrcFile(src, script, num, line))
+        expectedScript = ['no care', 'same']
+        self.assertListEqual(expectedScript, script)
+
+
+    @unittest.skip("BUGAGA: unfinished")
+    def test_genScript(self):
+        if not os.path.exists('tmp_test_dir/script'):
+            os.makedirs('tmp_test_dir/script')
+        os.chdir('tmp_test_dir/script')
+        content = '''\
 
   #device options
   set_option -technology SPARTAN3E
@@ -154,55 +154,55 @@ class Tests(unittest.TestCase):
   project -result_format "edif"
   project -result_file "../synthesis/mega_top.edf"    
     '''
-    
-    genScript(iTopModule = 'mega_top')
-    
-    f = open('synthesis.prj', 'r')
-    res = f.read()
-    f.close()
-    self.assertMultiLineEqual(content, res)
-    
-    os.chdir('../..')
-    
-    
-  def test_getSrcFromFileSys(self):
-    if not os.path.exists('tmp_test_dir/src'): os.makedirs('tmp_test_dir/src')
-    if not os.path.exists('tmp_test_dir/.svn'): os.makedirs('tmp_test_dir/.svn')
-    if not os.path.exists('tmp_test_dir/src/.svn'): os.makedirs('tmp_test_dir/src/.svn')
-    if not os.path.exists('tmp_test_dir/script'): os.makedirs('tmp_test_dir/script')
-    open('tmp_test_dir/src/should1.v', 'w').close()
-    open('tmp_test_dir/src/should1.vm', 'w').close()
-    open('tmp_test_dir/src/should1.vhdl', 'w').close()
-    open('tmp_test_dir/src/nope.txt', 'w').close()
-    open('tmp_test_dir/src/v', 'w').close()
-    open('tmp_test_dir/src/.svn/nope.v', 'w').close()
-    open('tmp_test_dir/.svn/nope.v', 'w').close()
-    open('tmp_test_dir/nope.v', 'w').close()
-    open('tmp_test_dir/src.v', 'w').close()
-    os.chdir('tmp_test_dir/script')
-    dsn = structure.Design(iPath = '..', iInit = False, iGen = False)
-    filesPath = os.path.abspath(os.getcwd()+'/../src').replace('\\','/')
-    expected = [filesPath+'/should1.v',
-                filesPath+'/should1.vm',
-                filesPath+'/should1.vhdl']
-    os.chdir('../..')
-    self.assertEqual(set(expected), set(getSrcFromFileSys(iDsn = dsn)))
+
+        genScript(iTopModule='mega_top')
+
+        f = open('synthesis.prj', 'r')
+        res = f.read()
+        f.close()
+        self.assertMultiLineEqual(content, res)
+
+        os.chdir('../..')
+
+
+    def test_getSrcFromFileSys(self):
+        if not os.path.exists('tmp_test_dir/src'): os.makedirs('tmp_test_dir/src')
+        if not os.path.exists('tmp_test_dir/.svn'): os.makedirs('tmp_test_dir/.svn')
+        if not os.path.exists('tmp_test_dir/src/.svn'): os.makedirs('tmp_test_dir/src/.svn')
+        if not os.path.exists('tmp_test_dir/script'): os.makedirs('tmp_test_dir/script')
+        open('tmp_test_dir/src/should1.v', 'w').close()
+        open('tmp_test_dir/src/should1.vm', 'w').close()
+        open('tmp_test_dir/src/should1.vhdl', 'w').close()
+        open('tmp_test_dir/src/nope.txt', 'w').close()
+        open('tmp_test_dir/src/v', 'w').close()
+        open('tmp_test_dir/src/.svn/nope.v', 'w').close()
+        open('tmp_test_dir/.svn/nope.v', 'w').close()
+        open('tmp_test_dir/nope.v', 'w').close()
+        open('tmp_test_dir/src.v', 'w').close()
+        os.chdir('tmp_test_dir/script')
+        dsn = structure.Design(iPath='..', iInit=False, iGen=False)
+        filesPath = os.path.abspath(os.getcwd() + '/../src').replace('\\', '/')
+        expected = [filesPath + '/should1.v',
+                    filesPath + '/should1.vm',
+                    filesPath + '/should1.vhdl']
+        os.chdir('../..')
+        self.assertEqual(set(expected), set(getSrcFromFileSys(iDsn=dsn)))
 
 
 def runTests():
-  consoleHandler.setLevel(logging.ERROR)
-  tests = [
-           'test_mergeSrc1', 
-           'test_synchTopModule',
-           'test_synchResultFile',
-           'test_synchSrcFile',
-           'test_genScript',
-           'test_getSrcFromFileSys'
-          ]
+    consoleHandler.setLevel(logging.ERROR)
+    tests = [
+        'test_mergeSrc1',
+        'test_synchTopModule',
+        'test_synchResultFile',
+        'test_synchSrcFile',
+        'test_genScript',
+        'test_getSrcFromFileSys'
+    ]
 
-  suite = unittest.TestSuite(map(Tests, tests))
-  unittest.TextTestRunner(verbosity=3).run(suite)  
+    suite = unittest.TestSuite(map(Tests, tests))
+    unittest.TextTestRunner(verbosity=3).run(suite)
 
 if __name__ == '__main__':
 #  unittest.main()
-  runTests()
+    runTests()

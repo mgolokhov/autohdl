@@ -20,13 +20,14 @@ use_setuptools()
 sys.path.append('autohdl')
 import pkg_info
 import procHandler
+import build
 
 procHandler.killAll()
-
+build.update_global()
 
 
 setup(name='AutoHDL',
-      version=pkg_info.getIncVersion(),
+      version=pkg_info.version(),
       description='Automatization Utilities for HDL projects',
       author='Maxim Golokhov',
       author_email='hexwer@gmail.com',
@@ -36,6 +37,6 @@ setup(name='AutoHDL',
       scripts=['autohdl/hdl.py',
                'autohdl/hdl.bat'],
       include_package_data=True,
-      install_requires=['tinydav', 'pyyaml', 'decorator', 'pyparsing'],
+      install_requires=['tinydav', 'pyyaml', 'decorator', 'pyparsing', 'requests'],
 )
 
