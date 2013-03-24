@@ -1,10 +1,9 @@
 import copy
-import sys
 import os
 import shutil
 import unittest
+import pprint
 
-sys.path.insert(0, '..')
 from autohdl.structure import *
 from autohdl.hdlLogger import *
 
@@ -180,6 +179,27 @@ class Tests(unittest.TestCase):
         }
         self.assertSetEqual(expected, set(res))
 
+    def test_setSrc(self):
+        self.dir_was = os.getcwd()
+        if os.path.exists('test_tmp'):
+            shutil.rmtree('test_tmp')
+        shutil.copytree('test_data_structure', 'test_tmp')
+        os.chdir('test_tmp/dsn1/script')
+        config = dict()
+        setSrc(config)
+        expected = {'structure': {'depSrc': [self.dir_was + '\\test_tmp\\dsn2\\src\\f2.v'],
+                                  'mainSrc': [self.dir_was + '\\test_tmp\\dsn1\\src\\f1.v'],
+                                  'netlists': {
+                                      self.dir_was + '\\test_tmp\\dsn1\\src\\f1.ngc',
+                                      self.dir_was + '\\test_tmp\\dsn2\\src\\f2.ngc'},
+                                  'parsed': {'f1': {'instances': {'f2'},
+                                                    'path': '..\\src\\f1.v'},
+                                             'f2': {'instances': set(),
+                                                    'path': '..\\..\\dsn2\\src\\f2.v'}}}}
+        self.assertEqual(config, expected)
+        pprint.pprint(config)
+        os.chdir(self.dir_was)
+
 
 def runTests():
     logging.disable(logging.ERROR)
@@ -191,6 +211,7 @@ def runTests():
 
     suite = unittest.TestSuite(map(Tests, tests))
     unittest.TextTestRunner(verbosity=3).run(suite)
+
 
 if __name__ == '__main__':
     unittest.main()

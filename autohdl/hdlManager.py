@@ -9,9 +9,9 @@ from autohdl.hdlGlobals import implementPath
 from autohdl import structure
 from autohdl import build
 from autohdl import git
-from autohdl import synthesis
+from autohdl import synplify
 from autohdl import aldec
-from autohdl import implement
+from autohdl import xilinx
 import webdav
 
 from autohdl.hdlLogger import log_call
@@ -20,10 +20,10 @@ alog = logging.getLogger(__name__)
 
 @log_call
 def validateTop(iTop, config):
-    parsed = config.get('parsed')
+    parsed = config.setdefault('structure', dict()).get('parsed')
     if not parsed:
         structure.setSrc(config)
-        parsed = config['parsed']
+        parsed = config['structure']['parsed']
 
     if iTop and parsed.get(iTop):
         return True
@@ -41,15 +41,10 @@ def getFullPathToUcf(iUcf):
         return False
     if os.path.exists(iUcf):
         return os.path.abspath(iUcf).replace('\\', '/')
-    if os.path.splitext(iUcf)[1] == '.ucf':
-        ucfFiles = glob.glob(iUcf)
-    #  pattern = iUcf if os.path.splitext(iUcf)[1] == '.ucf' else iUcf+'.ucf'
-    else:
-        ucfFiles = structure.search(directory='../src', onlyExt=['.ucf'])
-    if ucfFiles:
-        for i in ucfFiles:
-            if iUcf == os.path.splitext(os.path.basename(i))[0]:
-                return i.replace('\\', '/')
+    # <filename>.ucf or just <filename>
+    path = os.path.abspath('../src/{}.ucf'.format(os.path.splitext(iUcf)[0])).replace('\\', '/')
+    if os.path.exists(path):
+        return path
 
 
 @log_call
@@ -61,50 +56,67 @@ def setValidTop(arguments, config):
         topAsScriptName = ''
 
     if validateTop(arguments.top, config):
-        config['top'] = arguments.top
+        config['hdlManager']['top'] = arguments.top
         alog.info('Using top module name from arguments list')
     elif topAsScriptName and validateTop(topAsScriptName, config):
-        config['top'] = topAsScriptName
+        config['hdlManager']['top'] = topAsScriptName
         alog.info('Using top module name same as script name')
-    elif validateTop(config.get('top'), config):
+    elif validateTop(config['hdlManager'].get('top'), config):
         alog.info('Using top module name from merged configs (build.yaml and script)')
     else:
         top = build.load().get('top')
         if validateTop(top, config):
             alog.info('Using top module from build.yaml')
-            config['top'] = top
+            config['hdlManager']['top'] = top
         else:
+            config['hdlManager']['top'] = ''
             alog.error('Top module name undefined!')
 
 
 @log_call
 def setValidUcf(config):
-    ucfFromScript = getFullPathToUcf(config['ucf'])
-    if ucfFromScript:
-        config['ucf'] = ucfFromScript
-        alog.info('Using ucf file from script')
-        return
-
-    top = config.get('top')
+    top = config['hdlManager'].get('top')
+    print '2 ', top
     if top:
         ucfNameAsTop = getFullPathToUcf(top)
         if ucfNameAsTop:
-            config['ucf'] = ucfNameAsTop
+            config['hdlManager']['ucf'] = ucfNameAsTop
             alog.info('Using ucf name same as top module')
             return
 
+    ucfFromScript = getFullPathToUcf(config['hdlManager']['ucf'])
+    print '1 ', ucfFromScript
+    if ucfFromScript:
+        config['hdlManager']['ucf'] = ucfFromScript
+        alog.info('Using ucf file from script')
+        return
+
     ucfFromBuild = getFullPathToUcf(build.load().get('ucf'))
+    print '3 ', ucfFromBuild
     if ucfFromBuild:
-        config['ucf'] = ucfFromBuild
+        config['hdlManager']['ucf'] = ucfFromBuild
         alog.info('Using ucf file from build.yaml')
         return
+
+    # if only one ucf file
+    res = glob.glob('../src/*.ucf')
+    print '4 ', res
+    if len(res) == 1:
+        config['hdlManager']['ucf'] = getFullPathToUcf(res[0])
+        alog.info('Found only one ucf file, using it')
+        return
+    elif len(res) == 0:
+        alog.info('Cant find ucf file')
+    else:
+        alog.info('Found many ucf files, cant define which one to use')
 
     alog.warning('Ucf file undefined')
 
 
 @log_call
 def validateLocation():
-    try: # for Active-hdl compatibility
+    # for Active-hdl compatibility, possibility to run in project navigator
+    try:
         if not {'script', 'src'}.issubset(os.listdir(os.getcwd() + '/..')):
             mayBe = os.path.dirname(sys.modules['__main__'].__file__)
             if {'script', 'src'}.issubset(os.listdir(mayBe + '/..')):
@@ -124,7 +136,7 @@ def validateLocation():
 @log_call
 def mergeConfig(configScript, configBuild):
     """
-    Rewrites all params in configBuild by configScript, except 'dep' (it extends);
+    Rewrites all params in configBuild by configScript, except 'dep' (it's extended);
     """
     depInScript = configScript.pop('dep', []) or []
     configBuild.update(configScript)
@@ -145,15 +157,25 @@ def printInfo(config):
                'ucf        : {ucf}\n'
                'PROM size  : {size} kilobytes\n'
                + '#' * 40 +
-               '').format(technology=config.get('technology'),
-        part=config.get('part'),
-        package=config.get('package'),
-        top=config.get('top'),
-        ucf=config.get('ucf'),
-        size=config.get('size'),
-        upload=config.get('upload')))
+               '').format(technology=config['hdlManager'].get('technology'),
+                          part=config['hdlManager'].get('part'),
+                          package=config['hdlManager'].get('package'),
+                          top=config['hdlManager'].get('top'),
+                          ucf=config['hdlManager'].get('ucf'),
+                          size=config['hdlManager'].get('size'),
+                          upload=config['hdlManager'].get('upload')))
 
 
+# priority in searching top module name:
+#   1 name set by command line (-top <top_name>)
+#   2 name of python script (top_name.py)
+#   3 name set in python script (top="<top_name>")
+#   4 name in build.yaml (top:<top_name>)
+# priority in searching ucf file:
+#   1 same name as top module
+#   2 name in python script <ucf_filename>[.ucf]
+#   3 path in build.yaml (absolute or relative path)
+#   4 any single ucf file in "src" folder
 @log_call
 def kungfu(**configScript):
     alog.info('Processing...')
@@ -165,49 +187,64 @@ def kungfu(**configScript):
     build.compare_global(configScript)
     build.compare_global(configBuild)
     build.dump(configBuild)
-    config = mergeConfig(configScript, configBuild)
+    config = dict()
+    config['hdlManager'] = mergeConfig(configScript, configBuild)
 
     parser = argparse.ArgumentParser(description='HDL Manager')
-    parser.add_argument('-tb', action='store_true', help='export project to active-hdl')
-    parser.add_argument('-top', help='top module name')
-    parser.add_argument('-syn', nargs='?', const='batch', help='synthesis step')
-    parser.add_argument('-impl', action='store_true', help='implementation step')
+    parser.add_argument('-tb', nargs='?', const='aldec',
+                        choices=['aldec', 'verilator_not_yet'],
+                        help='export project to active-hdl [default=aldec]')
+    parser.add_argument('-top', help='set/redefine top module name [has highest priority]')
+    parser.add_argument('-synplify', nargs='?', const='batch',
+                        choices=['batch', 'gui'],
+                        help='synthesis step [default=batch]')
+    parser.add_argument('-xilinx', nargs='?', const='batch',
+                        choices=['batch', 'gui', 'gui-clean'],
+                        help='implementation step [default=batch]')
     parser.add_argument('-mcs', nargs='?', const='config', help='generate .mcs from .bit file')
     parser.add_argument('-upload', action='store_true', help='upload firmware to WebDav server')
     parser.add_argument('-git_mes', help='git message')
-    parser.add_argument('-d', action='store_true', help='debug flag')
+    parser.add_argument('-debug', nargs='?', const='normal',
+                        choices=['normal', 'hardcore_test'],
+                        help='debug mode')
     arguments = parser.parse_args()
 
     setValidTop(arguments, config)
     setValidUcf(config)
-    config['dsnName'] = os.path.basename(os.path.dirname(os.getcwd()))
-    config['mode'] = 'synplify_gui' if arguments.syn == 'gui' else 'synplify_batch'
-    if arguments.mcs and arguments.mcs != 'config': config['size'] = arguments.mcs
+    config['hdlManager']['dsn_root'] = os.path.dirname(os.getcwd())
+    config['hdlManager']['dsn_name'] = os.path.basename(config['hdlManager']['dsn_root'])
 
-    if arguments.d:
-        pprint.pprint(config)
-        config['debug'] = True
+    if arguments.mcs and arguments.mcs != 'config':
+        # redefine default value from configure files (kungfu.py, build.yaml)
+        config['hdlManager']['size'] = arguments.mcs
+
+    config['hdlManager']['cl'] = vars(arguments)
+
+    if arguments.debug:
+        alog.info('\n' + pprint.pformat(config))
+        config['hdlManager']['debug'] = True
+        return config
 
     printInfo(config)
 
     if arguments.tb:
         aldec.export(config)
         return
-    elif arguments.syn:
-        synthesis.run(config)
-    elif arguments.impl:
-        implement.run(config)
+    elif arguments.synplify:
+        synplify.run(config)
+    elif arguments.xilinx:
+        xilinx.run_project(config)
     elif arguments.mcs:
-        implement.bit2mcs(config)
+        xilinx.bit2mcs(config)
         return
     elif arguments.upload:
         pass
-    elif not config.get('debug'):
-        synthesis.run(config)
-        implement.run(config)
+    elif not config['hdlManager'].get('debug'):
+        synplify.run(config)
+        xilinx.run(config)
 
     if arguments.upload:
-        config['git_mes'] = arguments.git_mes
+        config['hdlManager']['git_mes'] = arguments.git_mes
         git.push_firmware(config)
         webdav.upload_fw(config=config)
 #        pprint.pprint(config)
@@ -215,4 +252,3 @@ def kungfu(**configScript):
 
 if __name__ == '__main__':
     print 'test'
-  

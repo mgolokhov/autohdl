@@ -1,0 +1,9 @@
+file_path: ..\src\f1.v
+includes:
+  paths: []
+parsed:
+  f1:
+    instances: !!set {f2: null}
+    path: ..\src\f1.v
+sha: 10047d9ce28edaa9a74a40994bea92aa1ca9be6e
+version: 2.7.717

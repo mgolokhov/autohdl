@@ -4,11 +4,8 @@ import shutil
 import unittest
 
 
-sys.path.insert(0, '..')
-sys.path.insert(0, '.')
 from autohdl.instance import *
-
-from autohdl.hdlLogger import  logging
+from autohdl.hdlLogger import logging
 
 log = logging.getLogger(__name__)
 

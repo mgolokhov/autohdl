@@ -1,0 +1,1 @@
+#TODO: create virtual env for tests' deployment

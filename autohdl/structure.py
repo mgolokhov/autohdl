@@ -11,6 +11,7 @@ from autohdl.hdlLogger import log_call, logging
 
 log = logging.getLogger(__name__)
 
+
 def generate(path=''):
     """
     Could be
@@ -28,13 +29,13 @@ def generate(path=''):
             os.mkdir(path)
 
     pathData = os.path.join(os.path.dirname(__file__), 'data')
-    autohdl_cfg = os.path.join(os.path.expanduser('~'),'autohdl')
+    autohdl_cfg = os.path.join(os.path.expanduser('~'), 'autohdl')
     Copy = namedtuple('Copy', ['src', 'dst'])
     listToCopy = (
         Copy(os.path.join(autohdl_cfg, 'build.yaml'), os.path.join(root, 'resource', 'build.yaml')),
         Copy(os.path.join(pathData, 'run_avhdl.bat'), os.path.join(root, 'script', 'run_avhdl.bat')),
         Copy(os.path.join(pathData, 'kungfu.py'), os.path.join(root, 'script', 'kungfu.py'))
-        )
+    )
     for i in listToCopy:
         if not os.path.exists(i.dst):
             shutil.copy(i.src, i.dst)
@@ -51,19 +52,19 @@ def tree(directory, padding=' ', _res=[], ignore=[]):
     padding += ' '
     files = os.listdir(directory)
     count = 0
-    for file in files:
-        if file in ignore:
+    for f in files:
+        if f in ignore:
             continue
         count += 1
         _res.append(padding + '|')
-        path = directory + os.path.sep + file
+        path = directory + os.path.sep + f
         if os.path.isdir(path):
             if count == len(files):
                 tree(directory=path, padding=padding + ' ')
             else:
                 tree(directory=path, padding=padding + '|')
         else:
-            _res.append(padding + '+-' + file)
+            _res.append(padding + '+-' + f)
     return '\n'.join(_res)
 
 
@@ -119,27 +120,40 @@ def search(directory='.',
                 resFiles.append(os.path.join(root, f))
     return resFiles
 
+
 ########################################################################
 @log_call
 def setMainSrc(config):
-    config['mainSrc'] = search('../src',
-        onlyExt=hdlGlobals.hdlFileExt,
-        ignoreDir=hdlGlobals.ignoreRepoDir)
-    config['mainSrcParsed'] = instance.get_instances(config['mainSrc'])
+    config.setdefault('structure', dict())
+    config['structure']['mainSrc'] = search('../src',
+                                            onlyExt=hdlGlobals.hdlFileExt,
+                                            ignoreDir=hdlGlobals.ignoreRepoDir)
+    config['structure']['mainSrcParsed'] = instance.get_instances(config['structure']['mainSrc'])
+
+
+def setNetlists(config):
+    config['structure']['netlists'] = set()
+    for i in config['structure']['mainSrc'] + config['structure']['depSrc']:
+        as_netlist = os.path.splitext(i)[0] + '.ngc'
+        if os.path.exists(as_netlist):
+            config['structure']['netlists'].add(as_netlist)
 
 
 def setSrc(config):
+    config.setdefault('structure', dict())
     log.info('Analyzing dependences...')
     progressBar.run()
     setMainSrc(config)
     setDepSrc(config)
+    setNetlists(config)
     progressBar.stop()
 
 
 @log_call
 def setDepSrc(config):
-    parsed = config['mainSrcParsed']
-    del config['mainSrcParsed']
+    config.setdefault('structure', dict())
+    parsed = config['structure']['mainSrcParsed']
+    del config['structure']['mainSrcParsed']
     while True:
         new = instance.analyze(parsed, config)
         if new:
@@ -147,9 +161,9 @@ def setDepSrc(config):
         else:
             break
 
-    config['parsed'] = parsed
+    config['structure']['parsed'] = parsed
     allSrcFiles = {os.path.abspath(val['path']) for val in parsed.values()}
-    config['depSrc'] = list(allSrcFiles - set(config['mainSrc']))
+    config['structure']['depSrc'] = list(allSrcFiles - set(config['structure']['mainSrc']))
 
 
 if __name__ == '__main__':

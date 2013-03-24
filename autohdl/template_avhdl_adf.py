@@ -1,12 +1,8 @@
 import os
-from autohdl.hdlGlobals import aldecPath
 
-# every func should return a string
-import pprint
 
 
 def synth_tool(iPrj):
-#  return 'MV_SYNPLIFY_PREMIER_D2010_03'
     return 'MV_SYNPLIFY_PREMIER_C2009_06'
 
 
@@ -45,7 +41,6 @@ def ucf(iPrj):
 
 def include_path(iPrj):
     incl_path = iPrj.get('include_path')
-    print incl_path
     if not incl_path:
         return ''
     elif type(incl_path) is str:
@@ -57,34 +52,20 @@ def include_path(iPrj):
 
 def files(iPrj):
     dep = []
-    if iPrj.get('depSrc'):
-        iPrj['depSrc'].sort(key=str.lower)
-        dep = ['dep/' + i + '=-1' for i in iPrj['depSrc']]
+    if iPrj.get('structure').get('depSrc'):
+        iPrj['structure']['depSrc'].sort(key=str.lower)
+        dep = ['dep/' + i + '=-1' for i in iPrj['structure']['depSrc']]
 
-    rootPath = iPrj['repoPath'] + '/'
-    l = []
-    # relative path to
-    # repo_root/prj/.hdl/aldec/src + virtual_folders
-    for i in iPrj['repoSrc']:
-        virtFolder = os.path.dirname(i).replace('\\', '/').split(rootPath)[1]
-        virtFolder = virtFolder.replace('/', '\\').rstrip('/src')
-        ass = len(virtFolder.split('\\')) # counts virtual folders
-        l.append('repo\\' + virtFolder + '/..' * ass + '/../../../script/' + os.path.relpath(i) + '=-1')
-    repo = l
-
-    #  TestBenchUtils = []
-    #  if iPrj.get('TestBenchUtils'):
-    #    pprint.pprint(iPrj['TestBenchUtils'])
-    #    print 'root: ', os.path.dirname(rootPath)
-    #    for i in iPrj['TestBenchUtils']:
-    #      virtFolder = os.path.dirname(i).split(os.path.dirname(rootPath)+'/')[1]
-    #      virtFolder = virtFolder.replace('/', '\\')+'/'
-    #      ass = len(virtFolder.split('\\'))
-    #      print virtFolder
-    #      print i
-    #      print virtFolder + '/../'*ass + os.path.relpath(i, start=aldecPath+'/src') + '=-1'
-    #      TestBenchUtils.append(virtFolder + '..\\'*ass + os.path.relpath(i, start=aldecPath+'/src') + '=-1')
-
+    repo = []
+    if iPrj['aldec']['repoPath']:
+        rootPath = iPrj['aldec']['repoPath'] + '/'
+        # relative path to
+        # repo_root/prj/autohdl/aldec/src + virtual_folders
+        for i in iPrj['aldec']['repoSrc']:
+            virtFolder = os.path.dirname(i).replace('\\', '/').split(rootPath)[1]
+            virtFolder = virtFolder.replace('/', '\\').rstrip('/src')
+            ass = len(virtFolder.split('\\')) # counts virtual folders
+            repo.append('repo\\' + virtFolder + '/..' * ass + '/../../../script/' + os.path.relpath(i) + '=-1')
 
     netlist = []
     #  if iPrj.get('netlistSrc'):
@@ -92,18 +73,22 @@ def files(iPrj):
     #    netlist = ['/'+ i + '=-1' for i in iPrj['netlistSrc']]
 
     uncopied = []
-    if iPrj.get('srcUncopied'):
-        iPrj['srcUncopied'].sort()
-        uncopied = ['/' + i + '=-1' for i in iPrj['srcUncopied']]
+    if iPrj['aldec'].get('srcUncopied'):
+        iPrj['aldec']['srcUncopied'].sort()
+        uncopied = ['/' + i + '=-1' for i in iPrj['aldec']['srcUncopied']]
 
-    allOtherSrc = list(set(iPrj['allSrc']) - set(iPrj['depSrc']))
+    allOtherSrc = list(set(iPrj['aldec']['allSrc']) - set(iPrj['structure']['depSrc']))
     if allOtherSrc:
         allOtherSrc.sort(key=str.lower)
-    rootPath = iPrj['rootPath'] + '/'
+    rootPath = iPrj['aldec']['rootPath'] + '/'
     l = []
     for i in allOtherSrc:
-        virtFolder = os.path.dirname(i).replace('\\', '/').split(rootPath)[1]
-        virtFolder = virtFolder.replace('/', '\\')
+        print i, rootPath
+        virt = os.path.dirname(i).replace('\\', '/').split(rootPath)
+        if len(virt) == 2:
+            virtFolder = virt[1].replace('/', '\\')
+        else:
+            virtFolder = ''
         l.append(virtFolder + '/' + i + '=-1')
     allOtherSrc = l
     files = '\n'.join(dep + netlist + allOtherSrc + uncopied + repo)
@@ -112,7 +97,7 @@ def files(iPrj):
 
 def files_data(iPrj):
     srcTb = ['.\\' + os.path.relpath(i) + '=Verilog Test Bench'
-             for i in iPrj['TestBenchSrc']
+             for i in iPrj['aldec']['TestBenchSrc']
              if os.path.splitext(i)[1] in ['.v']]
     filesData = '\n'.join(srcTb)
     return filesData

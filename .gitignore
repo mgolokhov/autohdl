@@ -5,4 +5,5 @@ build/*
 dist/*
 autohdl/test/verilog/in/tmp/*
 autohdl/drafts/*
+autohdl/test/test_tmp/*
 distribute*

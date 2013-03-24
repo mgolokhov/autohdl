@@ -1,0 +1,15 @@
+cfg_version: 3
+core: ''
+dep: ''
+host: cs.scircus.ru
+ignore_undefined_instances: null
+include_path: ''
+package: tq144
+part: xc3s250e
+size: ''
+speed_grade: -5
+technology: Spartan3e
+top: ''
+ucf: ''
+webdavBuildPath: test/distout/rtl
+webdavSrcPath: git/hdl
