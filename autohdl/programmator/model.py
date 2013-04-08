@@ -53,7 +53,7 @@ class Data():
         else:
             self.log_action('Authenticated as "{}" OK'.format(u))
         current_repo_name = os.path.basename(urlparse(self.current_repo).path)
-        for i in res.json:
+        for i in res.json():
             if current_repo_name == i['name']:
                 self.log_action('Permissions to read "{}" OK'.format(current_repo_name))
                 if self.save_password:

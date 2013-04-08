@@ -8,6 +8,7 @@ from autohdl import toolchain
 from autohdl.hdlGlobals import implementPath
 from autohdl.hdlLogger import log_call, logging
 from autohdl import git
+from time import strftime
 
 
 log = logging.getLogger(__name__)
@@ -18,7 +19,11 @@ def bit2mcs(config):
     try:
         if config['hdlManager']['size']:
             proc = '{tool} -u 0 {top} -s {size} -w'.format(tool=toolchain.Tool().get('ise_promgen'),
-                                                           top=config['hdlManager']['top'] + '.bit',
+                                                           top=os.path.join(config['hdlManager']['dsn_root'],
+                                                                            'autohdl',
+                                                                            'implement',
+                                                                            config['hdlManager']['top'],
+                                                                            config['hdlManager']['top'] + '.bit'),
                                                            size=config['hdlManager']['size'])
             subprocess.check_call(proc)
         else:
@@ -45,17 +50,23 @@ def clean(apath):
 
 # TODO: that code should be in other place (git)
 def copy_firmware(config):
+    print "F"*100
     firmware_ext = ['.bit', '.mcs']
-    dest_dir = os.path.join('..', 'resource')
+    dest_dir = os.path.join(config['hdlManager']['dsn_root'], 'resource')
     for i in os.listdir(dest_dir):
         if os.path.splitext(i)[1] in firmware_ext:
-            print 'removing ', os.path.join(dest_dir, i)
+            log.info('removing ' + os.path.join(dest_dir, i))
             os.remove(os.path.join(dest_dir, i))
 
     for i in firmware_ext:
-        src_abs_path = os.path.join(implementPath, config['hdlManager'].get('top') + i)
+        src_abs_path = os.path.join(config['hdlManager']['dsn_root'],
+                                    'autohdl/implement',
+                                    config['hdlManager'].get('top'),
+                                    config['hdlManager'].get('top') + i)
+        print src_abs_path
         if os.path.exists(src_abs_path):
             # get latest version for this top git.get_last_build_num(top)
+            ver = strftime('%y%m%d_%H%M%S', time.localtime())
             dest = '{dsn}_{top}_build_{ver}{ext}'.format(
                 dsn=os.path.basename(os.path.abspath('..')),
                 top=config['hdlManager'].get('top'),
@@ -63,7 +74,7 @@ def copy_firmware(config):
                 ext=i
             )
             dest_abs_path = os.path.join(dest_dir, dest)
-            print 'copying', dest_abs_path
+            log.info('copying ' + dest_abs_path)
             shutil.copy(src_abs_path, dest_abs_path)
 
 
@@ -168,6 +179,7 @@ def run_project(config):
         mk_project_script(config)
 
     run_shit(config)
+    # copy_firmware(config)
 
 
 def form_project_src(config):

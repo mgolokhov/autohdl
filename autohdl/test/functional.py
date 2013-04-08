@@ -77,4 +77,4 @@ def cloneGoldRepo():
 
 
 if __name__ == '__main__':
-    cloneGoldRepo()
+    run()

@@ -1,18 +1,15 @@
 import argparse
 import os
-import pprint
 import re
-import shutil
 import subprocess
 import urlparse
+import sys
 
 from pyparsing import makeHTMLTags, SkipTo
-import sys
 
 from autohdl import toolchain
 import webdav
 from autohdl.hdlLogger import logging
-from autohdl.hdlGlobals import implementPath
 import autohdl.doc as doc
 from autohdl.hdlGlobals import autohdlRoot
 
@@ -48,8 +45,8 @@ def upload(path='.', addr='http://cs.scircus.ru/git/hdl'):
         #_netrc
         res = urlparse.urlparse(addr)
         webdav.upload(src=path + '/.git',
-            dst='{0}/{1}.git'.format(res.path, name),
-            host=res.hostname)
+                      dst='{0}/{1}.git'.format(res.path, name),
+                      host=res.hostname)
         subprocess.call('{0} remote add webdav {1}/{2}.git'.format(gitPath, addr, name))
 
 
@@ -73,7 +70,7 @@ def pull(config):
 def getRepos(client, path):
     logging.info('Scanning repos')
     response = client.propfind('/{}/'.format(path),
-        depth=1)
+                               depth=1)
     anchorStart, anchorEnd = makeHTMLTags('D:href')
     anchor = anchorStart + SkipTo(anchorEnd).setResultsName('body') + anchorEnd
     return [tokens.body for tokens in anchor.searchString(response.content) if '.git' in tokens.body]
@@ -82,24 +79,24 @@ def getRepos(client, path):
 def clone(config):
     gitPath = toolchain.Tool().get('git_batch')
     if gitPath:
-        client = webdav.connect(config['host'])
-        repos = getRepos(client, config['webdavSrcPath'])
+        client = webdav.connect(config['hdlManager']['host'])
+        repos = getRepos(client, config['hdlManager']['webdavSrcPath'])
         for repo in repos:
-            subprocess.call('{} clone http://{}/{} -o webdav'.format(gitPath, config['host'], repo))
+            subprocess.call('{} clone http://{}/{} -o webdav'.format(gitPath, config['hdlManager']['host'], repo))
 
-        repos = getRepos(client, config['webdavSrcPath'] + '/cores/')
+        repos = getRepos(client, config['hdlManager']['webdavSrcPath'] + '/cores/')
         if not os.path.exists('cores'):
             os.mkdir('cores')
         os.chdir('cores')
         for repo in repos:
-            subprocess.call('{} clone http://{}/{} -o webdav'.format(gitPath, config['host'], repo))
+            subprocess.call('{} clone http://{}/{} -o webdav'.format(gitPath, config['hdlManager']['host'], repo))
         os.chdir('..')
 
 
 def get_last_build_num(top):
     p = subprocess.Popen('git log -1 --grep="{top}_build_" --all'.format(top=top),
-        stderr=subprocess.PIPE,
-        stdout=subprocess.PIPE)
+                         stderr=subprocess.PIPE,
+                         stdout=subprocess.PIPE)
     out, err = p.communicate()
     res = re.search(r'\w*_build_(\d+):', out + err)
     num = int(res.group(1)) if res else 0
@@ -119,14 +116,14 @@ def synchWithBuild(config):
 #  backupFirmware(config)
     gitPath = toolchain.Tool().get('git_batch')
     res = subprocess.Popen('{} status'.format(gitPath),
-        stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT)
+                           stdout=subprocess.PIPE,
+                           stderr=subprocess.STDOUT)
     if 'working directory clean' in res.stdout.read():
         return
     updateGitignore()
     res = subprocess.Popen('{} branch'.format(gitPath),
-        stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT)
+                           stdout=subprocess.PIPE,
+                           stderr=subprocess.STDOUT)
 
     if ' develop\n' in res.stdout.read():
         subprocess.call('{} checkout develop'.format(gitPath))
@@ -139,25 +136,24 @@ def synchWithBuild(config):
 
 def _popen(prog, shell=True):
     p = subprocess.Popen(prog,
-        shell=shell,
-        stderr=subprocess.PIPE,
-        stdout=subprocess.PIPE
+                         shell=shell,
+                         stderr=subprocess.PIPE,
+                         stdout=subprocess.PIPE
     )
     out, err = p.communicate()
     return p, out, err
 
 
 def valid_firmware(config):
-    ver = get_last_build_num(config['top'])
-    folder = os.path.abspath(os.path.join('..', 'resource'))
+    ver = get_last_build_num(config['hdlManager']['top'])
+    folder = os.path.abspath(os.path.join(config['hdlManager']['dsn_root'],
+                                          'resource'))
     for fw in os.listdir(folder):
         name, e = os.path.splitext(fw)
         for valid_ext in ['.bit', '.mcs']:
-            if (config['top'] in name
-                and valid_ext == e
-                and ver < int(name.split('_build_')[1])):
+            if config['hdlManager']['top'] in name and valid_ext == e and ver < int(name.split('_build_')[1]):
                 config['firmware_{ext}'.format(ext=valid_ext[1:])] = os.path.join(folder, fw)
-    if config.get('firmware_git') or config.get('firmware_mcs'):
+    if config.get('firmware_bit') or config.get('firmware_mcs'):
         return True
     else:
         print 'Old version of firmware, nothing to upload'
@@ -176,27 +172,26 @@ def push_firmware(config):
         p, out, err = _popen('git status -s')
         print out + err
         mes = config.get('git_mes') or raw_input('add comment :\n')
-        mes = '{comment}; \\\n'\
-              'technology: {technology}; part: {part}; package: {package}; '\
-              'PROM size: {size} kilobytes; spi: {spi}'.format(comment=mes,
-            technology=config.get('technology'),
-            part=config.get('part'),
-            package=config.get('package'),
-            size=config.get('size'),
-            spi=config.get('spi'),
+        mes = '{comment}; \n' \
+              'technology: {technology}; part: {part}; package: {package}; ' \
+              'PROM size: {size} kilobytes; '.format(comment=mes,
+                                                               technology=config['hdlManager'].get('technology'),
+                                                               part=config['hdlManager'].get('part'),
+                                                               package=config['hdlManager'].get('package'),
+                                                               size=config['hdlManager'].get('size'),
         )
-        config['git_mes'] = mes
+        config['hdlManager']['git_mes'] = mes
         print 'ass ' * 10
         print mes
         p, out, err = _popen('git add -A')
         print out + err
         mes = mes.decode(sys.stdin.encoding).encode('cp1251')
         dsn = os.path.basename(os.getcwd())
-        top = config.get('top')
+        top = config['hdlManager']['top']
         ver = get_last_build_num(top) + 1
         config['firmware_name'] = '{dsn}_{top}_build_{ver}'.format(dsn=dsn, top=top, ver=ver)
         p, out, err = _popen('git commit -m"{firmware_name}: {mes}"'.format(firmware_name=config['firmware_name'],
-            mes=mes))
+                                                                            mes=mes))
         print out + err
         p, out, err = _popen('git push --all', shell=False)
         print out + err
@@ -219,8 +214,8 @@ def getGitRoot(path):
 def commands():
     parser = argparse.ArgumentParser(add_help=False)
     parser.add_argument('-git',
-        choices=['upload', 'cmd', 'pull', 'clone', 'doc'],
-        help='creation/synchronization with webdav repo'
+                        choices=['upload', 'cmd', 'pull', 'clone', 'doc'],
+                        help='creation/synchronization with webdav repo'
     )
     return parser
 
@@ -240,11 +235,11 @@ def handle(config):
             pathWas = os.getcwd()
             os.chdir(getGitRoot(pathWas))
             subprocess.call('{} --login -i'.format(gitPath))
-        #      os.chdir(pathWas)
+            #      os.chdir(pathWas)
     # pull & clone don't depend on root path
     elif config['git'] == 'pull':
         pull(config)
-    elif  config['git'] == 'clone':
+    elif config['git'] == 'clone':
         clone(config)
     elif config['git'] == 'doc':
         doc.handler('git')

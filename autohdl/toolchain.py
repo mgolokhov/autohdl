@@ -12,6 +12,7 @@ import yaml as yaml
 from yaml.error import YAMLError
 import autohdl.progressBar as progressBar
 
+
 class Tool(object):
     @log_call
     def __init__(self):
@@ -29,15 +30,15 @@ class Tool(object):
                                   'batch': 'synplify_premier.exe',
                                   'path': ['/Synopsys/', '/Synplicity/']},
                      # tested on version Git-1.7.4-preview20110204
-                     'git': {'batch': 'git.cmd',
+                     'git': {'batch': 'git.exe',
                              'sh': 'sh.exe',
                              'path': ['/Git/']}
-        }
+                     }
         self.pathCfg = sys.prefix + '/Lib/site-packages/autohdl_cfg/toolchain.yaml'
         if not os.path.exists(self.pathCfg):
-            dir = os.path.dirname(self.pathCfg)
-            if not os.path.exists(dir):
-                os.mkdir(dir)
+            adir = os.path.dirname(self.pathCfg)
+            if not os.path.exists(adir):
+                os.mkdir(adir)
             open(self.pathCfg, 'w').close()
         self.result = None
 

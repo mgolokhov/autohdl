@@ -185,7 +185,7 @@ class Application(Frame):
         self.grid(sticky=N + S + E + W)
 
         top = self.winfo_toplevel()
-        top.title('AutoHDL progammator v0.4')
+        top.title('AutoHDL firmware manager v0.4')
         top.resizable(width=FALSE, height=FALSE)
 
         self.queue = Queue.Queue()

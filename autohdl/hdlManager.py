@@ -223,6 +223,7 @@ def kungfu(**configScript):
     if arguments.debug:
         alog.info('\n' + pprint.pformat(config))
         config['hdlManager']['debug'] = True
+        xilinx.copy_firmware(config)
         return config
 
     printInfo(config)
@@ -240,8 +241,11 @@ def kungfu(**configScript):
     elif arguments.upload:
         pass
     elif not config['hdlManager'].get('debug'):
+        config['hdlManager']['cl']['synplify'] = 'batch'
         synplify.run(config)
-        xilinx.run(config)
+        config['hdlManager']['cl']['xilinx'] = 'batch'
+        xilinx.run_project(config)
+
 
     if arguments.upload:
         config['hdlManager']['git_mes'] = arguments.git_mes

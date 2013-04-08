@@ -108,8 +108,8 @@ def exists(path, client):
 
 def upload_fw(config):
     # dsn_name/implement/file
-    client = connect(config['host'])
-    dsn_name = config['dsnName']
+    client = connect(config['hdlManager']['host'])
+    dsn_name = config['hdlManager']['dsn_name']
     for i in ['firmware_bit', 'firmware_mcs']:
         firmware = config.get(i)
         if not firmware:
@@ -123,7 +123,7 @@ def upload_fw(config):
 
         root, ext = os.path.splitext(os.path.basename(firmware))
         name = os.path.basename(root)
-        folder = config['webdavBuildPath'] + '/' + dsn_name
+        folder = config['hdlManager']['webdavBuildPath'] + '/' + dsn_name
         print 'Uploading folder: ', folder,
         print client.mkcol(folder)
         path = '{folder}/{name}_new'.format(folder=folder,
@@ -131,7 +131,7 @@ def upload_fw(config):
         )
 
         dst = path + '_info'
-        info = config['git_mes']
+        info = config['hdlManager']['git_mes']
         print 'Uploading info: ', dst,
         print client.put(dst, info)
 
