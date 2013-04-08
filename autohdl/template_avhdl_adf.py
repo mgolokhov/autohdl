@@ -83,7 +83,6 @@ def files(iPrj):
     rootPath = iPrj['aldec']['rootPath'] + '/'
     l = []
     for i in allOtherSrc:
-        print i, rootPath
         virt = os.path.dirname(i).replace('\\', '/').split(rootPath)
         if len(virt) == 2:
             virtFolder = virt[1].replace('/', '\\')

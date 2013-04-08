@@ -50,7 +50,6 @@ def clean(apath):
 
 # TODO: that code should be in other place (git)
 def copy_firmware(config):
-    print "F"*100
     firmware_ext = ['.bit', '.mcs']
     dest_dir = os.path.join(config['hdlManager']['dsn_root'], 'resource')
     for i in os.listdir(dest_dir):
@@ -63,14 +62,11 @@ def copy_firmware(config):
                                     'autohdl/implement',
                                     config['hdlManager'].get('top'),
                                     config['hdlManager'].get('top') + i)
-        print src_abs_path
         if os.path.exists(src_abs_path):
-            # get latest version for this top git.get_last_build_num(top)
-            ver = strftime('%y%m%d_%H%M%S', time.localtime())
             dest = '{dsn}_{top}_build_{ver}{ext}'.format(
                 dsn=os.path.basename(os.path.abspath('..')),
                 top=config['hdlManager'].get('top'),
-                ver=git.get_last_build_num(config['hdlManager'].get('top')) + 1,
+                ver=strftime('%y%m%d_%H%M%S', time.localtime()),
                 ext=i
             )
             dest_abs_path = os.path.join(dest_dir, dest)
@@ -128,10 +124,7 @@ def mk_project_script(config):
         top=config['hdlManager']['top'],
         process_run='process run "Generate Programming File"' if gen_prog_file else ""
     )
-    # print config['xilinx']['script_path']
-    import pprint
 
-    pprint.pprint(config)
     with open(config['xilinx']['script_path'], 'w') as f:
         f.write(res)
 

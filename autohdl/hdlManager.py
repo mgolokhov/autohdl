@@ -220,39 +220,30 @@ def kungfu(**configScript):
 
     config['hdlManager']['cl'] = vars(arguments)
 
-    if arguments.debug:
+    if arguments.debug == 'normal':
         alog.info('\n' + pprint.pformat(config))
-        config['hdlManager']['debug'] = True
-        xilinx.copy_firmware(config)
         return config
 
     printInfo(config)
 
-    if arguments.tb:
-        aldec.export(config)
-        return
-    elif arguments.synplify:
-        synplify.run(config)
-    elif arguments.xilinx:
-        xilinx.run_project(config)
-    elif arguments.mcs:
-        xilinx.bit2mcs(config)
-        return
-    elif arguments.upload:
-        pass
-    elif not config['hdlManager'].get('debug'):
+    if len(sys.argv) == 1:
         config['hdlManager']['cl']['synplify'] = 'batch'
         synplify.run(config)
         config['hdlManager']['cl']['xilinx'] = 'batch'
         xilinx.run_project(config)
+        xilinx.copy_firmware(config)
 
-
+    if arguments.tb:
+        aldec.export(config)
+    if arguments.synplify:
+        synplify.run(config)
+    if arguments.xilinx:
+        xilinx.run_project(config)
+    if arguments.mcs:
+        xilinx.bit2mcs(config)
     if arguments.upload:
         config['hdlManager']['git_mes'] = arguments.git_mes
         git.push_firmware(config)
-        webdav.upload_fw(config=config)
-#        pprint.pprint(config)
-
 
 if __name__ == '__main__':
     print 'test'

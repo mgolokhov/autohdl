@@ -162,8 +162,8 @@ def valid_firmware(config):
 
 def push_firmware(config):
     """integration with bitbucket"""
-    if not valid_firmware(config):
-        return
+    # if not valid_firmware(config):
+    #     return
     cwd_was = os.getcwd()
     git_root_dir = subprocess.check_output('git rev-parse --show-toplevel')
     git_root_dir = git_root_dir.strip().strip('\n')
@@ -171,25 +171,22 @@ def push_firmware(config):
     try:
         p, out, err = _popen('git status -s')
         print out + err
-        mes = config.get('git_mes') or raw_input('add comment :\n')
+        mes = config['hdlManager'].get('git_mes') or raw_input('add comment :\n')
         mes = '{comment}; \n' \
               'technology: {technology}; part: {part}; package: {package}; ' \
               'PROM size: {size} kilobytes; '.format(comment=mes,
-                                                               technology=config['hdlManager'].get('technology'),
-                                                               part=config['hdlManager'].get('part'),
-                                                               package=config['hdlManager'].get('package'),
-                                                               size=config['hdlManager'].get('size'),
+                                                     technology=config['hdlManager'].get('technology'),
+                                                     part=config['hdlManager'].get('part'),
+                                                     package=config['hdlManager'].get('package'),
+                                                     size=config['hdlManager'].get('size'),
         )
         config['hdlManager']['git_mes'] = mes
-        print 'ass ' * 10
-        print mes
         p, out, err = _popen('git add -A')
         print out + err
         mes = mes.decode(sys.stdin.encoding).encode('cp1251')
         dsn = os.path.basename(os.getcwd())
         top = config['hdlManager']['top']
-        ver = get_last_build_num(top) + 1
-        config['firmware_name'] = '{dsn}_{top}_build_{ver}'.format(dsn=dsn, top=top, ver=ver)
+        config['firmware_name'] = '{dsn}_{top}_build_'.format(dsn=dsn, top=top)
         p, out, err = _popen('git commit -m"{firmware_name}: {mes}"'.format(firmware_name=config['firmware_name'],
                                                                             mes=mes))
         print out + err
