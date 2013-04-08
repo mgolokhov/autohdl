@@ -1,19 +1,19 @@
 import locale
 import netrc
-from netrc import NetrcParseError
 import os
 import shutil
 import subprocess
 from urlparse import urlparse
+import re
 
 #from autohdl.hdlLogger import  logging
 #log = logging.getLogger(__name__)
 
 import requests
-import sys
 
 BB_API = 'https://api.bitbucket.org/1.0/user/repositories'
 BB_HOST = 'bitbucket.org'
+
 
 class Data():
 #  def log_action(self, *args):
@@ -64,9 +64,9 @@ class Data():
 
     def _popen(self, prog):
         p = subprocess.Popen(prog.encode(locale.getpreferredencoding()),
-            shell=True,
-            stderr=subprocess.PIPE,
-            stdout=subprocess.PIPE
+                             shell=True,
+                             stderr=subprocess.PIPE,
+                             stdout=subprocess.PIPE
         )
         out, err = p.communicate()
         out = unicode(out, encoding='utf-8')
@@ -82,7 +82,7 @@ class Data():
             os.makedirs(self.autohdl_dir)
         current_repo_location = os.path.join(self.autohdl_dir, current_repo_name)
         p, out, err = self._popen('git clone {}.git {}'.format(self.current_repo,
-            current_repo_location))
+                                                               current_repo_location))
         self.log_action('')
         os.chdir(current_repo_location)
         p, out, err = self._popen('git pull --all'.format(self.current_repo))
@@ -90,23 +90,23 @@ class Data():
         if 'fatal' in err:
             print err
             return
-        p, out, err = self._popen('git log --all --grep="_build_" --format="%s"')
+        p, out, err = self._popen('git log --all --grep="_build_" --format="%s$$sha$$%h"')
         self.log_action('')
         if 'fatal' in err:
             print err
             return
-        self.firmwares = out.splitlines()
+        self.firmwares = dict()
+        for i, v in enumerate(out.splitlines()):
+            com, sha = v.split('$$sha$$')
+            self.firmwares.update({i: {'comment': com, 'sha': sha}})
         self.queue.put(self.firmwares)
         return self.firmwares
-
 
     def download_firmware(self, firmware):
         # git log --all --grep "current_firmware" --format="%h"
         # git checkout %h => dsn/resource/build_name.bit
-        self.current_firmware = firmware
-        p, out, err = self._popen(u'git log --all --grep "{}" --format="%h_#$@_%s"'.format(self.current_firmware))
-        self.log_action('')
-        sha, message = out.strip().split('_#$@_')
+        # self.current_firmware \
+        sha = self.firmwares[int(firmware)]['sha']
         p, out, err = self._popen('git checkout {}'.format(sha))
         self.log_action('')
         current_repo_name = os.path.basename(urlparse(self.current_repo).path)
@@ -119,7 +119,6 @@ class Data():
                 shutil.copy(src, dest)
                 self.log_action('Saved as {}'.format(dest))
 
-
     def auth_dump(self, host, user, password):
         #check {host{user,password}}
         content = None
@@ -131,11 +130,11 @@ class Data():
             print 'no need auth_dump'
             return
         except (IOError, netrc.NetrcParseError):
-            content = 'machine {host}\n'\
-                      'login {user}\n'\
+            content = 'machine {host}\n' \
+                      'login {user}\n' \
                       'password {password}'.format(host=host,
-                user=user,
-                password=password)
+                                                   user=user,
+                                                   password=password)
         except KeyError:
             _netrc.hosts.update({host: (user, None, password)})
             content = str(_netrc).replace("'", '')
@@ -144,7 +143,6 @@ class Data():
                 f.write(content)
         except IOError:
             self.log_action('Cant save data to ' + self.get_netrc_path())
-
 
     def get_netrc_path(self):
         home = os.path.expanduser('~')
@@ -156,4 +154,4 @@ class Data():
             res = netrc.netrc(self.get_netrc_path()).hosts
         except (IOError, netrc.NetrcParseError):
             pass
-        return  res.get(hostname, (None, None, None))
+        return res.get(hostname, (None, None, None))

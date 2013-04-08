@@ -1,12 +1,10 @@
 import Queue
 from Tkinter import *
-from threading import Thread
 import threading
 from ttk import *
 from tkFileDialog import askdirectory
 from tkFont import Font
 import os
-import time
 
 import model
 
@@ -25,8 +23,8 @@ class MyDialog(Dialog):
 
         self.save_password = BooleanVar()
         Checkbutton(master,
-            text='save (caution: in plain text)',
-            variable=self.save_password).grid(row=2, columnspan=2)
+                    text='save (caution: in plain text)',
+                    variable=self.save_password).grid(row=2, columnspan=2)
         self.result = None, None, None
         return self.entry_user # initial focus
 
@@ -45,7 +43,7 @@ class Application(Frame):
                 arg = unicode(arg, encoding='utf-8')
             self.text2.insert(END, arg + '\n')
             self.text2.yview(END)
-        #    self.update()
+            #    self.update()
         self.update_idletasks()
 
     def global_hotkeys(self):
@@ -64,8 +62,8 @@ class Application(Frame):
         try:
             if not self.queue.empty():
                 self.listbox.delete(0, END)
-                for i in self.queue.get(0):
-                    self.listbox.insert(END, i)
+                for i in self.queue.get(0).values():
+                    self.listbox.insert(END, i['comment'])
         except Queue.Empty:
             pass
         self.after(100, self.refresh_listbox)
@@ -86,7 +84,10 @@ class Application(Frame):
             self.log_action('Changed working folder to ' + d)
 
     def filter_handle(self, event=None):
-        filtered = [i for i in self.data.firmwares if self.afilter.get() in i]
+        filtered = []
+        for i in self.data.firmwares.values():
+            if self.afilter.get() in i['comment']:
+                filtered.append(i['comment'])
         self.listbox.delete(0, END)
         for i in filtered:
             self.listbox.insert(END, i)
@@ -94,7 +95,7 @@ class Application(Frame):
     def info_handle(self, event=None):
         res = self.listbox.get(self.listbox.curselection()).split(':')[1]
         self.log_action('Comment message:\n' + res)
-        self.data.download_firmware(self.listbox.get(self.listbox.curselection()))
+        self.data.download_firmware(self.listbox.curselection()[0])
 
     def auto_refresh_handle(self, event=None):
         self.update()
@@ -134,7 +135,7 @@ class Application(Frame):
 
         self.auto_refresh = IntVar()
         checkbutton = Checkbutton(fr1)
-        checkbutton['text'] = 'Automatically refresh and save latest firmware in current working directory (CWD)'
+        checkbutton['text'] = 'Auto-refresh and save latest firmware in CWD (current working directory)'
         checkbutton['variable'] = self.auto_refresh
         checkbutton['command'] = self.auto_refresh_handle
         checkbutton.grid(column=1, row=2, columnspan=1, sticky='w')
@@ -157,12 +158,12 @@ class Application(Frame):
         yScroll.grid(column=1, row=0, sticky=N + S)
 
         self.listbox = Listbox(fr2,
-            height=5,
-            width=50,
-            selectmode=SINGLE,
-            listvariable=self.list_val,
-            yscrollcommand=yScroll.set)
-        self.listbox.grid(row=0, column=0, sticky=E + W + N + S, padx=5, pady=2)
+                               height=5,
+                               width=50,
+                               selectmode=SINGLE,
+                               listvariable=self.list_val,
+                               yscrollcommand=yScroll.set)
+        self.listbox.grid(row=0, column=0, sticky=E + W + N + S, padx=5, pady=1)
         yScroll["command"] = self.listbox.yview
         self.listbox.bind("<<ListboxSelect>>", self.info_handle)
 
