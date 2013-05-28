@@ -204,7 +204,7 @@ def form_project_src(config):
         synthesis_result_constraint = config['hdlManager']['ucf']
     if not os.path.exists(synthesis_result_constraint):
         log.warning('No constraint file')
-    netlists = config.get('netlists') or []  # should type list
+    netlists = config['structure'].get('netlists') or []  # should type list
     impl_src = set()
     impl_src.add(synthesis_result_constraint)
     impl_src.add(synthesis_result_netlist)
