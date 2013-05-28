@@ -9,7 +9,7 @@ from autohdl import hdlGlobals
 from autohdl import template_avhdl_adf
 from autohdl import toolchain
 from autohdl.hdlGlobals import aldecPath
-
+import pprint
 
 @log_call
 def extend(config):

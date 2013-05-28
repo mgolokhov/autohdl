@@ -6,6 +6,8 @@ part: xc3s250e
 package: tq144
 speed_grade: -5
 
+AldecMacros: ""
+
 # nexys3
 #technology: Spartan6
 #part: XC6SLX16
