@@ -231,6 +231,7 @@ def kungfu(**configScript):
         synplify.run(config)
         config['hdlManager']['cl']['xilinx'] = 'batch'
         xilinx.run_project(config)
+        xilinx.bit2mcs(config)
         xilinx.copy_firmware(config)
 
     if arguments.tb:
@@ -239,11 +240,13 @@ def kungfu(**configScript):
         synplify.run(config)
     if arguments.xilinx:
         xilinx.run_project(config)
+        xilinx.bit2mcs(config)
         xilinx.copy_firmware(config)
     if arguments.mcs:
         xilinx.bit2mcs(config)
         xilinx.copy_firmware(config)
     if arguments.upload:
+        # TODO: i'm not sure
         xilinx.copy_firmware(config)
         config['hdlManager']['git_mes'] = arguments.git_mes
         git.push_firmware(config)
