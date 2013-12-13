@@ -48,9 +48,10 @@ class Parser(object):
         for statement in statements:
         #      print 'statement ', statement
             for tokens in self.pattern.searchString(statement):
-            #        print tokens
-            #        print tokens.get('moduleName')
-            #        print tokens.get('moduleInstance')
+                #print tokens
+                #print "module name: ", tokens.get('moduleName')
+                #print "module inst: ", tokens.get('moduleInstance')
+                #print raw_input("next?????")
                 moduleName = tokens.get('moduleName')
                 moduleInstance = tokens.get('moduleInstance')
                 if moduleInstance and moduleInstance not in self.keywords:

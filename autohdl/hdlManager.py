@@ -15,6 +15,7 @@ from autohdl import xilinx
 import webdav
 
 from autohdl.hdlLogger import log_call
+from autohdl import publisher
 
 alog = logging.getLogger(__name__)
 
@@ -76,7 +77,6 @@ def setValidTop(arguments, config):
 @log_call
 def setValidUcf(config):
     top = config['hdlManager'].get('top')
-    print '2 ', top
     if top:
         ucfNameAsTop = getFullPathToUcf(top)
         if ucfNameAsTop:
@@ -85,14 +85,12 @@ def setValidUcf(config):
             return
 
     ucfFromScript = getFullPathToUcf(config['hdlManager']['ucf'])
-    print '1 ', ucfFromScript
     if ucfFromScript:
         config['hdlManager']['ucf'] = ucfFromScript
         alog.info('Using ucf file from script')
         return
 
     ucfFromBuild = getFullPathToUcf(build.load().get('ucf'))
-    print '3 ', ucfFromBuild
     if ucfFromBuild:
         config['hdlManager']['ucf'] = ucfFromBuild
         alog.info('Using ucf file from build.yaml')
@@ -100,7 +98,6 @@ def setValidUcf(config):
 
     # if only one ucf file
     res = glob.glob('../src/*.ucf')
-    print '4 ', res
     if len(res) == 1:
         config['hdlManager']['ucf'] = getFullPathToUcf(res[0])
         alog.info('Found only one ucf file, using it')
@@ -203,11 +200,12 @@ def kungfu(**configScript):
                         help='implementation step [default=batch]')
     parser.add_argument('-mcs', nargs='?', const='config', help='generate .mcs from .bit file')
     parser.add_argument('-upload', action='store_true', help='upload firmware to WebDav server')
-    parser.add_argument('-git_mes', help='git message')
+    parser.add_argument('-message', help='information about firmware')
     parser.add_argument('-debug', nargs='?', const='normal',
                         choices=['normal', 'hardcore_test'],
                         help='debug mode')
     arguments = parser.parse_args()
+
 
     setValidTop(arguments, config)
     setValidUcf(config)
@@ -233,6 +231,7 @@ def kungfu(**configScript):
         xilinx.run_project(config)
         xilinx.bit2mcs(config)
         xilinx.copy_firmware(config)
+        return
 
     if arguments.tb:
         aldec.export(config)
@@ -248,8 +247,7 @@ def kungfu(**configScript):
     if arguments.upload:
         # TODO: i'm not sure
         xilinx.copy_firmware(config)
-        config['hdlManager']['git_mes'] = arguments.git_mes
-        git.push_firmware(config)
+        publisher.publish(config)
 
 if __name__ == '__main__':
     print 'test'

@@ -28,7 +28,8 @@ class Data():
         self.save_password = None
 
         # load repo list
-        self.repos = ('https://bitbucket.org/mgolokhov/autohdl_programmator_test',
+        self.repos = ("https://bitbucket.org/mgolokhov/izhevsk005_server",
+                      'https://bitbucket.org/mgolokhov/autohdl_programmator_test',
                       'https://bitbucket.org/mgolokhov/testfirmware',
                       'https://bitbucket.org/mgolokhov/testprog',
                       'dump/repo')
@@ -81,7 +82,7 @@ class Data():
         if not os.path.exists(self.autohdl_dir):
             os.makedirs(self.autohdl_dir)
         current_repo_location = os.path.join(self.autohdl_dir, current_repo_name)
-        p, out, err = self._popen('git clone {}.git {}'.format(self.current_repo,
+        p, out, err = self._popen('git clone {}.git "{}"'.format(self.current_repo,
                                                                current_repo_location))
         self.log_action('')
         os.chdir(current_repo_location)

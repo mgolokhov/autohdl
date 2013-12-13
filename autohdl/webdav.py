@@ -110,28 +110,26 @@ def upload_fw(config):
     # dsn_name/implement/file
     client = connect(config['hdlManager']['host'])
     dsn_name = config['hdlManager']['dsn_name']
-    for i in ['firmware_bit', 'firmware_mcs']:
-        firmware = config.get(i)
-        if not firmware:
-            continue
+    for i in config['publisher']['webdave_files']:
         try:
-            with open(firmware, 'rb') as f:
+            with open(i, 'rb') as f:
                 content = f.read()
         except IOError:
-            print 'Cant open file ' + os.path.abspath(firmware)
+            print 'Cant open file ' + os.path.abspath(i)
             continue
 
-        root, ext = os.path.splitext(os.path.basename(firmware))
+        root, ext = os.path.splitext(os.path.basename(i))
         name = os.path.basename(root)
         folder = config['hdlManager']['webdavBuildPath'] + '/' + dsn_name
         print 'Uploading folder: ', folder,
         print client.mkcol(folder)
-        path = '{folder}/{name}_new'.format(folder=folder,
+        path = '{folder}/{name}'.format(folder=folder,
             name=name,
         )
 
         dst = path + '_info'
-        info = config['hdlManager']['git_mes']
+        info = "charset=utf-8\n"
+        info += config['publisher']['message'].decode(sys.stdin.encoding or 'utf-8').encode('utf-8')
         print 'Uploading info: ', dst,
         print client.put(dst, info)
 

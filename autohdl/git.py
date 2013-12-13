@@ -171,7 +171,7 @@ def push_firmware(config):
     try:
         p, out, err = _popen('git status -s')
         print out + err
-        mes = config['hdlManager'].get('git_mes') or raw_input('add comment :\n')
+        mes = config['publisher']['message']
         mes = '{comment}; \n' \
               'technology: {technology}; part: {part}; package: {package}; ' \
               'PROM size: {size} kilobytes; '.format(comment=mes,
@@ -184,13 +184,9 @@ def push_firmware(config):
         p, out, err = _popen('git add -A')
         print out + err
         mes = mes.decode(sys.stdin.encoding).encode('cp1251')
-        dsn = os.path.basename(os.getcwd())
-        top = config['hdlManager']['top']
-        config['firmware_name'] = '{dsn}_{top}_build_'.format(dsn=dsn, top=top)
-        p, out, err = _popen('git commit -m"{firmware_name}: {mes}"'.format(firmware_name=config['firmware_name'],
-                                                                            mes=mes))
+        p, out, err = _popen('git commit -m"_build_: {mes}"'.format(mes=mes))
         print out + err
-        p, out, err = _popen('git push --all', shell=False)
+        p, out, err = _popen('git push bitbucket --all', shell=False)
         print out + err
     finally:
         os.chdir(cwd_was)
