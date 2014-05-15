@@ -1,5 +1,6 @@
 import copy
 import os
+import pprint
 import shutil
 import unittest
 import logging
@@ -22,6 +23,7 @@ def _mk_tree(paths):
 class Tests(unittest.TestCase):
     @classmethod
     def setUpClass(self):
+        self.maxDiff = None
         logging.disable(logging.ERROR)
         self.dir_was = os.getcwd()
         self.test_tmp = 'test_tmp'
@@ -191,15 +193,20 @@ class Tests(unittest.TestCase):
         os.chdir(self.test_tmp + '/dsn1/script')
         config = dict()
         setSrc(config)
-        expected = {'structure': {'depSrc': [self.dir_was + '\\test_tmp\\dsn2\\src\\f2.v'],
+        expected = {'structure': {'depSrc': [self.dir_was + '\\test_tmp\\dsn2\\src\\f2.v',
+                                             self.dir_was + '\\test_tmp\\dsn2\\src\\f3.v'],
                                   'mainSrc': [self.dir_was + '\\test_tmp\\dsn1\\src\\f1.v'],
                                   'netlists': {
                                       self.dir_was + '\\test_tmp\\dsn1\\src\\f1.ngc',
                                       self.dir_was + '\\test_tmp\\dsn2\\src\\f2.ngc'},
                                   'parsed': {'f1': {'instances': {'f2'},
                                                     'path': '..\\src\\f1.v'},
-                                             'f2': {'instances': set(),
-                                                    'path': '..\\..\\dsn2\\src\\f2.v'}}}}
+                                             'f2': {'instances': set('f3'),
+                                                    'path': '..\\..\\dsn2\\src\\f2.v'},
+                                             'f3': {'instances': set(),
+                                                    'path': '..\\..\\dsn2\\src\\f3.v'}}}}
+
+        pprint.pprint(config)
         self.assertEqual(config, expected)
 
 

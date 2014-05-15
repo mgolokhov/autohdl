@@ -33,13 +33,17 @@ class FuncTest(unittest.TestCase):
             actual.pop('version')
             self.assertEqual(actual, expected)
 
+    def test_get_instances2(self):
+        print "fuckpup"
+        with open('c:/repo/github/autohdlPrj/autohdl/test/verilog/oper001/io_mux.v') as f:
+            print get_instances(f.read())
+        print 'done'
 
-#  def test(self):
-#    self.assertFalse(True)
+
 
 
 if __name__ == '__main__':
     suite = unittest.TestLoader().loadTestsFromTestCase(FuncTest)
     res = unittest.TextTestRunner(verbosity=2).run(suite)
     print res.wasSuccessful()
-  
+#

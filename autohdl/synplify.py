@@ -12,13 +12,13 @@ from autohdl.hdlLogger import log_call
 log = logging.getLogger(__name__)
 
 
-@log_call
+#@log_call
 def getIncludePath(config):
     incl = (config.get('include_path', ".") or '.')
     return ';'.join(incl)
 
 
-@log_call
+#@log_call
 def setParams(config):
     synMacros = config['hdlManager'].get('SynMacros')
     if synMacros and synMacros != 'None':
@@ -41,7 +41,7 @@ def setParams(config):
     f.close()
 
 
-@log_call
+#@log_call
 def setSrc(config):
     srcMain = config['structure']['mainSrc']
     srcDep = config['structure'].get('depSrc') or []
@@ -52,7 +52,7 @@ def setSrc(config):
     config['synplify']['srcFiles'] = '\n'.join(['add_file "{0}"'.format(i) for i in srcFiles])
 
 
-@log_call
+#@log_call
 def extend(config):
     #TODO: convert all to abspath
     config['synplify']['pathTool'] = toolchain.Tool().get('synplify_' +
@@ -84,7 +84,7 @@ def extend(config):
     return config
 
 
-@log_call
+#@log_call
 def parseLog(config):
     logFile = os.path.abspath(config['synplify']['pathLog'])
     if os.path.exists(logFile):
@@ -135,7 +135,7 @@ def logging_synthesis(config):
     loge.close()
 
 
-@log_call
+#@log_call
 def run_synplify_batch(config):
     run = '"%s" %s %s %s %s' % (config['synplify']['pathTool'],
                                 '-product synplify_premier',
@@ -150,6 +150,22 @@ def run_synplify_batch(config):
     p.start()
     global logging_synthesis_done
     try:
+        #TODO: handle err
+        # 0 - OK
+        # 2 - logical error
+        # 3 - startup failure
+        # 4 - licensing failure
+        # 5 - batch not available
+        # 6 - duplicate-user error
+        # 7 - project-load error
+        # 8 - command-line error
+        # 9 - Tcl-script error
+        # 20 - graphic-resource error
+        # 21 - Tcl-initialization error
+        # 22 - job-configuration error
+        # 23 - parts error
+        # 24 - product-configuration error
+        # 25 - multiple top levels
         subprocess.check_call(run, env=xilinx_env.get())
     except subprocess.CalledProcessError:
         print 'Synthesis error'
@@ -159,7 +175,7 @@ def run_synplify_batch(config):
     logging_synthesis_done = True
 
 
-@log_call
+#@log_call
 def run_synplify_gui(config):
     run = config['synplify']['pathTool'] + ' synthesis.prj'
     if config['hdlManager'].get('debug') == 'hardcore_test':
@@ -169,7 +185,7 @@ def run_synplify_gui(config):
     subprocess.check_call(run, env=xilinx_env.get())
 
 
-@log_call
+#@log_call
 def runTool(config):
     """
     Runs external tool for synthesis
@@ -186,7 +202,7 @@ def runTool(config):
     os.chdir(config['synplify']['pathWas'])
 
 
-@log_call
+#@log_call
 def run(config):
     config['synplify'] = dict()
     logging.info('Synthesis stage...')

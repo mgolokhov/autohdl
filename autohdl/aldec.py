@@ -11,7 +11,7 @@ from autohdl import toolchain
 from autohdl.hdlGlobals import aldecPath
 import pprint
 
-@log_call
+#@log_call
 def extend(config):
     """
     Precondition: cwd= <dsn_name>/script
@@ -29,11 +29,16 @@ def extend(config):
                                                       ignoreDir=hdlGlobals.ignoreRepoDir)
 
     config['aldec']['TestBenchSrc'] = structure.search(directory='../TestBench', ignoreDir=hdlGlobals.ignoreRepoDir)
+    config['aldec']['TestBenchUtils'] = structure.search(directory='../../TestBenchUtils', ignoreDir=hdlGlobals.ignoreRepoDir)
+    if config['aldec']['TestBenchUtils']:
+        config['aldec']['TestBenchSrc'] += config['aldec']['TestBenchUtils']
 
     config['aldec']['netlistSrc'] = structure.search(directory=aldecPath + '/src',
                                                      onlyExt='.sedif .edn .edf .edif .ngc'.split())
 
-    config['aldec']['filesToCompile'] = (config['aldec']['allSrc'] + config['structure']['depSrc'])
+    config['aldec']['filesToCompile'] = (config['aldec']['allSrc']
+                                         + config['structure']['depSrc']
+                                         + config['aldec']['TestBenchSrc'])
 
     #add cores designs (ignore repo files) to project navigator
     if os.path.basename(os.path.abspath('../..')) == 'cores':
@@ -58,21 +63,21 @@ def extend(config):
     config['build'] = build.load()
 
 
-@log_call
+#@log_call
 def gen_aws(iPrj):
     content = '[Designs]\n{dsn}=./{dsn}.adf'.format(dsn=iPrj['aldec']['dsnName'])
     with open(aldecPath + '/wsp.aws', 'w') as f:
         f.write(content)
 
 
-@log_call
+#@log_call
 def gen_adf(iPrj):
     adf = template_avhdl_adf.generate(iPrj=iPrj)
     with open(aldecPath + '/{dsn}.adf'.format(dsn=iPrj['aldec']['dsnName']), 'w') as f:
         f.write(adf)
 
 
-@log_call
+#@log_call
 def gen_compile_cfg(config):
     src = []
     for i in config['aldec']['filesToCompile']:
@@ -89,7 +94,7 @@ def gen_compile_cfg(config):
         f.write('\n'.join(src))
 
 
-@log_call
+#@log_call
 def cleanAldec():
     if not {'resource', 'script', 'src', 'TestBench'}.issubset(os.listdir(os.getcwd() + '/..')):
         return
@@ -101,7 +106,7 @@ def cleanAldec():
             os.remove(i)
 
 
-@log_call
+#@log_call
 def copyNetlists():
     netLists = structure.search(directory='../src',
                                 onlyExt='.sedif .edn .edf .edif .ngc'.split(),
@@ -110,7 +115,7 @@ def copyNetlists():
         shutil.copyfile(i, aldecPath + '/src/' + os.path.split(i)[1])
 
 
-@log_call
+#@log_call
 def genPredefined():
     predef = hdlGlobals.predefDirs + ['dep']
     for i in predef:
@@ -119,14 +124,14 @@ def genPredefined():
             os.makedirs(folder)
 
 
-@log_call
+#@log_call
 def preparation():
     cleanAldec()
     genPredefined()
     copyNetlists()
 
 
-@log_call
+#@log_call
 def export(config):
     preparation()
     extend(config)

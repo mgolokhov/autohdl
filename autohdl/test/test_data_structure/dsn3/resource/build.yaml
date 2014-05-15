@@ -6,8 +6,6 @@ part: xc3s250e
 package: tq144
 speed_grade: -5
 
-AldecMacros: ""
-
 # nexys3
 #technology: Spartan6
 #part: XC6SLX16
@@ -40,14 +38,12 @@ webdavSrcPath: git/hdl
 webdavBuildPath: test/distout/rtl
 host: cs.scircus.ru
 
-ignore_undefined_instances: ""
+ignore_undefined_instances:
 # add list like that
 #- name_instance_1
 #- name_instance_2
 size: ""
 #256
 #512
-
-webdav_files: ""
 
 

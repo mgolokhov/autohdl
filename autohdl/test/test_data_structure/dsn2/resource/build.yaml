@@ -27,7 +27,8 @@ include_path: ""
 #- ../include1;../../include2
 
 # Dependency search path list
-dep: ""
+dep:
+- ../../dsn3/src/f4.v
 # add list like that
 #- path/to/inst_file1
 #- 'path\to\inst_file2'

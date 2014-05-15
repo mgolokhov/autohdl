@@ -88,7 +88,7 @@ def _convertToSet(arg):
     return set(arg)
 
 
-@log_call
+#@log_call
 def search(directory='.',
            ignoreDir=None, ignoreExt=None, onlyExt=None):
     """
@@ -122,7 +122,7 @@ def search(directory='.',
 
 
 ########################################################################
-@log_call
+#@log_call
 def setMainSrc(config):
     config.setdefault('structure', dict())
     config['structure']['mainSrc'] = search('../src',
@@ -149,7 +149,7 @@ def setSrc(config):
     progressBar.stop()
 
 
-@log_call
+#@log_call
 def setDepSrc(config):
     config.setdefault('structure', dict())
     parsed = config['structure']['mainSrcParsed']

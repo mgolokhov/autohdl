@@ -35,7 +35,7 @@ def compare_global(config):
         except KeyboardInterrupt:
             sys.exit(1)
 
-@log_call
+#@log_call
 def _toRelative(content, file):
     """
     Convert all paths in content to relative;
@@ -59,7 +59,7 @@ def _toRelative(content, file):
         content['include_path'] = [os.path.relpath(i, path) for i in includePath]
 
 
-@log_call
+#@log_call
 def _toAbsolute(content, file):
     """
     Convert all paths in content to absolute;
@@ -104,7 +104,7 @@ def _toAbsolute(content, file):
 
 
 
-@log_call
+#@log_call
 def load(file=buildFilePath, _cache={}, cacheEnable=True, silent=False):
     path = os.path.abspath(file)
     if cacheEnable and _cache.get(path):
@@ -142,7 +142,7 @@ def isModified(content, file):
         return True
 
 
-@log_call
+#@log_call
 def dump(content, file=buildFilePath):
     #todo: compare old & new shas in parsed/build_sha
     path = os.path.abspath(file)
@@ -151,10 +151,10 @@ def dump(content, file=buildFilePath):
         yaml.dump(content, open(path, 'w'), default_flow_style=False)
 
 
-@log_call
-def getPathToBuild(file):
-    file = os.path.abspath(file)
-    pathAsList = file.replace('\\', '/').split('/')
+#@log_call
+def getPathToBuild(afile):
+    afile = os.path.abspath(afile)
+    pathAsList = afile.replace('\\', '/').split('/')
     path = ''
     if pathAsList.count('src'):
         index = pathAsList.index('src')
@@ -164,25 +164,26 @@ def getPathToBuild(file):
             log.warning("Can't find build file: " + path)
             path = ''
     else:
-        log.warning('Wrong location for source file: ' + file)
+        log.warning('Wrong location for source file: ' + afile)
         log.warning('Expects in <dsn_name>/src/ directory')
     return path
 
 
-@log_call
-def getDepPaths(file):
+#@log_call
+def getDepPaths(afile):
     """
     Input:  path to file with undefined instance;
     Output: list of path to dependent files
     """
-    path = getPathToBuild(file)
+    path = getPathToBuild(afile)
     depInBuild = load(path, cacheEnable=False).get('dep')
     if not depInBuild:
-        return []
-    if type(depInBuild) is not list:
-        depInBuild = [depInBuild]
+        depInBuild = [os.path.basename(afile)]
+    elif type(depInBuild) is not list:
+        depInBuild = [depInBuild] + [os.path.basename(afile)]
     paths = []
-    for i in [os.path.abspath(os.path.dirname(file))] + depInBuild:
+    #print 'depInBuild', depInBuild
+    for i in [os.path.abspath(os.path.dirname(afile))] + depInBuild:
         if os.path.isfile(i):
             paths.append(i)
         elif os.path.isdir(i):
@@ -191,11 +192,11 @@ def getDepPaths(file):
                     if os.path.splitext(f)[1] in ['.v']:
                         paths.append((os.path.join(root, f)))
         else:
-            log.warning('Path does not exists: ' + os.path.abspath(i) + '; in file: ' + file)
+            log.warning('Path does not exists: ' + os.path.abspath(i) + '; in file: ' + afile)
     return paths
 
 
-@log_call
+#@log_call
 def updateDeps(files):
     if type(files) is not list:
         files = [files]

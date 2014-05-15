@@ -14,7 +14,7 @@ import autohdl.progressBar as progressBar
 
 
 class Tool(object):
-    @log_call
+    #@log_call
     def __init__(self):
         self.data = {'avhdl': {'gui': 'avhdl.exe',
                                'batch': None,
@@ -84,7 +84,7 @@ class Tool(object):
                 alog.debug(e)
 
 
-    @log_call
+    #@log_call
     def getFromCfg(self):
         self.cfg = {}
         try:
@@ -102,7 +102,7 @@ class Tool(object):
         return False
 
 
-    @log_call
+    #@log_call
     def getWin32Drivers(self):
         drivers = []
         LOCALDISK = 3
@@ -122,7 +122,7 @@ class Tool(object):
                     filename = os.path.join(root, basename)
                     yield filename
 
-    @log_call
+    #@log_call
     def searchLight(self):
         alog.info('Searching {}...'.format(self.tag))
         progressBar.run()
@@ -147,7 +147,7 @@ class Tool(object):
             alog.warning('Cant find tool: ' + self.tag)
 
 
-    @log_call
+    #@log_call
     def saveSearchResult(self):
         try:
             if not self.cfg:
@@ -160,7 +160,7 @@ class Tool(object):
             return
 
 
-    @log_call
+    #@log_call
     def askConfirm(self):
         d = dict([(index, path) for index, path in enumerate(self.fullPaths)])
         current = 0

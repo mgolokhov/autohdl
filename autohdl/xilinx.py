@@ -12,7 +12,7 @@ from autohdl.hdlLogger import log_call, logging
 log = logging.getLogger(__name__)
 
 
-@log_call
+#@log_call
 def bit2mcs(config):
     try:
         if config['hdlManager']['size']:
@@ -28,7 +28,7 @@ def bit2mcs(config):
             log.warning('PROM size was not set')
     except subprocess.CalledProcessError as e:
         log.error(e)
-        sys.exit()
+        sys.exit(1)
 
 
 def copy_firmware(config):
@@ -92,12 +92,33 @@ project close
 """
 
 
-def clean_project(config):
+def clean(config):
+    for i in range(3):
+        if os.path.exists(config['xilinx']['project_directory']):
+            try:
+                shutil.rmtree(config['xilinx']['project_directory'])
+                break
+            except Exception as e:
+                log.warning(e)
     if os.path.exists(config['xilinx']['project_directory']):
-        try:
-            shutil.rmtree(config['xilinx']['project_directory'])
-        except Exception as e:
-            log.warning(e)
+        message = 'Cant clean xilinx project '+config['xilinx']['project_directory']
+        log.error(message)
+        sys.exit(message)
+
+
+def mk_new(config):
+    for i in range(3):
+        if not os.path.exists(config['xilinx']['project_directory']):
+            try:
+                os.makedirs(config['xilinx']['project_directory'])
+                break
+            except Exception as e:
+                log.warning(e)
+                time.sleep(1)
+    if not os.path.exists(config['xilinx']['project_directory']):
+        message = 'Cant make xilinx project '+config['xilinx']['project_directory']
+        log.error(message)
+        sys.exit(message)
 
 
 def mk_project_script(config):
@@ -125,26 +146,27 @@ def mk_project_script(config):
 
 
 def run_shit(config):
-    config['execution_fifo'] = list()
-    run = '{program} {arguments}'.format(program=toolchain.Tool().get('ise_batch'),
-                                         arguments=config['xilinx']['script_path'])
-    config['execution_fifo'].append(run)
-    if config['hdlManager']['cl']['xilinx'] == 'gui-clean' or config['hdlManager']['cl']['xilinx'] == 'gui':
+    execution_fifo = []
+    first_run = '{program} {arguments}'.format(program=toolchain.Tool().get('ise_batch'),
+                                               arguments=config['xilinx']['script_path'])
+
+    execution_fifo.append(first_run)
+    is_gui_mode = (config['hdlManager']['cl']['xilinx'] == 'gui-clean' or
+                   config['hdlManager']['cl']['xilinx'] == 'gui')
+    if is_gui_mode:
         config['xilinx']['project_file'] = os.path.join(config['xilinx']['project_directory'],
                                                         config['hdlManager']['top'] + '.xise')
-        run = '{program} {arguments}'.format(program=toolchain.Tool().get('ise_gui'),
-                                             arguments=config['xilinx']['project_file'])
-        config['execution_fifo'].append(run)
-    if config['hdlManager'].get('debug') != 'hardcore_test':
-        for i in config['execution_fifo']:
-            p = subprocess.Popen(i, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-            while True:
-                out = p.stdout.read(1)
-                if out == "" or p.poll() is not None:
-                    break
-                else:
-                    sys.stdout.write(out)
-                    sys.stdout.flush()
+        second_run = '{program} {arguments}'.format(program=toolchain.Tool().get('ise_gui'),
+                                                    arguments=config['xilinx']['project_file'])
+        execution_fifo.append(second_run)
+    if not config.get('TDD'):
+        for i in execution_fifo:
+            if subprocess.call(i):
+                message = 'Error to run: '+first_run
+                log.error(message)
+                sys.exit(message)
+    else:
+        config['tdd']['execution_fifo'] = execution_fifo
 
 
 def run_project(config):
@@ -153,19 +175,9 @@ def run_project(config):
                                                                          'autohdl',
                                                                          'implement',
                                                                          config['hdlManager']['top']))
-    # check project.tcl src files if they are not modified, don't clean
-    clean_project(config)
-
-    for i in range(3):
-        if not os.path.exists(config['xilinx']['project_directory']):
-            try:
-                os.makedirs(config['xilinx']['project_directory'])
-                break
-            except Exception as e:
-                log.warning(e)
-                time.sleep(1)
-        if not os.path.exists(config['xilinx']['project_directory']):
-            sys.exit("Cant create xilinx project")
+    # TODO: check project.tcl src files if they are not modified, don't clean
+    clean(config)
+    mk_new(config)
 
     config['xilinx']['script_path'] = os.path.abspath(os.path.join('..',
                                                                    'autohdl',

@@ -5,6 +5,8 @@ from autohdl import git
 from autohdl import webdav
 import os
 import re
+import logging
+alog = logging.getLogger(__name__)
 
 
 def form_message(config):
@@ -22,20 +24,39 @@ def form_message(config):
                                                )
 
 
+def scan_for_firmwares(config, patterns):
+    files = []
+    path = os.path.join(config['hdlManager']['dsn_root'], 'resource')
+    for afile in os.listdir(path):
+        for pattern in patterns:
+            res = re.search(afile, pattern)
+            print "search", pattern, afile
+            print res
+            raw_input('next')
+            if res:
+                files.append(os.path.join(path, afile))
+    return files
+
+
 def publish(config):
     config['publisher'] = dict()
     form_message(config)
-    git.push_firmware(config)
+    # git.push_firmware(config)
     config['publisher']['webdave_files'] = []
     root = os.path.join(config['hdlManager']['dsn_root'], 'resource')
     if config['hdlManager'].get('webdav_files'):
-        for i in config['hdlManager']['webdav_files']:
-            structure.search(directory=root, onlyExt=('.bit', '.mcs'))
-    name = "{}_{}".format(config['hdlManager']['dsn_name'], config['hdlManager']['top'])
-    for i in os.listdir(root):
-        for k in ['bit', 'mcs']:
-            res = re.search("{name}_build_(\d)+_(\d)+\.{ext}".format(name=name, ext=k), i)
-            if res:
-                config['publisher']['webdave_files'].append(os.path.join(root, i))
+        names = config['hdlManager'].get('webdav_files')
+        config['publisher']['webdave_files'] = scan_for_firmwares(config, names)
+    else:
+        names = ["{}_{}".format(config['hdlManager']['dsn_name'], config['hdlManager']['top'])]
+        for i in os.listdir(root):
+            for k in ['bit', 'mcs']:
+                for name in names:
+                    print name
+                    res = re.search("{name}_build_(\d)+_(\d)+\.{ext}".format(name=name, ext=k), i)
+                    if res:
+                        config['publisher']['webdave_files'].append(os.path.join(root, i))
     if config['publisher']['webdave_files']:
         webdav.upload_fw(config)
+    else:
+        alog.error('No file to publish')

@@ -1,0 +1,997 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="18530743-ba01-4729-8762-b37fb1becd5f" name="Default" comment="">
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/autohdl/aldec.py" afterPath="$PROJECT_DIR$/autohdl/aldec.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/autohdl/build.py" afterPath="$PROJECT_DIR$/autohdl/build.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/autohdl/data/build.yaml" afterPath="$PROJECT_DIR$/autohdl/data/build.yaml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/autohdl/test/test_data_structure/dsn2/resource/build.yaml" afterPath="$PROJECT_DIR$/autohdl/test/test_data_structure/dsn2/resource/build.yaml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/autohdl/autohdl/parsed/f1.vcache" afterPath="$PROJECT_DIR$/autohdl/autohdl/parsed/f1.vcache" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/autohdl/test/test_data_structure/dsn2/src/f2.v" afterPath="$PROJECT_DIR$/autohdl/test/test_data_structure/dsn2/src/f2.v" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/autohdl/autohdl/parsed/f2.vcache" afterPath="$PROJECT_DIR$/autohdl/autohdl/parsed/f2.vcache" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/autohdl/hdlManager.py" afterPath="$PROJECT_DIR$/autohdl/hdlManager.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/autohdl/instance.py" afterPath="$PROJECT_DIR$/autohdl/instance.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/autohdl/publisher.py" afterPath="$PROJECT_DIR$/autohdl/publisher.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/autohdl/structure.py" afterPath="$PROJECT_DIR$/autohdl/structure.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/autohdl/test/structure_test.py" afterPath="$PROJECT_DIR$/autohdl/test/structure_test.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/autohdl/synplify.py" afterPath="$PROJECT_DIR$/autohdl/synplify.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/autohdl/toolchain.py" afterPath="$PROJECT_DIR$/autohdl/toolchain.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/autohdl/data/version.json" afterPath="$PROJECT_DIR$/autohdl/data/version.json" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/autohdl/webdav.py" afterPath="$PROJECT_DIR$/autohdl/webdav.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/autohdl/xilinx.py" afterPath="$PROJECT_DIR$/autohdl/xilinx.py" />
+    </list>
+    <list id="fc223c72-a4a3-49b1-99a0-ae669451d4e6" name="Failed commit: Default" comment="reformated 2 spaces to 4 for tabs; added version checking for build.yaml; added checking for unknown parameters in config (build)" />
+    <list id="8aefd2a1-6629-45a0-b326-f4c4b4ccc76a" name="Failed commit: Default (2)" comment="changed version manager" />
+    <ignored path="autohdl.iws" />
+    <ignored path=".idea/workspace.xml" />
+    <file path="/Dummy.txt" changelist="18530743-ba01-4729-8762-b37fb1becd5f" time="1387568182040" ignored="false" />
+    <file path="/hdlManager.py" changelist="18530743-ba01-4729-8762-b37fb1becd5f" time="1387354469797" ignored="false" />
+    <file path="/procHandler.py" changelist="18530743-ba01-4729-8762-b37fb1becd5f" time="1361362195819" ignored="false" />
+    <file path="/synthesis.py" changelist="18530743-ba01-4729-8762-b37fb1becd5f" time="1363174478987" ignored="false" />
+    <file path="/implement_test.py" changelist="18530743-ba01-4729-8762-b37fb1becd5f" time="1362377894443" ignored="false" />
+    <file path="/aaadraft.py" changelist="18530743-ba01-4729-8762-b37fb1becd5f" time="1379445181914" ignored="false" />
+    <file path="/implement.py" changelist="18530743-ba01-4729-8762-b37fb1becd5f" time="1362326504282" ignored="false" />
+    <file path="/aldec.py" changelist="18530743-ba01-4729-8762-b37fb1becd5f" time="1369729462451" ignored="false" />
+    <file path="/aldec_test.py" changelist="18530743-ba01-4729-8762-b37fb1becd5f" time="1363179705817" ignored="false" />
+    <file path="/structure.py" changelist="18530743-ba01-4729-8762-b37fb1becd5f" time="1364162997917" ignored="false" />
+    <file path="C:/Python27/Lib/site-packages/AutoHDL-2.7.634-py2.7.egg/autohdl/toolchain.py" changelist="18530743-ba01-4729-8762-b37fb1becd5f" time="1362827139801" ignored="false" />
+    <file path="/build.yaml" changelist="18530743-ba01-4729-8762-b37fb1becd5f" time="1386917737413" ignored="false" />
+    <file path="/template_avhdl_adf.py" changelist="18530743-ba01-4729-8762-b37fb1becd5f" time="1369729582754" ignored="false" />
+    <file path="/__init__.py" changelist="18530743-ba01-4729-8762-b37fb1becd5f" time="1362829312527" ignored="false" />
+    <file path="/top.v" changelist="18530743-ba01-4729-8762-b37fb1becd5f" time="1362829521944" ignored="false" />
+    <file path="/build.py" changelist="18530743-ba01-4729-8762-b37fb1becd5f" time="1387544878885" ignored="false" />
+    <file path="C:/Python27/Lib/site-packages/AutoHDL-2.7.636-py2.7.egg/autohdl/toolchain.py" changelist="18530743-ba01-4729-8762-b37fb1becd5f" time="1362856419369" ignored="false" />
+    <file path="C:/Python27/Lib/site-packages/AutoHDL-2.7.638-py2.7.egg/autohdl/toolchain.py" changelist="18530743-ba01-4729-8762-b37fb1becd5f" time="1362856804247" ignored="false" />
+    <file path="C:/Python27/Lib/site-packages/AutoHDL-2.7.639-py2.7.egg/autohdl/toolchain.py" changelist="18530743-ba01-4729-8762-b37fb1becd5f" time="1362856854447" ignored="false" />
+    <file path="/a.dummy" changelist="18530743-ba01-4729-8762-b37fb1becd5f" time="1387366497376" ignored="false" />
+    <file path="/hdlManager_test.py" changelist="18530743-ba01-4729-8762-b37fb1becd5f" time="1363160974005" ignored="false" />
+    <file path="/synthesis_test.py" changelist="18530743-ba01-4729-8762-b37fb1becd5f" time="1363171233909" ignored="false" />
+    <file path="C:/Python27/Lib/site-packages/AutoHDL-2.7.674-py2.7.egg/autohdl/hdlManager.py" changelist="18530743-ba01-4729-8762-b37fb1becd5f" time="1363185808677" ignored="false" />
+    <file path="C:/Python27/Lib/site-packages/AutoHDL-2.7.659-py2.7.egg/autohdl/hdlManager.py" changelist="18530743-ba01-4729-8762-b37fb1becd5f" time="1363185808677" ignored="false" />
+    <file path="/synplify.py" changelist="18530743-ba01-4729-8762-b37fb1becd5f" time="1363607297802" ignored="false" />
+    <file path="/xilinx.py" changelist="18530743-ba01-4729-8762-b37fb1becd5f" time="1374580097199" ignored="false" />
+    <file path="/aaadraft2.py" changelist="18530743-ba01-4729-8762-b37fb1becd5f" time="1386917308870" ignored="false" />
+    <file path="/structure_test.py" changelist="18530743-ba01-4729-8762-b37fb1becd5f" time="1387264989382" ignored="false" />
+    <file path="/functional.py" changelist="18530743-ba01-4729-8762-b37fb1becd5f" time="1364229839415" ignored="false" />
+    <file path="/toolchain.py" changelist="18530743-ba01-4729-8762-b37fb1becd5f" time="1364233493866" ignored="false" />
+    <file path="/hdl.py" changelist="18530743-ba01-4729-8762-b37fb1becd5f" time="1364293072500" ignored="false" />
+    <file path="/webdav.py" changelist="18530743-ba01-4729-8762-b37fb1becd5f" time="1373454705848" ignored="false" />
+    <file path="/git.py" changelist="18530743-ba01-4729-8762-b37fb1becd5f" time="1373458179815" ignored="false" />
+    <file path="/model.py" changelist="18530743-ba01-4729-8762-b37fb1becd5f" time="1365446513265" ignored="false" />
+    <file path="/programmator.py" changelist="18530743-ba01-4729-8762-b37fb1becd5f" time="1365447306877" ignored="false" />
+    <file path="/vparser.py" changelist="18530743-ba01-4729-8762-b37fb1becd5f" time="1369733750864" ignored="false" />
+    <file path="/vpreprocessor.py" changelist="18530743-ba01-4729-8762-b37fb1becd5f" time="1371627545237" ignored="false" />
+    <file path="$APPLICATION_HOME_DIR$/lib/openapi.jar!/standardSchemas/xslt-1_0.xsd" changelist="18530743-ba01-4729-8762-b37fb1becd5f" time="1371632270242" ignored="false" />
+    <file path="$APPLICATION_HOME_DIR$/lib/openapi.jar!/standardSchemas/XMLSchema-instance.xsd" changelist="18530743-ba01-4729-8762-b37fb1becd5f" time="1371632270243" ignored="false" />
+    <file path="$APPLICATION_HOME_DIR$/lib/openapi.jar!/standardSchemas/xslt-2_0.xsd" changelist="18530743-ba01-4729-8762-b37fb1becd5f" time="1371632270243" ignored="false" />
+    <file path="$APPLICATION_HOME_DIR$/lib/openapi.jar!/standardSchemas/xml.xsd" changelist="18530743-ba01-4729-8762-b37fb1becd5f" time="1371632270243" ignored="false" />
+    <file path="$APPLICATION_HOME_DIR$/lib/openapi.jar!/standardSchemas/xhtml1-frameset.xsd" changelist="18530743-ba01-4729-8762-b37fb1becd5f" time="1371632270243" ignored="false" />
+    <file path="$APPLICATION_HOME_DIR$/lib/openapi.jar!/standardSchemas/xhtml1-transitional.xsd" changelist="18530743-ba01-4729-8762-b37fb1becd5f" time="1371632270243" ignored="false" />
+    <file path="$APPLICATION_HOME_DIR$/lib/openapi.jar!/standardSchemas/xhtml1-strict.xsd" changelist="18530743-ba01-4729-8762-b37fb1becd5f" time="1371632270243" ignored="false" />
+    <file path="$APPLICATION_HOME_DIR$/lib/pycharm.jar!/resources/relaxng.rng" changelist="18530743-ba01-4729-8762-b37fb1becd5f" time="1371632270243" ignored="false" />
+    <file path="$APPLICATION_HOME_DIR$/lib/openapi.jar!/standardSchemas/catalog.xsd" changelist="18530743-ba01-4729-8762-b37fb1becd5f" time="1371632270243" ignored="false" />
+    <file path="$APPLICATION_HOME_DIR$/lib/openapi.jar!/standardSchemas/html5/xhtml5.xsd" changelist="18530743-ba01-4729-8762-b37fb1becd5f" time="1371632270243" ignored="false" />
+    <file path="$APPLICATION_HOME_DIR$/lib/openapi.jar!/standardSchemas/XMLSchema.xsd" changelist="18530743-ba01-4729-8762-b37fb1becd5f" time="1371632270243" ignored="false" />
+    <file path="$APPLICATION_HOME_DIR$/lib/openapi.jar!/standardSchemas/xinclude.xsd" changelist="18530743-ba01-4729-8762-b37fb1becd5f" time="1371632270243" ignored="false" />
+    <file path="/publisher.py" changelist="18530743-ba01-4729-8762-b37fb1becd5f" time="1386917377373" ignored="false" />
+    <file path="/*.regexp" changelist="18530743-ba01-4729-8762-b37fb1becd5f" time="1373453231205" ignored="false" />
+    <file path="/utils.py" changelist="18530743-ba01-4729-8762-b37fb1becd5f" time="1373535592876" ignored="false" />
+    <file path="/proc1.py" changelist="18530743-ba01-4729-8762-b37fb1becd5f" time="1386161116887" ignored="false" />
+    <file path="/f3.v" changelist="18530743-ba01-4729-8762-b37fb1becd5f" time="1387264331779" ignored="false" />
+    <file path="/f2.v" changelist="18530743-ba01-4729-8762-b37fb1becd5f" time="1387264348863" ignored="false" />
+    <file path="/instance.py" changelist="18530743-ba01-4729-8762-b37fb1becd5f" time="1387364102874" ignored="false" />
+    <option name="TRACKING_ENABLED" value="true" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ChangesViewManager" flattened_view="true" show_ignored="false" />
+  <component name="CoverageDataManager">
+    <SUITE FILE_PATH="coverage/autohdlPrj$Unittest_Tests_test_run_project_impl_gui_new.coverage" NAME="Unittest Tests.test_run_project_impl_gui_new Coverage Results" MODIFIED="1362426181284" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/autohdl/test" />
+  </component>
+  <component name="CreatePatchCommitExecutor">
+    <option name="PATCH_PATH" value="" />
+  </component>
+  <component name="DaemonCodeAnalyzer">
+    <disable_hints />
+  </component>
+  <component name="DatabaseView">
+    <flatten value="false" />
+    <groupTables value="false" />
+    <sortChildren value="true" />
+  </component>
+  <component name="ExecutionTargetManager" SELECTED_TARGET="default_target" />
+  <component name="FavoritesManager">
+    <favorites_list name="autohdl" />
+  </component>
+  <component name="FileEditorManager">
+    <leaf>
+      <file leaf-file-name="func_test.py" pinned="false" current="true" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/autohdl/test/verilog/func_test.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="31" column="38" selection-start="1168" selection-end="1168" vertical-scroll-proportion="1.1254126">
+              <folding>
+                <element signature="e#0#9#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="__init__.py" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/autohdl/verilog/__init__.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="19" column="24" selection-start="502" selection-end="522" vertical-scroll-proportion="0.0">
+              <folding>
+                <element signature="e#0#9#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="cache.py" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/autohdl/verilog/cache.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
+              <folding>
+                <element signature="e#0#9#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+    </leaf>
+  </component>
+  <component name="FindManager">
+    <FindUsagesManager>
+      <setting name="OPEN_NEW_TAB" value="false" />
+    </FindUsagesManager>
+  </component>
+  <component name="Git.Settings">
+    <option name="PREVIOUS_COMMIT_AUTHORS">
+      <list>
+        <option value="gotcha" />
+      </list>
+    </option>
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GitLogSettings">
+    <option name="myDateState">
+      <MyDateState />
+    </option>
+  </component>
+  <component name="IdeDocumentHistory">
+    <option name="changedFiles">
+      <list>
+        <option value="$PROJECT_DIR$/autohdl/webdav.py" />
+        <option value="$PROJECT_DIR$/autohdl/git.py" />
+        <option value="$PROJECT_DIR$/autohdl/utils.py" />
+        <option value="$PROJECT_DIR$/autohdl/xilinx.py" />
+        <option value="$PROJECT_DIR$/autohdl/drafts/aaadraft.py" />
+        <option value="$PROJECT_DIR$/autohdl/drafts/proc1.py" />
+        <option value="$PROJECT_DIR$/autohdl/drafts/aaadraft2.py" />
+        <option value="$PROJECT_DIR$/autohdl/publisher.py" />
+        <option value="$PROJECT_DIR$/autohdl/data/build.yaml" />
+        <option value="$PROJECT_DIR$/autohdl/test/test_data_structure/dsn2/src/f3.v" />
+        <option value="$PROJECT_DIR$/autohdl/test/test_data_structure/dsn2/src/f2.v" />
+        <option value="$PROJECT_DIR$/autohdl/test/structure_test.py" />
+        <option value="$PROJECT_DIR$/autohdl/hdlManager.py" />
+        <option value="$PROJECT_DIR$/autohdl/instance.py" />
+        <option value="$PROJECT_DIR$/autohdl/aldec.py" />
+        <option value="$PROJECT_DIR$/autohdl/build.py" />
+      </list>
+    </option>
+  </component>
+  <component name="ProjectFrameBounds">
+    <option name="x" value="-10" />
+    <option name="y" value="12" />
+    <option name="width" value="1460" />
+    <option name="height" value="809" />
+  </component>
+  <component name="ProjectInspectionProfilesVisibleTreeState">
+    <entry key="Project Default">
+      <profile-state>
+        <expanded-state>
+          <State>
+            <id />
+          </State>
+          <State>
+            <id>CSS</id>
+          </State>
+          <State>
+            <id>Python</id>
+          </State>
+          <State>
+            <id>RELAX NG</id>
+          </State>
+        </expanded-state>
+        <selected-state>
+          <State>
+            <id>PyPropertyAccessInspection</id>
+          </State>
+        </selected-state>
+      </profile-state>
+    </entry>
+  </component>
+  <component name="ProjectLevelVcsManager" settingsEditedManually="false">
+    <OptionsSetting value="true" id="Add" />
+    <OptionsSetting value="true" id="Remove" />
+    <OptionsSetting value="true" id="Checkout" />
+    <OptionsSetting value="true" id="Update" />
+    <OptionsSetting value="true" id="Status" />
+    <OptionsSetting value="true" id="Edit" />
+    <ConfirmationsSetting value="1" id="Add" />
+    <ConfirmationsSetting value="0" id="Remove" />
+  </component>
+  <component name="ProjectReloadState">
+    <option name="STATE" value="0" />
+  </component>
+  <component name="ProjectView">
+    <navigator currentView="ProjectPane" proportions="" version="1" splitterProportion="0.5">
+      <flattenPackages />
+      <showMembers ProjectPane="false" />
+      <showModules />
+      <showLibraryContents />
+      <hideEmptyPackages />
+      <abbreviatePackageNames />
+      <autoscrollToSource ProjectPane="false" />
+      <autoscrollFromSource ProjectPane="false" />
+      <sortByType />
+    </navigator>
+    <panes>
+      <pane id="Scope" />
+      <pane id="ProjectPane">
+        <subPane>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="autohdlPrj" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="autohdlPrj" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="autohdlPrj" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="autohdlPrj" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="autohdlPrj" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="autohdl" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="autohdlPrj" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="autohdlPrj" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="autohdl" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="verilog" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="autohdlPrj" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="autohdlPrj" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="autohdl" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="test" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="autohdlPrj" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="autohdlPrj" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="autohdl" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="test" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="verilog" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+        </subPane>
+      </pane>
+      <pane id="Favorites" />
+    </panes>
+  </component>
+  <component name="PropertiesComponent">
+    <property name="FileHistory.git4idea.history.GitHistoryProvider_flatWidth0" value="123" />
+    <property name="FileHistory.git4idea.history.GitHistoryProvider_flatWidth1" value="130" />
+    <property name="options.splitter.main.proportions" value="0.3" />
+    <property name="FileHistory.git4idea.history.GitHistoryProvider_treeWidth0" value="137" />
+    <property name="recentsLimit" value="5" />
+    <property name="FileHistory.git4idea.history.GitHistoryProvider_flatOrder1" value="1" />
+    <property name="FileHistory.git4idea.history.GitHistoryProvider_flatOrder0" value="0" />
+    <property name="last_opened_file_path" value="C:/Python27" />
+    <property name="FileHistory.git4idea.history.GitHistoryProvider_flatWidth2" value="137" />
+    <property name="FileHistory.git4idea.history.GitHistoryProvider_treeWidth3" value="795" />
+    <property name="FileHistory.git4idea.history.GitHistoryProvider_flatWidth3" value="799" />
+    <property name="FileHistory.git4idea.history.GitHistoryProvider_treeWidth2" value="132" />
+    <property name="FileHistory.git4idea.history.GitHistoryProvider_treeWidth1" value="125" />
+    <property name="FileHistory.git4idea.history.GitHistoryProvider_flatOrder2" value="2" />
+    <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="FileHistory.git4idea.history.GitHistoryProvider_flatOrder3" value="3" />
+    <property name="FullScreen" value="false" />
+    <property name="options.splitter.details.proportions" value="0.2" />
+    <property name="FileHistory.git4idea.history.GitHistoryProvider_treeOrder0" value="0" />
+    <property name="FileHistory.git4idea.history.GitHistoryProvider_treeOrder3" value="3" />
+    <property name="FileHistory.git4idea.history.GitHistoryProvider_treeOrder1" value="1" />
+    <property name="FileHistory.git4idea.history.GitHistoryProvider_treeOrder2" value="2" />
+    <property name="options.lastSelected" value="editor.preferences.import" />
+    <property name="DefaultHtmlFileTemplate" value="Html" />
+    <property name="options.searchVisible" value="true" />
+  </component>
+  <component name="PyConsoleOptionsProvider">
+    <option name="myPythonConsoleState">
+      <PyConsoleSettings />
+    </option>
+    <option name="myDjangoConsoleState">
+      <PyConsoleSettings />
+    </option>
+  </component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\repo\github\autohdlPrj\autohdl\test\fake_repo\dsn_test_impl\autohdl\synthesis\top" />
+      <recent name="C:\repo\github\autohdlPrj\autohdl\test\fake_repo\dsn_test_impl\src" />
+      <recent name="D:\03_repo\github\autohdl" />
+      <recent name="D:\03_repo\github\" />
+      <recent name="D:\03_repo\github\autohdl\lib" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\repo\github\autohdlPrj\autohdl\test\fake_repo\dsn_test_impl\autohdl\synthesis\top" />
+      <recent name="D:\03_repo\github\autohdlPrj" />
+    </key>
+  </component>
+  <component name="RunManager" selected="Python.deploy">
+    <configuration default="false" name="deploy" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/autohdl" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <module name="autohdl" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" enabled="false" sample_coverage="true" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/autohdl/deploy.py" />
+      <option name="PARAMETERS" value="" />
+      <RunnerSettings RunnerId="PythonRunner" />
+      <ConfigurationWrapper RunnerId="PythonRunner" />
+      <method />
+    </configuration>
+    <configuration default="false" name="aaadraft2" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/autohdl/drafts" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <module name="autohdl" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" enabled="false" sample_coverage="true" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/autohdl/drafts/aaadraft2.py" />
+      <option name="PARAMETERS" value="" />
+      <RunnerSettings RunnerId="PythonRunner" />
+      <ConfigurationWrapper RunnerId="PythonRunner" />
+      <method />
+    </configuration>
+    <configuration default="false" name="structure_test" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/autohdl/test" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <module name="autohdl" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" enabled="false" sample_coverage="true" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/autohdl/test/structure_test.py" />
+      <option name="PARAMETERS" value="" />
+      <RunnerSettings RunnerId="PythonRunner" />
+      <ConfigurationWrapper RunnerId="PythonRunner" />
+      <method />
+    </configuration>
+    <configuration default="false" name="Unittests in structure_test" type="tests" factoryName="Unittests" temporary="true">
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/autohdl/test" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <module name="autohdl" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" enabled="false" sample_coverage="true" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/autohdl/test/structure_test.py" />
+      <option name="CLASS_NAME" value="" />
+      <option name="METHOD_NAME" value="" />
+      <option name="FOLDER_NAME" value="" />
+      <option name="TEST_TYPE" value="TEST_SCRIPT" />
+      <option name="PATTERN" value="" />
+      <option name="USE_PATTERN" value="false" />
+      <option name="PUREUNITTEST" value="true" />
+      <option name="PARAMS" value="" />
+      <option name="USE_PARAM" value="false" />
+      <RunnerSettings RunnerId="PythonRunner" />
+      <ConfigurationWrapper RunnerId="PythonRunner" />
+      <method />
+    </configuration>
+    <configuration default="false" name="Unittest Tests.test_setSrc" type="tests" factoryName="Unittests" temporary="true">
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/autohdl/test" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <module name="autohdl" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" enabled="false" sample_coverage="true" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/autohdl/test/structure_test.py" />
+      <option name="CLASS_NAME" value="Tests" />
+      <option name="METHOD_NAME" value="test_setSrc" />
+      <option name="FOLDER_NAME" value="" />
+      <option name="TEST_TYPE" value="TEST_METHOD" />
+      <option name="PATTERN" value="" />
+      <option name="USE_PATTERN" value="false" />
+      <option name="PUREUNITTEST" value="true" />
+      <option name="PARAMS" value="" />
+      <option name="USE_PARAM" value="false" />
+      <RunnerSettings RunnerId="PythonRunner" />
+      <ConfigurationWrapper RunnerId="PythonRunner" />
+      <method />
+    </configuration>
+    <configuration default="true" type="PythonConfigurationType" factoryName="Python">
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <module name="autohdl" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" enabled="false" sample_coverage="true" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="" />
+      <option name="PARAMETERS" value="" />
+      <method />
+    </configuration>
+    <configuration default="true" type="docs" factoryName="Docutils task">
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <module name="autohdl" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" enabled="false" sample_coverage="true" runner="coverage.py" />
+      <option name="docutils_input_file" value="" />
+      <option name="docutils_output_file" value="" />
+      <option name="docutils_params" value="" />
+      <option name="docutils_task" value="" />
+      <option name="docutils_open_in_browser" value="false" />
+      <method />
+    </configuration>
+    <configuration default="true" type="docs" factoryName="Sphinx task">
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <module name="autohdl" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" enabled="false" sample_coverage="true" runner="coverage.py" />
+      <option name="docutils_input_file" value="" />
+      <option name="docutils_output_file" value="" />
+      <option name="docutils_params" value="" />
+      <option name="docutils_task" value="" />
+      <option name="docutils_open_in_browser" value="false" />
+      <method />
+    </configuration>
+    <configuration default="true" type="tests" factoryName="Unittests">
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <module name="autohdl" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" enabled="false" sample_coverage="true" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="" />
+      <option name="CLASS_NAME" value="" />
+      <option name="METHOD_NAME" value="" />
+      <option name="FOLDER_NAME" value="" />
+      <option name="TEST_TYPE" value="TEST_SCRIPT" />
+      <option name="PATTERN" value="" />
+      <option name="USE_PATTERN" value="false" />
+      <option name="PUREUNITTEST" value="true" />
+      <option name="PARAMS" value="" />
+      <option name="USE_PARAM" value="false" />
+      <method />
+    </configuration>
+    <configuration default="true" type="tests" factoryName="Doctests">
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <module name="autohdl" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" enabled="false" sample_coverage="true" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="" />
+      <option name="CLASS_NAME" value="" />
+      <option name="METHOD_NAME" value="" />
+      <option name="FOLDER_NAME" value="" />
+      <option name="TEST_TYPE" value="TEST_SCRIPT" />
+      <option name="PATTERN" value="" />
+      <option name="USE_PATTERN" value="false" />
+      <method />
+    </configuration>
+    <configuration default="true" type="JavascriptDebugSession" factoryName="Local" singleton="true">
+      <JSDebuggerConfigurationSettings>
+        <option name="engineId" value="embedded" />
+        <option name="fileUrl" />
+      </JSDebuggerConfigurationSettings>
+      <method />
+    </configuration>
+    <configuration default="false" name="git.html" type="JavascriptDebugSession" factoryName="Local">
+      <JSDebuggerConfigurationSettings>
+        <option name="engineId" value="chrome" />
+        <option name="fileUrl" value="file://$PROJECT_DIR$/doc/git.html" />
+      </JSDebuggerConfigurationSettings>
+      <method />
+    </configuration>
+    <configuration default="false" name="aaadraft" type="PythonConfigurationType" factoryName="Python">
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/autohdl/drafts" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <module name="autohdl" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" enabled="false" sample_coverage="true" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/autohdl/drafts/aaadraft.py" />
+      <option name="PARAMETERS" value="" />
+      <RunnerSettings RunnerId="PythonRunner" />
+      <ConfigurationWrapper RunnerId="PythonRunner" />
+      <method />
+    </configuration>
+    <list size="7">
+      <item index="0" class="java.lang.String" itemvalue="JavaScript Debug.git.html" />
+      <item index="1" class="java.lang.String" itemvalue="Python.aaadraft" />
+      <item index="2" class="java.lang.String" itemvalue="Python.deploy" />
+      <item index="3" class="java.lang.String" itemvalue="Python.aaadraft2" />
+      <item index="4" class="java.lang.String" itemvalue="Python.structure_test" />
+      <item index="5" class="java.lang.String" itemvalue="Python tests.Unittests in structure_test" />
+      <item index="6" class="java.lang.String" itemvalue="Python tests.Unittest Tests.test_setSrc" />
+    </list>
+    <recent_temporary>
+      <list size="5">
+        <item index="0" class="java.lang.String" itemvalue="Python.deploy" />
+        <item index="1" class="java.lang.String" itemvalue="Python tests.Unittest Tests.test_setSrc" />
+        <item index="2" class="java.lang.String" itemvalue="Python tests.Unittests in structure_test" />
+        <item index="3" class="java.lang.String" itemvalue="Python.structure_test" />
+        <item index="4" class="java.lang.String" itemvalue="Python.aaadraft2" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="ShelveChangesManager" show_recycled="false" />
+  <component name="StructureViewFactory">
+    <option name="AUTOSCROLL_FROM_SOURCE" value="true" />
+  </component>
+  <component name="SvnConfiguration" maxAnnotateRevisions="500" myUseAcceleration="nothing" myAutoUpdateAfterCommit="false" cleanupOnStartRun="false" SSL_PROTOCOLS="all">
+    <option name="USER" value="" />
+    <option name="PASSWORD" value="" />
+    <option name="mySSHConnectionTimeout" value="30000" />
+    <option name="mySSHReadTimeout" value="30000" />
+    <option name="LAST_MERGED_REVISION" />
+    <option name="MERGE_DRY_RUN" value="false" />
+    <option name="MERGE_DIFF_USE_ANCESTRY" value="true" />
+    <option name="UPDATE_LOCK_ON_DEMAND" value="false" />
+    <option name="IGNORE_SPACES_IN_MERGE" value="false" />
+    <option name="CHECK_NESTED_FOR_QUICK_MERGE" value="false" />
+    <option name="IGNORE_SPACES_IN_ANNOTATE" value="true" />
+    <option name="SHOW_MERGE_SOURCES_IN_ANNOTATE" value="true" />
+    <option name="FORCE_UPDATE" value="false" />
+    <option name="IGNORE_EXTERNALS" value="false" />
+    <configuration useDefault="true">C:\Users\gotcha\AppData\Roaming\Subversion</configuration>
+    <myIsUseDefaultProxy>false</myIsUseDefaultProxy>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="18530743-ba01-4729-8762-b37fb1becd5f" name="Default" comment="" />
+      <changelist id="fc223c72-a4a3-49b1-99a0-ae669451d4e6" name="Failed commit: Default" comment="reformated 2 spaces to 4 for tabs; added version checking for build.yaml; added checking for unknown parameters in config (build)" />
+      <changelist id="8aefd2a1-6629-45a0-b326-f4c4b4ccc76a" name="Failed commit: Default (2)" comment="changed version manager" />
+      <created>1308819140783</created>
+      <updated>1308819140783</updated>
+    </task>
+    <task id="LOCAL-00001" summary="xilinx env wrapper handled by toolchain">
+      <created>1353619994498</created>
+      <updated>1353619994498</updated>
+    </task>
+    <task id="LOCAL-00002" summary="changed lxml library to standard xml">
+      <created>1353664436945</created>
+      <updated>1353664436945</updated>
+    </task>
+    <task id="LOCAL-00003" summary="added auto build incrementation every upload/deploy">
+      <created>1353666636996</created>
+      <updated>1353666636996</updated>
+    </task>
+    <task id="LOCAL-00004" summary="authentication data stores in _netrc">
+      <created>1353674663712</created>
+      <updated>1353674663712</updated>
+    </task>
+    <task id="LOCAL-00005" summary="clean .pyc files before install">
+      <created>1355181412415</created>
+      <updated>1355181412415</updated>
+    </task>
+    <task id="LOCAL-00006" summary="added config values: package, technology, part, speed_grade; device - deprecated">
+      <created>1355181667828</created>
+      <updated>1355181667828</updated>
+    </task>
+    <task id="LOCAL-00007" summary="programmator works only with bitbucket, draft">
+      <created>1356801616413</created>
+      <updated>1356801616413</updated>
+    </task>
+    <task id="LOCAL-00008" summary="firmwares are stored in git repo">
+      <created>1356801770576</created>
+      <updated>1356801770576</updated>
+    </task>
+    <task id="LOCAL-00009" summary="refactoring and tests">
+      <created>1365405127639</created>
+      <updated>1365405127639</updated>
+    </task>
+    <task id="LOCAL-00010" summary="refactored, more stable algorithm to form listbox">
+      <created>1365447681019</created>
+      <updated>1365447681019</updated>
+    </task>
+    <task id="LOCAL-00011" summary="refactored cl, cleaned debug info">
+      <created>1365447815229</created>
+      <updated>1365447815229</updated>
+    </task>
+    <task id="LOCAL-00012" summary="refactoring&#10;">
+      <created>1386916475499</created>
+      <updated>1386916475499</updated>
+    </task>
+    <option name="localTasksCounter" value="13" />
+    <servers />
+  </component>
+  <component name="TodoView" selected-index="0">
+    <todo-panel id="selected-file">
+      <are-packages-shown value="false" />
+      <are-modules-shown value="false" />
+      <flatten-packages value="false" />
+      <is-autoscroll-to-source value="false" />
+    </todo-panel>
+    <todo-panel id="all">
+      <are-packages-shown value="false" />
+      <are-modules-shown value="false" />
+      <flatten-packages value="false" />
+      <is-autoscroll-to-source value="false" />
+    </todo-panel>
+    <todo-panel id="default-changelist">
+      <are-packages-shown value="false" />
+      <are-modules-shown value="false" />
+      <flatten-packages value="false" />
+      <is-autoscroll-to-source value="false" />
+    </todo-panel>
+  </component>
+  <component name="ToolWindowManager">
+    <frame x="-10" y="12" width="1460" height="809" extended-state="6" />
+    <editor active="true" />
+    <layout>
+      <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32887402" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.2240717" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
+      <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.20065789" sideWeight="0.7972973" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Structure" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.21879484" sideWeight="0.79004663" order="0" side_tool="false" content_ui="tabs" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.20731707" sideWeight="0.79004663" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.5516667" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.20502432" sideWeight="0.23051947" order="1" side_tool="true" content_ui="tabs" />
+      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.29707792" sideWeight="0.6669368" order="8" side_tool="true" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.20995334" sideWeight="0.52187836" order="2" side_tool="false" content_ui="tabs" x="38" y="0" width="1368" height="750" />
+      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.289644" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
+      <window_info id="Data Sources" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32954547" sideWeight="0.5970874" order="5" side_tool="false" content_ui="tabs" />
+      <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
+      <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
+      <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.748056" sideWeight="0.4967051" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3257677" sideWeight="0.5" order="11" side_tool="false" content_ui="tabs" />
+      <window_info id="Coverage" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.31779054" sideWeight="0.2562112" order="3" side_tool="true" content_ui="tabs" />
+      <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Dependency Viewer" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
+      <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.24918567" sideWeight="0.5873786" order="4" side_tool="false" content_ui="combo" />
+      <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.39871383" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
+    </layout>
+  </component>
+  <component name="VcsContentAnnotationSettings">
+    <option name="myLimit" value="2678400000" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <option name="OFFER_MOVE_TO_ANOTHER_CHANGELIST_ON_PARTIAL_COMMIT" value="true" />
+    <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="true" />
+    <option name="CHECK_NEW_TODO" value="true" />
+    <option name="myTodoPanelSettings">
+      <value>
+        <are-packages-shown value="false" />
+        <are-modules-shown value="false" />
+        <flatten-packages value="false" />
+        <is-autoscroll-to-source value="false" />
+      </value>
+    </option>
+    <option name="PERFORM_UPDATE_IN_BACKGROUND" value="true" />
+    <option name="PERFORM_COMMIT_IN_BACKGROUND" value="true" />
+    <option name="PERFORM_EDIT_IN_BACKGROUND" value="true" />
+    <option name="PERFORM_CHECKOUT_IN_BACKGROUND" value="true" />
+    <option name="PERFORM_ADD_REMOVE_IN_BACKGROUND" value="true" />
+    <option name="PERFORM_ROLLBACK_IN_BACKGROUND" value="false" />
+    <option name="CHECK_LOCALLY_CHANGED_CONFLICTS_IN_BACKGROUND" value="false" />
+    <option name="CHANGED_ON_SERVER_INTERVAL" value="60" />
+    <option name="SHOW_ONLY_CHANGED_IN_SELECTION_DIFF" value="true" />
+    <option name="CHECK_COMMIT_MESSAGE_SPELLING" value="true" />
+    <option name="DEFAULT_PATCH_EXTENSION" value="patch" />
+    <option name="SHORT_DIFF_HORIZONTALLY" value="true" />
+    <option name="SHORT_DIFF_EXTRA_LINES" value="2" />
+    <option name="SOFT_WRAPS_IN_SHORT_DIFF" value="true" />
+    <option name="INCLUDE_TEXT_INTO_PATCH" value="false" />
+    <option name="INCLUDE_TEXT_INTO_SHELF" value="false" />
+    <option name="SHOW_FILE_HISTORY_DETAILS" value="true" />
+    <option name="SHOW_VCS_ERROR_NOTIFICATIONS" value="true" />
+    <option name="SHOW_DIRTY_RECURSIVELY" value="false" />
+    <option name="LIMIT_HISTORY" value="true" />
+    <option name="MAXIMUM_HISTORY_ROWS" value="1000" />
+    <option name="UPDATE_FILTER_SCOPE_NAME" />
+    <option name="USE_COMMIT_MESSAGE_MARGIN" value="false" />
+    <option name="COMMIT_MESSAGE_MARGIN_SIZE" value="72" />
+    <option name="WRAP_WHEN_TYPING_REACHES_RIGHT_MARGIN" value="false" />
+    <option name="FORCE_NON_EMPTY_COMMENT" value="false" />
+    <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="false" />
+    <option name="LAST_COMMIT_MESSAGE" value="refactoring&#10;" />
+    <option name="MAKE_NEW_CHANGELIST_ACTIVE" value="true" />
+    <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="false" />
+    <option name="CHECK_FILES_UP_TO_DATE_BEFORE_COMMIT" value="false" />
+    <option name="REFORMAT_BEFORE_PROJECT_COMMIT" value="false" />
+    <option name="REFORMAT_BEFORE_FILE_COMMIT" value="false" />
+    <option name="FILE_HISTORY_DIALOG_COMMENTS_SPLITTER_PROPORTION" value="0.8" />
+    <option name="FILE_HISTORY_DIALOG_SPLITTER_PROPORTION" value="0.5" />
+    <option name="ACTIVE_VCS_NAME" />
+    <option name="UPDATE_GROUP_BY_PACKAGES" value="false" />
+    <option name="UPDATE_GROUP_BY_CHANGELIST" value="false" />
+    <option name="UPDATE_FILTER_BY_SCOPE" value="false" />
+    <option name="SHOW_FILE_HISTORY_AS_TREE" value="false" />
+    <option name="FILE_HISTORY_SPLITTER_PROPORTION" value="0.6" />
+    <MESSAGE value="all files except parsed (cache) generated by tool located in .hdl folder" />
+    <MESSAGE value="all files generated by tool located in .hdl folder" />
+    <MESSAGE value="changed structure module, optimized search algorithm &amp; api&#10;fixed: synthesis hang up while parsing error log" />
+    <MESSAGE value="tracking firmwares (copy to resource) in develop branch while uploading to webdav server" />
+    <MESSAGE value="subprocess git with call() function, as a result more adequate output for user" />
+    <MESSAGE value="fixed bug: failed to run implement because netlists were not copied" />
+    <MESSAGE value="fixed bug: was using old api for search ucf files" />
+    <MESSAGE value="fixed: constant rewriting _netrc for every attempt to authenticate" />
+    <MESSAGE value="changed checking for modification of aldec compile file from timestamp to sha1" />
+    <MESSAGE value="fixed: setting incorrect path to dependencies from aldec gui" />
+    <MESSAGE value="added macros (e.t. SIM_TEST) export in Aldec" />
+    <MESSAGE value="xilinx env wrapper handled by toolchain" />
+    <MESSAGE value="changed lxml library to standard xml" />
+    <MESSAGE value="added auto build incrementation every upload/deploy" />
+    <MESSAGE value="authentication data stores in _netrc" />
+    <MESSAGE value="clean .pyc files before install" />
+    <MESSAGE value="added config values: package, technology, part, speed_grade; device - deprecated" />
+    <MESSAGE value="programmator works only with bitbucket, draft" />
+    <MESSAGE value="firmwares are stored in git repo" />
+    <MESSAGE value="reformated 2 spaces to 4 for tabs; added version checking for build.yaml; added checking for unknown parameters in config (build)" />
+    <MESSAGE value="changed version manager" />
+    <MESSAGE value="refactoring and tests" />
+    <MESSAGE value="refactored, more stable algorithm to form listbox" />
+    <MESSAGE value="refactored cl, cleaned debug info" />
+    <MESSAGE value="refactoring&#10;" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="python-line">
+          <url>file://$USER_HOME$/Downloads/DavidVilla-python-bitbucket-api-3c0cb202b417/DavidVilla-python-bitbucket-api-3c0cb202b417/setup.py</url>
+          <line>29</line>
+        </line-breakpoint>
+      </breakpoints>
+      <option name="time" value="1" />
+    </breakpoint-manager>
+  </component>
+  <component name="editorHistoryManager">
+    <entry file="file://$PROJECT_DIR$/autohdl/test/test_data_structure/dsn1/resource/build.yaml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="30" column="0" selection-start="575" selection-end="596" vertical-scroll-proportion="0.21428572" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/autohdl/test/structure_test.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="194" column="11" selection-start="9220" selection-end="9220" vertical-scroll-proportion="0.0" />
+      </provider>
+    </entry>
+    <entry file="file://C:/Python27/Lib/site-packages/AutoHDL-2.7.657-py2.7.egg/autohdl/structure.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="131" column="0" selection-start="4038" selection-end="4038" vertical-scroll-proportion="1.1729107" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/autohdl/aldec.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="13" column="0" selection-start="294" selection-end="294" vertical-scroll-proportion="0.08742005" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/autohdl/test/instance_test.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
+          <folding>
+            <element signature="e#0#10#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/autohdl/build.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="17" column="23" selection-start="462" selection-end="462" vertical-scroll-proportion="0.32673267">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/autohdl/structure.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="173" column="9" selection-start="5233" selection-end="5238" vertical-scroll-proportion="0.7458746">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/autohdl/hdlManager.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="6" column="12" selection-start="90" selection-end="90" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/autohdl/verilog/vpreprocessor.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="-7.837607">
+          <folding>
+            <element signature="e#0#9#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/autohdl/verilog/vparser.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/autohdl/test/verilog/vparser_test.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
+          <folding>
+            <element signature="e#0#9#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/autohdl/instance.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="20" column="17" selection-start="388" selection-end="388" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/autohdl/test/verilog/__init__.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/autohdl/verilog/__init__.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="19" column="24" selection-start="502" selection-end="522" vertical-scroll-proportion="0.0">
+          <folding>
+            <element signature="e#0#9#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/autohdl/verilog/cache.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
+          <folding>
+            <element signature="e#0#9#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/autohdl/test/verilog/func_test.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="31" column="38" selection-start="1168" selection-end="1168" vertical-scroll-proportion="1.1254126">
+          <folding>
+            <element signature="e#0#9#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+  </component>
+  <component name="masterDetails">
+    <states>
+      <state key="ScopeChooserConfigurable.UI">
+        <settings>
+          <splitter-proportions>
+            <option name="proportions">
+              <list>
+                <option value="0.2" />
+              </list>
+            </option>
+          </splitter-proportions>
+        </settings>
+      </state>
+    </states>
+  </component>
+</project>
+

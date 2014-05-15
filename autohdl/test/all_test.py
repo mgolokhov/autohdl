@@ -1,6 +1,8 @@
 import sys
 import unittest
 import os
+import cgitb
+cgitb.enable(format='text')
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)) + '/verilog')
 import func_test

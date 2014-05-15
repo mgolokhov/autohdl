@@ -95,6 +95,8 @@ def files(iPrj):
 
 
 def files_data(iPrj):
+    import pprint
+    pprint.pprint(iPrj['aldec']['TestBenchSrc'])
     srcTb = ['.\\' + os.path.relpath(i) + '=Verilog Test Bench'
              for i in iPrj['aldec']['TestBenchSrc']
              if os.path.splitext(i)[1] in ['.v']]
@@ -283,8 +285,12 @@ def generate(iPrj):
 
                 '[Verilog Library]\n'
                 # should be installed
-                'ovi_xilinxcorelib=\n'
-                'ovi_unisim=\n'
+                'xilinxcorelib_ver=\n'
+                'unisims_ver=\n'
+                'unimacro_ver=\n'
+                'simprimps_ver=\n'
+                # 'ovi_xilinxcorelib=\n'
+                # 'ovi_unisim=\n'
 
                 '[LocalVerilogSets]\n'
                 # SystemVerilog 1800-2005

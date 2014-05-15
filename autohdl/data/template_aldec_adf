@@ -167,8 +167,10 @@ ShowHide=ShowTopLevel
 Selected=
 
 [Verilog Library]
-ovi_xilinxcorelib=
-ovi_unisim=
+xilinxcorelib_ver=
+unisims_ver=
+unimacro_ver=
+simprimps_ver=
 
 [LocalVerilogSets]
 VerilogLanguage=7

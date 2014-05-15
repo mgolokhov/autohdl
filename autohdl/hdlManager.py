@@ -4,6 +4,8 @@ import logging
 import os
 import pprint
 import sys
+import cgitb
+cgitb.enable(format='text')
 
 from autohdl.hdlGlobals import implementPath
 from autohdl import structure
@@ -19,7 +21,7 @@ from autohdl import publisher
 
 alog = logging.getLogger(__name__)
 
-@log_call
+#@log_call
 def validateTop(iTop, config):
     parsed = config.setdefault('structure', dict()).get('parsed')
     if not parsed:
@@ -30,7 +32,7 @@ def validateTop(iTop, config):
         return True
 
 
-@log_call
+#@log_call
 def getFullPathToUcf(iUcf):
     # could be
     # empty
@@ -48,7 +50,7 @@ def getFullPathToUcf(iUcf):
         return path
 
 
-@log_call
+#@log_call
 def setValidTop(arguments, config):
     try:
         topAsScriptName = os.path.splitext(os.path.basename(sys.modules['__main__'].__file__))[0]
@@ -74,7 +76,7 @@ def setValidTop(arguments, config):
             alog.error('Top module name undefined!')
 
 
-@log_call
+#@log_call
 def setValidUcf(config):
     top = config['hdlManager'].get('top')
     if top:
@@ -110,7 +112,7 @@ def setValidUcf(config):
     alog.warning('Ucf file undefined')
 
 
-@log_call
+#@log_call
 def validateLocation():
     # for Active-hdl compatibility, possibility to run in project navigator
     try:
@@ -130,7 +132,7 @@ def validateLocation():
         alog.debug(e)
 
 
-@log_call
+#@log_call
 def mergeConfig(configScript, configBuild):
     """
     Rewrites all params in configBuild by configScript, except 'dep' (it's extended);
@@ -142,7 +144,7 @@ def mergeConfig(configScript, configBuild):
     return configBuild
 
 
-@log_call
+#@log_call
 def printInfo(config):
     alog.info(('Main design settings:\n'
                + '#' * 40 +
@@ -173,7 +175,7 @@ def printInfo(config):
 #   2 name in python script <ucf_filename>[.ucf]
 #   3 path in build.yaml (absolute or relative path)
 #   4 any single ucf file in "src" folder
-@log_call
+#@log_call
 def kungfu(**configScript):
     alog.info('Processing...')
     alog.debug('args: ' + str(sys.argv))
@@ -205,7 +207,6 @@ def kungfu(**configScript):
                         choices=['normal', 'hardcore_test'],
                         help='debug mode')
     arguments = parser.parse_args()
-
 
     setValidTop(arguments, config)
     setValidUcf(config)

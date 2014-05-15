@@ -13,7 +13,7 @@ class InstanceException(Exception):
         Exception.__init__(self, iString)
 
 
-@log_call
+#@log_call
 def get_instances(files):
     """
     Input: list of files;
@@ -38,14 +38,15 @@ def get_instances(files):
     return parsed
 
 
-@log_call
+#@log_call
 def resolve_undef(instance, in_file, _parsed={}):
-#  print 'searching instance ', instance
-#  print 'undef in file: ', in_file
+    #print 'searching instance ', instance
+    #print 'undef in file: ', in_file
     if instance in _parsed:
         return {instance: _parsed[instance]}
 
     dep_files = build.getDepPaths(in_file)
+    #print dep_files
     if dep_files:
         for i in dep_files:
             parsed = get_instances([i])
@@ -69,7 +70,7 @@ def asNetlist(inFile, config):
         return True
 
 
-@log_call
+#@log_call
 def analyze(parsed, config={}, _ignore=set()):
     """
     Input: dictionary

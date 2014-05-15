@@ -160,7 +160,7 @@ def connect(host='cs.scircus.ru'):
         sys.exit()
 
 
-@log_call
+#@log_call
 def upload(src, dst, host='cs.scircus.ru'):
     #TODO: atomic uploading
     client = connect(host)
