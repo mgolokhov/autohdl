@@ -215,7 +215,7 @@ def runTests():
         # 'test_form_tcl_script_batch_mode',
     ]
 
-    suite = unittest.TestSuite(map(Tests, tests))
+    suite = unittest.TestSuite(list(map(Tests, tests)))
     unittest.TextTestRunner(verbosity=2).run(suite)
 
 

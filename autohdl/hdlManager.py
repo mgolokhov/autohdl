@@ -7,16 +7,12 @@ import sys
 import cgitb
 cgitb.enable(format='text')
 
-from autohdl.hdlGlobals import implementPath
 from autohdl import structure
 from autohdl import build
-from autohdl import git
 from autohdl import synplify
 from autohdl import aldec
 from autohdl import xilinx
-import webdav
 
-from autohdl.hdlLogger import log_call
 from autohdl import publisher
 
 alog = logging.getLogger(__name__)
@@ -251,4 +247,4 @@ def kungfu(**configScript):
         publisher.publish(config)
 
 if __name__ == '__main__':
-    print 'test'
+    print('test')

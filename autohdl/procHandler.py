@@ -1,8 +1,7 @@
 import subprocess
 import os
 import json
-import sys
-import signal
+
 
 def getConfigure():
     home = os.path.expanduser('~')
@@ -42,14 +41,14 @@ def killAll():
     pythonPids = []
     for k in ['python.exe', 'pythonw.exe']:
         p = subprocess.check_output('cmd /c "tasklist /fo list  /fi "imagename eq {}""'.format(k))
-        print p
+        print(p)
         for i in p.splitlines():
             if "pid" in i.lower():
                 pythonPids.append(i.split(':')[1].strip())
     autohdlPids = load()
     for i in pythonPids:
-        if i in autohdlPids.keys():
-            print 'killing ', i
+        if i in list(autohdlPids.keys()):
+            print('killing ', i)
             #      os.kill(int(i), signal.CTRL_C_EVENT)
             kill(int(i))
         # clean proc list

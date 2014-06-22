@@ -2,13 +2,12 @@ import argparse
 import os
 import re
 import subprocess
-import urlparse
+import urllib.parse
 import sys
 
 from pyparsing import makeHTMLTags, SkipTo
-
 from autohdl import toolchain
-import webdav
+import autohdl.webdav as webdav
 from autohdl.hdlLogger import logging
 import autohdl.doc as doc
 from autohdl.hdlGlobals import autohdlRoot
@@ -16,7 +15,7 @@ from autohdl.hdlGlobals import autohdlRoot
 
 def initialize(path='.'):
     if os.path.exists(path + '/.git'):
-        print 'Already initialized'
+        print('Already initialized')
         return
     gitPath = toolchain.Tool().get('git_batch')
     if gitPath:
@@ -43,7 +42,7 @@ def upload(path='.', addr='http://cs.scircus.ru/git/hdl'):
         subprocess.call(gitPath + ' update-server-info')
         os.chdir('..')
         #_netrc
-        res = urlparse.urlparse(addr)
+        res = urllib.parse.urlparse(addr)
         webdav.upload(src=path + '/.git',
                       dst='{0}/{1}.git'.format(res.path, name),
                       host=res.hostname)
@@ -61,7 +60,7 @@ def pull(config):
                 repos.append(root)
         for repo in repos:
         #      repo /= os.path.basename(os.path.abspath(r))
-            print repo, ' ',
+            print(repo, ' ', end=' ')
             os.chdir(repo)
             subprocess.call('"{}" pull webdav'.format(gitPath))
             os.chdir(cwdWas)
@@ -156,7 +155,7 @@ def valid_firmware(config):
     if config.get('firmware_bit') or config.get('firmware_mcs'):
         return True
     else:
-        print 'Old version of firmware, nothing to upload'
+        print('Old version of firmware, nothing to upload')
         return False
 
 
@@ -170,7 +169,7 @@ def push_firmware(config):
     os.chdir(git_root_dir)
     try:
         p, out, err = _popen('git status -s')
-        print out + err
+        print(out + err)
         mes = config['publisher']['message']
         mes = '{comment}; \n' \
               'technology: {technology}; part: {part}; package: {package}; ' \
@@ -182,12 +181,12 @@ def push_firmware(config):
         )
         config['hdlManager']['git_mes'] = mes
         p, out, err = _popen('git add -A')
-        print out + err
+        print(out + err)
         mes = mes.decode(sys.stdin.encoding).encode('cp1251')
         p, out, err = _popen('git commit -m"_build_: {mes}"'.format(mes=mes))
-        print out + err
+        print(out + err)
         p, out, err = _popen('git push bitbucket --all', shell=False)
-        print out + err
+        print(out + err)
     finally:
         os.chdir(cwd_was)
 

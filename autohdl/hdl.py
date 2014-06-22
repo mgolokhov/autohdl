@@ -1,22 +1,16 @@
 import argparse
-import logging
-import os
-import pprint
+import sys
 import subprocess
-
-from autohdl.hdlLogger import *
-alog = logging.getLogger(__name__)
 
 import autohdl.build as build
 import autohdl.structure as structure
-import autohdl.toolchain as toolchain
 import autohdl.git as git
 import autohdl.hdlManager as hdlManager
 import autohdl.pkg_info as pkg_info
 import autohdl.documentation as documentation
-from autohdl.hdlGlobals import programmatorPath
-import autohdl.programmator.programmator as prog
-import sys
+from autohdl.hdlLogger import logging
+
+alog = logging.getLogger(__name__)
 
 
 def main():
@@ -26,20 +20,11 @@ def main():
                         help='set design name and create structure [default - current directory name]')
     parser.add_argument('-version', action='store_true', help='display package version')
     parser.add_argument('-tb', action='store_true', help='export project to active-hdl')
-    parser.add_argument('-prog', action='store_true', help='run firmware manager')
     parser.add_argument('-edit', choices=['default_build', 'toolchain'], help='edit default build.yaml file')
     args = parser.parse_args()
 
-    if args.prog:
-        if os.path.basename(os.getcwd()) == 'script':
-            if not os.path.exists(programmatorPath):
-                os.mkdir(programmatorPath)
-            os.chdir(programmatorPath)
-        prog.run()
-        sys.exit()
-
     if args.version:
-        alog.info('AutoHDL version: ' + pkg_info.version())
+        print('AutoHDL version: ' + pkg_info.version())
     elif args.doc:
         documentation.handler('index')
     elif args.tb:
@@ -59,7 +44,7 @@ def main():
     else:
         dsn = structure.generate(path=args.name)
         git.initialize(args.name if args.name else '.')
-        print dsn
+        print(dsn)
 
 
 if __name__ == '__main__':

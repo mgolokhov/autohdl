@@ -1,6 +1,8 @@
 import os
-from autohdl.verilog import cache, vpreprocessor, vparser
 from datetime import datetime
+
+from autohdl.verilog import cache, vpreprocessor, vparser
+
 
 def get_instances(file):
     """
@@ -28,9 +30,9 @@ if __name__ == '__main__':
         for root, dirs, files in os.walk(r'D:\repo\github\autohdl\test\verilog\in\func'):
             for f in files:
                 path = root + '/' + f
-                print get_instances(path)
+                print(get_instances(path))
     except Exception as e:
-        print e
-        print path
+        print(e)
+        print(path)
         raise
-    print datetime.now() - start
+    print(datetime.now() - start)

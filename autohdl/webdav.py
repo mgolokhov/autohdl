@@ -1,17 +1,14 @@
 import base64
 import os
-import pprint
 import socket
 import sys
 import getpass
 
 import tinydav
-from pyparsing import makeHTMLTags, SkipTo
 from tinydav.exception import HTTPUserError
-import yaml as yaml
+import yaml
+from autohdl.hdlLogger import logging
 
-from autohdl import build
-from autohdl.hdlLogger import log_call, logging
 
 log = logging.getLogger(__name__)
 
@@ -32,10 +29,10 @@ def checkAuth(host, iUsername, iPassword):
     client = tinydav.HTTPClient(host)
     client.setbasicauth(iUsername, iPassword)
     try:
-        print client.head('/test')
+        print(client.head('/test'))
     except HTTPUserError as e:
         #logging
-        print e
+        print(e)
         logging.debug(e)
         return False
     return True
@@ -48,15 +45,15 @@ def dumpAuth(iPath, iUsername, iPassword):
         with open(iPath, 'wb') as f:
             yaml.dump(contentYaml, f, default_flow_style=False)
     except IOError as e:
-        print e
+        print(e)
 
 
 def askAuth():
-    quit = raw_input('To cancel hit Q, Enter to continue: ')
+    quit = input('To cancel hit Q, Enter to continue: ')
     if quit.lower() == 'q':
-        print 'Exit...'
+        print('Exit...')
         sys.exit(0)
-    username = raw_input('user: ')
+    username = input('user: ')
     password = getpass.getpass('password: ')
     return username, password
 
@@ -80,7 +77,7 @@ def dump_netrc(host, username, password):
 
 
 def authenticate(host='cs.scircus.ru'):
-    print 'Authentication',
+    print('Authentication', end=' ')
     path = sys.prefix + '/Lib/site-packages/autohdl_cfg/open_sesame'
     username, password = loadAuth(path)
     state = 'check'
@@ -115,14 +112,14 @@ def upload_fw(config):
             with open(i, 'rb') as f:
                 content = f.read()
         except IOError:
-            print 'Cant open file ' + os.path.abspath(i)
+            print('Cant open file ' + os.path.abspath(i))
             continue
 
         root, ext = os.path.splitext(os.path.basename(i))
         name = os.path.basename(root)
         folder = config['hdlManager']['webdavBuildPath'] + '/' + dsn_name
-        print 'Uploading folder: ', folder,
-        print client.mkcol(folder)
+        print('Uploading folder: ', folder, end=' ')
+        print(client.mkcol(folder))
         path = '{folder}/{name}'.format(folder=folder,
             name=name,
         )
@@ -130,12 +127,12 @@ def upload_fw(config):
         dst = path + '_info'
         info = "charset=utf-8\n"
         info += config['publisher']['message'].decode(sys.stdin.encoding or 'utf-8').encode('utf-8')
-        print 'Uploading info: ', dst,
-        print client.put(dst, info)
+        print('Uploading info: ', dst, end=' ')
+        print(client.put(dst, info))
 
         dst = path + ext
-        print 'Uploading file: ', dst,
-        print client.put(dst, content)
+        print('Uploading file: ', dst, end=' ')
+        print(client.put(dst, content))
 
 
 def getContent(iFile):
@@ -143,7 +140,7 @@ def getContent(iFile):
         with open(iFile, "rb") as f:
             data = f.read()
     except IOError as e:
-        print e
+        print(e)
         sys.exit()
     return data
 
@@ -155,8 +152,8 @@ def connect(host='cs.scircus.ru'):
         client.setbasicauth(username, password)
         return client
     except socket.gaierror as e:
-        print e
-        print 'Cant connect to server'
+        print(e)
+        print('Cant connect to server')
         sys.exit()
 
 
@@ -168,44 +165,44 @@ def upload(src, dst, host='cs.scircus.ru'):
         d = dst if dst[-1] != '/' else dst[:-1]
         client.get(os.path.dirname(d))
     except HTTPUserError as e:
-        print 'Wrong destination:', dst, e
+        print('Wrong destination:', dst, e)
         sys.exit()
 
     try:
         if 'HTTP/1.1 200 OK' in client.propfind(dst + '//').content:
-            print 'Already exists: ', dst
+            print('Already exists: ', dst)
             sys.exit()
     except HTTPUserError:
         pass
 
     if os.path.isfile(src):
         content = getContent(src)
-        print 'Uploading file: ', dst,
-        print client.put(dst, content)
+        print('Uploading file: ', dst, end=' ')
+        print(client.put(dst, content))
     else:
         path_was = os.getcwd()
-        print dst, client.mkcol(dst)
+        print(dst, client.mkcol(dst))
         try:
             os.chdir(src)
             for root, dirs, files in os.walk('.'):
                 for d in dirs:
                     ad = os.path.join(root, d).replace('\\', '/')
                     web_dst = '{0}{1}'.format(dst, ad.replace('./', '/'))
-                    print web_dst,
-                    print client.mkcol(web_dst)
+                    print(web_dst, end=' ')
+                    print(client.mkcol(web_dst))
                 for f in files:
                     af = os.path.join(root, f).replace('\\', '/')
                     web_dst = '{0}{1}'.format(dst, af.replace('./', '/'))
-                    print web_dst,
+                    print(web_dst, end=' ')
                     content = open(af).read()
 
                     headers = None if content else {'Content-Length': 0}
-                    print client.put(web_dst,
+                    print(client.put(web_dst,
                         content,
-                        headers=headers)
+                        headers=headers))
         finally:
             os.chdir(path_was)
 
 
 if __name__ == '__main__':
-    print authenticate()
+    print(authenticate())

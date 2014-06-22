@@ -1,8 +1,8 @@
-import sys
-import os
 import shutil
 import unittest
+
 from autohdl import toolchain as tc
+
 
 try:
     sys.path.insert(0, '..')

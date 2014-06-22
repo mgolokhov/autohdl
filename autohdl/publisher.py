@@ -1,11 +1,9 @@
-from autohdl import webdav
-from autohdl import structure
-from autohdl import xilinx
-from autohdl import git
-from autohdl import webdav
 import os
 import re
 import logging
+
+from autohdl import webdav
+
 alog = logging.getLogger(__name__)
 
 
@@ -13,7 +11,7 @@ def form_message(config):
     if config['hdlManager']['cl']['message']:
         mes = config['hdlManager']['cl']['message']
     else:
-        mes = raw_input("Enter some information about firmware: ")
+        mes = input("Enter some information about firmware: ")
     config['publisher']['message'] = '{comment}; \n' \
         'technology: {technology}; part: {part}; package: {package}; ' \
         'PROM size: {size} kilobytes; '.format(comment=mes,
@@ -30,9 +28,9 @@ def scan_for_firmwares(config, patterns):
     for afile in os.listdir(path):
         for pattern in patterns:
             res = re.search(afile, pattern)
-            print "search", pattern, afile
-            print res
-            raw_input('next')
+            print("search", pattern, afile)
+            print(res)
+            input('next')
             if res:
                 files.append(os.path.join(path, afile))
     return files
@@ -52,7 +50,7 @@ def publish(config):
         for i in os.listdir(root):
             for k in ['bit', 'mcs']:
                 for name in names:
-                    print name
+                    print(name)
                     res = re.search("{name}_build_(\d)+_(\d)+\.{ext}".format(name=name, ext=k), i)
                     if res:
                         config['publisher']['webdave_files'].append(os.path.join(root, i))

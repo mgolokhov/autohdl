@@ -6,7 +6,7 @@ import time
 from time import strftime
 
 from autohdl import toolchain
-from autohdl.hdlLogger import log_call, logging
+from autohdl.hdlLogger import logging
 
 
 log = logging.getLogger(__name__)
@@ -204,7 +204,7 @@ def form_project_src(config):
                                                                 config['hdlManager']['top'] + '.edf', ))
         log.info('Searching a netlist after synplify')
         for i in range(30):
-            print "."
+            print(".")
             if os.path.exists(synthesis_result_netlist):
                 break
             time.sleep(0.5)
@@ -219,7 +219,7 @@ def form_project_src(config):
                                                                    'synplicity.ucf', ))
         impl_src.add(synthesis_result_netlist)
         if not os.path.exists(synthesis_result_constraint):
-            print 'cant find', synthesis_result_constraint
+            print('cant find', synthesis_result_constraint)
             synthesis_result_constraint = config['hdlManager']['ucf']
         if not os.path.exists(synthesis_result_constraint):
             log.warning('No constraint file')

@@ -106,7 +106,7 @@ def files_data(iPrj):
 
 def defineMacro(iPrj):
     macros = iPrj.get('hdlManager').get('AldecMacros')
-    print macros
+    print(macros)
     if macros:
         return '[DefineMacro]\nGlobal=' + ' '.join(macros) + '\n'
     else:

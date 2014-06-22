@@ -4,7 +4,8 @@ import os
 import sys
 import glob
 
-from autohdl.hdlLogger import log_call, logging
+from autohdl.hdlLogger import logging
+
 
 alog = logging.getLogger(__name__)
 
@@ -50,7 +51,6 @@ class Tool(object):
             self.paths = self.data[self.tool]['path']
             self.util = self.data[self.tool][self.mode]
         except Exception as e:
-            print e
             alog.debug(e)
             raise KeyError('Wrong tag ' + tag)
 
@@ -92,7 +92,6 @@ class Tool(object):
                 self.cfg = yaml.load(f)
                 path = self.cfg[self.tag]
         except Exception as e:
-            print e
             alog.debug(e)
             return False
 
@@ -110,7 +109,7 @@ class Tool(object):
         for i in range(26):
             if (bitmask >> i) & 0x01:
                 driver = chr(i + 65) + ':/'
-                if ctypes.windll.kernel32.GetDriveTypeA(driver) == LOCALDISK:
+                if ctypes.windll.kernel32.GetDriveTypeW(driver) == LOCALDISK:
                     drivers.append(driver)
         return drivers
 
@@ -140,7 +139,7 @@ class Tool(object):
         progressBar.stop()
         if self.fullPaths:
             self.fullPaths = [i.replace('\\', '/') for i in self.fullPaths]
-            self.fullPaths.sort(cmp=None, key=os.path.getmtime, reverse=True)
+            self.fullPaths.sort(key=lambda f: os.path.getmtime(f), reverse=True)
             self.askConfirm()
             self.saveSearchResult()
         else:
@@ -165,13 +164,13 @@ class Tool(object):
         d = dict([(index, path) for index, path in enumerate(self.fullPaths)])
         current = 0
         while True:
-            print '\nFound paths (in use [*]):'
-            for k, v in d.iteritems():
+            print('\nFound paths (in use [*]):')
+            for k, v in d.items():
                 if current == k:
-                    print '[*] {}'.format(v)
+                    print('[*] {}'.format(v))
                 else:
-                    print '[{0}] {1}'.format(k, v)
-            num = raw_input('To change enter number. Leave as is and continue hit Enter:')
+                    print('[{0}] {1}'.format(k, v))
+            num = input('To change enter number. Leave as is and continue hit Enter:')
             if not num:
                 self.result = d[current]
                 return
@@ -180,16 +179,17 @@ class Tool(object):
                     current = int(num)
             except ValueError as exp:
                 alog.debug(exp)
-                print 'Invalid input!'
+                print('Invalid input!')
 
 
 if __name__ == '__main__':
-    Tool().refresh('ise_xflow')
+    #Tool().refresh('ise_xflow')
 #  print Tool().get('ise_impact')
 #  print Tool().get('ise_xflow')
 #  print Tool('avhdl_gui').result
 #  print Tool('synplify_batch').result
-#  print Tool('git_batch').result
+    print(Tool().get('git_batch'))
+    print(Tool().get('synplify_gui'))
 #  print Tool('synplify_gui').result
 #  print Tool('ise_gui').result
 #  print Tool('ise_batch').result

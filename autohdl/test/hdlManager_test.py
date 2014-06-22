@@ -1,7 +1,6 @@
 import unittest
 import os
 import sys
-import logging
 
 from autohdl.hdlManager import kungfu
 
@@ -63,7 +62,7 @@ class Test(unittest.TestCase):
         res = kungfu(top='no_match_top_py_script_content',
                      ucf='top_py_script_content')
         self.assertEqual(res['top'], 'top_build_yaml')
-        print res['ucf']
+        print(res['ucf'])
 
     def test_undefined_top_and_ucf_from_py_script_content(self):
         os.chdir('test_data_hdlManager/dsn2/script')

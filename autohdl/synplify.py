@@ -6,7 +6,6 @@ import sys
 
 from autohdl import toolchain, xilinx_env
 from autohdl.hdlGlobals import synthesisPath
-from autohdl.hdlLogger import log_call
 
 
 log = logging.getLogger(__name__)
@@ -122,14 +121,14 @@ def logging_synthesis(config):
         where = loge.tell()
         res = loge.readline()
         if res.endswith('\n'):
-            print res
+            print(res)
         elif logging_synthesis_done:
             break
         else:
             for dots in range(40):
-                print '.' * dots,
+                print('.' * dots, end=' ')
                 time.sleep(0.1)
-                print '\r', ' ' * dots, '\r',
+                print('\r', ' ' * dots, '\r', end=' ')
                 sys.stdout.flush()
             loge.seek(where)
     loge.close()
@@ -168,7 +167,7 @@ def run_synplify_batch(config):
         # 25 - multiple top levels
         subprocess.check_call(run, env=xilinx_env.get())
     except subprocess.CalledProcessError:
-        print 'Synthesis error'
+        print('Synthesis error')
         logging_synthesis_done = True
         sys.exit(1)
 
@@ -195,7 +194,7 @@ def runTool(config):
     if config['hdlManager']['cl']['synplify'] == 'batch':
         run_synplify_batch(config=config)
         sys.stdout.flush()
-        print parseLog(config=config)
+        print(parseLog(config=config))
     elif config['hdlManager']['cl']['synplify'] == 'gui':
         run_synplify_gui(config=config)
 

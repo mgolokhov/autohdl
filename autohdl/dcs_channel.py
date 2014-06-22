@@ -1,6 +1,6 @@
-import serial
 import argparse
-import sys
+
+import serial
 
 
 parser = argparse.ArgumentParser(description='test dcs channel')
@@ -17,15 +17,15 @@ if ser.isOpen():
     ser.close()
 
 ser.open()
-print ser
+print(ser)
 
 def xoratung(arg):
 #  print arg
     it = iter(arg)
-    res = int(it.next(), 2)
+    res = int(next(it), 2)
     while True:
         try:
-            res = res ^ int(it.next(), 2)
+            res = res ^ int(next(it), 2)
         #      print res
         except StopIteration:
             return str(res)
@@ -47,11 +47,11 @@ def calCrc(d, c='11111111'):
 def parse(packet):
 #  print '\n'.join(packet)
 #  print 'crc ', crc
-    print 'ext tm', int(''.join((packet[0], packet[1][0])), 2)
-    print 'type ', int(packet[1][1:4], 2)
-    print 'adr ', int(''.join((packet[1][4:], packet[2][0])), 2)
-    print 'ka ', int(packet[2][1:4], 2)
-    print 'enc', int(''.join((packet[2][4:], packet[3], packet[4], packet[5])), 2)
+    print('ext tm', int(''.join((packet[0], packet[1][0])), 2))
+    print('type ', int(packet[1][1:4], 2))
+    print('adr ', int(''.join((packet[1][4:], packet[2][0])), 2))
+    print('ka ', int(packet[2][1:4], 2))
+    print('enc', int(''.join((packet[2][4:], packet[3], packet[4], packet[5])), 2))
 
 
 def str2bin(iStr):
@@ -65,7 +65,7 @@ def main():
         try:
             byte = ser.read()
         except KeyboardInterrupt:
-            print 'exit...'
+            print('exit...')
             return
         res = str2bin(byte)
         #    print res
@@ -91,11 +91,11 @@ def main():
         elif state == 'tail':
             if res[0] == '1' and res[1] == '0':
                 if ''.join(newcrc[2:]) == res[2:]:
-                    print 'crc OK'
+                    print('crc OK')
                 else:
-                    print 'crc BAD'
+                    print('crc BAD')
                 parse(packet)
-                print '\n'
+                print('\n')
             state = 'idle'
 
 

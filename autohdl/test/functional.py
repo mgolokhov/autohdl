@@ -28,8 +28,8 @@ def run():
         res = diff(fake_repo_gold + '/' + dsnName,
             dst_fake_repo + '/' + dsnName)
         pprint.pprint(res)
-        print 'TEST____________', 'FAILED' if any(res.values()) else 'PASSED'
-        print 'Run time ', time.clock() - startTest
+        print('TEST____________', 'FAILED' if any(res.values()) else 'PASSED')
+        print('Run time ', time.clock() - startTest)
 
 
 def _getTree(iPath, iIgnoreExt=[]):
@@ -73,7 +73,7 @@ def cloneGoldRepo():
         for dir in dirs:
             if dir in ['aldec', 'parsed']:
                 shutil.rmtree(os.path.join(root, dir))
-    print 'Cloned from gold repo'
+    print('Cloned from gold repo')
 
 
 if __name__ == '__main__':

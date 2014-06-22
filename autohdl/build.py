@@ -5,8 +5,8 @@ import sys
 
 import yaml
 from autohdl.hdlGlobals import buildFilePath
+from autohdl.hdlLogger import logging
 
-from autohdl.hdlLogger import log_call, logging
 
 log = logging.getLogger(__name__)
 
@@ -31,7 +31,7 @@ def compare_global(config):
     if unknown:
         logging.warning('Unknown keys in config: ' + str(unknown))
         try:
-            raw_input('Hit return to continue or ctrl+c to exit')
+            input('Hit return to continue or ctrl+c to exit')
         except KeyboardInterrupt:
             sys.exit(1)
 
@@ -130,11 +130,11 @@ def default():
 
 def isModified(content, file):
     h = hashlib.sha1()
-    h.update(yaml.dump(content, default_flow_style=False))
+    h.update(yaml.dump(content, default_flow_style=False).encode('utf-8'))
     shaNew = h.hexdigest()
     h = hashlib.sha1()
     try:
-        h.update(open(file).read())
+        h.update(open(file).read().encode('utf-8'))
     except IOError:
         return True
     shaOld = h.hexdigest()

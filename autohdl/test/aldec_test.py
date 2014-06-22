@@ -1,6 +1,4 @@
 import re
-import os
-import shutil
 import unittest
 
 from autohdl.aldec import *

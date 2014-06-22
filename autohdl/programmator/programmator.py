@@ -1,14 +1,13 @@
-import Queue
-from Tkinter import *
+import queue
+from tkinter import *
 import threading
-from ttk import *
-from tkFileDialog import askdirectory
-from tkFont import Font
+from tkinter.ttk import *
+from tkinter.filedialog import askdirectory
+from tkinter.font import Font
 import os
 
-import model
-
-from dialog_ import Dialog
+from . import model
+from .dialog_ import Dialog
 
 
 class MyDialog(Dialog):
@@ -37,10 +36,10 @@ class MyDialog(Dialog):
 class Application(Frame):
     def log_action(self, arg):
         if arg:
-            if not isinstance(arg, basestring):
+            if not isinstance(arg, str):
                 arg = str(arg)
-            if type(arg) is not unicode:
-                arg = unicode(arg, encoding='utf-8')
+            if type(arg) is not str:
+                arg = str(arg, encoding='utf-8')
             self.text2.insert(END, arg + '\n')
             self.text2.yview(END)
             #    self.update()
@@ -62,9 +61,9 @@ class Application(Frame):
         try:
             if not self.queue.empty():
                 self.listbox.delete(0, END)
-                for i in self.queue.get(0).values():
+                for i in list(self.queue.get(0).values()):
                     self.listbox.insert(END, i['comment'])
-        except Queue.Empty:
+        except queue.Empty:
             pass
         self.after(100, self.refresh_listbox)
 
@@ -85,7 +84,7 @@ class Application(Frame):
 
     def filter_handle(self, event=None):
         filtered = []
-        for i in self.data.firmwares.values():
+        for i in list(self.data.firmwares.values()):
             if self.afilter.get() in i['comment']:
                 filtered.append(i['comment'])
         self.listbox.delete(0, END)
@@ -189,7 +188,7 @@ class Application(Frame):
         top.title('AutoHDL firmware manager v0.4')
         top.resizable(width=FALSE, height=FALSE)
 
-        self.queue = Queue.Queue()
+        self.queue = queue.Queue()
         self.data = model.Data(log_action=self.log_action, queue=self.queue)
         self.create_widgets()
         self.global_hotkeys()

@@ -2,7 +2,6 @@ import os
 import hashlib
 
 import yaml
-
 from autohdl.hdlLogger import logging
 from autohdl.pkg_info import version
 from autohdl.hdlGlobals import parsedCachePath, buildFilePath
@@ -23,10 +22,10 @@ def shaOK(data):
     if data:
         h = hashlib.sha1()
         with open(data['file_path']) as f:
-            h.update(f.read())
+            h.update(f.read().encode('utf-8'))
         for i in data['includes']['paths']:
             with open(i) as f:
-                h.update(f.read())
+                h.update(f.read().encode('utf-8'))
         sha = h.hexdigest()
         if sha == data['sha']:
             return True
@@ -44,7 +43,7 @@ def clean():
                 if os.path.splitext(i)[1] == '.vcache':
                     os.remove(CACHE_PATH + '/' + i)
             except Exception as e:
-                print e
+                print(e)
 
 
 def refreshCache(_once=[]):
@@ -54,7 +53,7 @@ def refreshCache(_once=[]):
     try:
         with open(buildFilePath) as f:
             h = hashlib.sha1()
-            h.update(f.read())
+            h.update(f.read().encode('utf-8'))
             shaNew = h.hexdigest()
         sha_build = CACHE_PATH + '/sha_build'
         try:
@@ -101,10 +100,10 @@ def dump(data):
     if data['cachable']:
         h = hashlib.sha1()
         with open(data['file_path']) as f:
-            h.update(f.read())
+            h.update(f.read().encode('utf-8'))
         for i in data['includes']['paths']:
             with open(i) as f:
-                h.update(f.read())
+                h.update(f.read().encode('utf-8'))
         data['sha'] = h.hexdigest()
         data['version'] = version()
         # curdir = <dsn>/script

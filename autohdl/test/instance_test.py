@@ -1,11 +1,9 @@
-import sys
-import os
 import shutil
 import unittest
 
-
 from autohdl.instance import *
 from autohdl.hdlLogger import logging
+
 
 log = logging.getLogger(__name__)
 
@@ -569,7 +567,7 @@ class Test2(unittest.TestCase):
             shutil.rmtree('tmp_test_dir')
 
     def test_1(self):
-        print ParseFile('../src/top1.v').getResult()
+        print(ParseFile('../src/top1.v').getResult())
 
 
 if __name__ == '__main__':
@@ -590,5 +588,5 @@ if __name__ == '__main__':
 #           'test_parseFile2'
 #           ]
     tests = ['test_1', ]
-    suite = unittest.TestSuite(map(Test2, tests))
+    suite = unittest.TestSuite(list(map(Test2, tests)))
     unittest.TextTestRunner(verbosity=2).run(suite)

@@ -64,7 +64,9 @@ class MyLogger(logging._loggerClass):
                 record.__dict__[key] = extra[key]
         return record
 
-logging.setLoggerClass(MyLogger)
+
+#logging.setLoggerClass(MyLogger)
+
 
 @decorator
 def log_call(fn, *args, **kw):
@@ -72,10 +74,10 @@ def log_call(fn, *args, **kw):
     logger = logging.getLogger(fn.__module__)
     try:
         frame = sys._getframe(2)
-        varnames = fn.func_code.co_varnames
+        varnames = fn.__code__.co_varnames
         arglist = ', '.join([i[1] + '=' + str(i[0]) for i in zip(args, varnames)])
         if kw:
-            arglist += ', '.join(['{0}={1}'.format(k, v) for k, v in kw.viewitems()])
+            arglist += ', '.join(['{0}={1}'.format(k, v) for k, v in kw.items()])
 
         logger.debug("%(func)s IN (%(args)s)" % (
             {'func': fn.__name__,

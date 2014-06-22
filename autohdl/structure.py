@@ -6,10 +6,10 @@ from collections import namedtuple
 from autohdl import instance
 from autohdl import hdlGlobals
 from autohdl import progressBar
+from autohdl.hdlLogger import logging
 
-from autohdl.hdlLogger import log_call, logging
 
-log = logging.getLogger(__name__)
+alog = logging.getLogger(__name__)
 
 
 def generate(path=''):
@@ -22,7 +22,7 @@ def generate(path=''):
     root = os.path.abspath(path)
     if not os.path.exists(root):
         os.makedirs(root)
-    log.info('Design root: ' + root)
+    alog.info('Design root: ' + root)
     for i in hdlGlobals.predefDirs:
         path = os.path.join(root, i)
         if not os.path.exists(path):
@@ -104,19 +104,19 @@ def search(directory='.',
     resFiles = []
     for root, dirs, files in os.walk(os.path.abspath(directory)):
         for i in set(dirs) & ignoreDir:
-            log.debug('ignore directory: ' + i)
+            alog.debug('ignore directory: ' + i)
             dirs.remove(i)
         for f in files[:]:
-            log.debug('file: ' + f)
+            alog.debug('file: ' + f)
             ext = os.path.splitext(f)[1]
             if ext in ignoreExt:
                 files.remove(f)
-                log.debug('ignore file (ignore list) ' + f)
+                alog.debug('ignore file (ignore list) ' + f)
             elif onlyExt and (ext not in onlyExt):
                 files.remove(f)
-                log.debug('ignore file (only list) ' + f)
+                alog.debug('ignore file (only list) ' + f)
             else:
-                log.debug('add file ' + f)
+                alog.debug('add file ' + f)
                 resFiles.append(os.path.join(root, f))
     return resFiles
 
@@ -141,7 +141,7 @@ def setNetlists(config):
 
 def setSrc(config):
     config.setdefault('structure', dict())
-    log.info('Analyzing dependences...')
+    alog.info('Analyzing dependences...')
     progressBar.run()
     setMainSrc(config)
     setDepSrc(config)
@@ -162,7 +162,7 @@ def setDepSrc(config):
             break
 
     config['structure']['parsed'] = parsed
-    allSrcFiles = {os.path.abspath(val['path']) for val in parsed.values()}
+    allSrcFiles = {os.path.abspath(val['path']) for val in list(parsed.values())}
     config['structure']['depSrc'] = list(allSrcFiles - set(config['structure']['mainSrc']))
 
 
@@ -171,4 +171,4 @@ if __name__ == '__main__':
     res += [search(directory=i) for i in ['verilog', 'programmator']]
     #  print '\n'.join(res)
 
-    print res
+    print(res)

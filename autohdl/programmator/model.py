@@ -3,8 +3,7 @@ import netrc
 import os
 import shutil
 import subprocess
-from urlparse import urlparse
-import re
+from urllib.parse import urlparse
 
 #from autohdl.hdlLogger import  logging
 #log = logging.getLogger(__name__)
@@ -45,7 +44,7 @@ class Data():
         res = requests.get(url=BB_API, auth=(u, p))
         if auth_as_other_user or res.status_code != 200:
             res = requests.get(url=BB_API, auth=(self.user, self.password))
-            print res
+            print(res)
             if res.status_code != 200:
                 self.log_action('Authentication required. Status code: {}'.format(res.status_code))
                 return
@@ -70,8 +69,8 @@ class Data():
                              stdout=subprocess.PIPE
         )
         out, err = p.communicate()
-        out = unicode(out, encoding='utf-8')
-        err = unicode(err, encoding='utf-8')
+        out = str(out, encoding='utf-8')
+        err = str(err, encoding='utf-8')
         return p, out, err
 
     def get_firmwares(self):
@@ -89,12 +88,12 @@ class Data():
         p, out, err = self._popen('git pull --all'.format(self.current_repo))
         self.log_action('')
         if 'fatal' in err:
-            print err
+            print(err)
             return
         p, out, err = self._popen('git log --all --grep="_build_" --format="%s$$sha$$%h"')
         self.log_action('')
         if 'fatal' in err:
-            print err
+            print(err)
             return
         self.firmwares = dict()
         for i, v in enumerate(out.splitlines()):
@@ -128,7 +127,7 @@ class Data():
             u, _, p = _netrc.hosts[host] # no host -> KeyError
             if user != u or password != p:
                 raise KeyError
-            print 'no need auth_dump'
+            print('no need auth_dump')
             return
         except (IOError, netrc.NetrcParseError):
             content = 'machine {host}\n' \

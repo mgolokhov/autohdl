@@ -1,4 +1,5 @@
-from pyparsing import Keyword, Literal, nestedExpr, Optional, Word, alphas, alphanums, SkipTo
+from pyparsing import Keyword, nestedExpr, Optional, Word, alphas, alphanums
+
 
 class Parser(object):
     """
@@ -121,4 +122,4 @@ module dcs_packet_v2_tb;
 endmodule
 
 '''
-    print Parser({'preprocessed': t, 'file_path': 'aaaa'}).parsed
+    print(Parser({'preprocessed': t, 'file_path': 'aaaa'}).parsed)

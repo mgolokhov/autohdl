@@ -2,14 +2,13 @@ import os
 import shutil
 import subprocess
 
-from autohdl.hdlLogger import log_call
 from autohdl import structure
 from autohdl import build
 from autohdl import hdlGlobals
 from autohdl import template_avhdl_adf
 from autohdl import toolchain
 from autohdl.hdlGlobals import aldecPath
-import pprint
+
 
 #@log_call
 def extend(config):
@@ -87,7 +86,7 @@ def gen_compile_cfg(config):
         try:
             res = '[file:.\\{0}]\nEnabled=1'.format(os.path.relpath(path=path, start=aldecPath))
         except ValueError:
-            print 'FUCKUP ' * 10
+            print('FUCKUP ' * 10)
             res = '[file:{0}]\nEnabled=1'.format(i)
         src.append(res)
     with open(aldecPath + '/compile.cfg', 'w') as f:

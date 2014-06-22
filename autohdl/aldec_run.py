@@ -24,7 +24,7 @@ alog.addHandler(consoleHandler)
 def calcSha(afile):
     with open(afile) as f:
         h = hashlib.sha1()
-        h.update(f.read())
+        h.update(f.read().encode('utf-8'))
         return h.hexdigest()
 
 
@@ -147,7 +147,7 @@ def synchBuild():
             with open(config) as f:
                 content = f.read()
                 h = hashlib.sha1()
-                h.update(content)
+                h.update(content.encode('utf-8'))
                 shaNew = h.hexdigest()
                 if shaNew != shaOld:
                     filesNew = parse(content)

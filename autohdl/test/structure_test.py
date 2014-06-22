@@ -1,7 +1,5 @@
 import copy
-import os
 import pprint
-import shutil
 import unittest
 import logging
 
@@ -218,7 +216,7 @@ def runTests():
         'test_search2',
     ]
 
-    suite = unittest.TestSuite(map(Tests, tests))
+    suite = unittest.TestSuite(list(map(Tests, tests)))
     unittest.TextTestRunner(verbosity=3).run(suite)
 
 

@@ -1,9 +1,0 @@
-file_path: ..\..\dsn2\src\f2.v
-includes:
-  paths: []
-parsed:
-  f2:
-    instances: !!set {f3: null}
-    path: ..\..\dsn2\src\f2.v
-sha: d15b8361ed324fd7e71ba77597c725c0c4dd4721
-version: 2.7.834

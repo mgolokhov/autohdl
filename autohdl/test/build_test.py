@@ -1,7 +1,4 @@
 import unittest
-import sys
-import os
-import shutil
 
 try:
     sys.path.insert(0, '..')
@@ -61,8 +58,8 @@ class Tests(unittest.TestCase):
         f.close()
 
         dsnName = 'myDesign'
-        expected = {u'myDesign': [os.path.abspath(os.getcwd() + '/..').replace('\\', '/')],
-                    u'some': [os.path.abspath(os.getcwd() + '/.').replace('\\', '/'),
+        expected = {'myDesign': [os.path.abspath(os.getcwd() + '/..').replace('\\', '/')],
+                    'some': [os.path.abspath(os.getcwd() + '/.').replace('\\', '/'),
                               os.path.abspath(os.getcwd() + '/..').replace('\\', '/')]}
 
         self.assertDictEqual(expected, getDeps(iDsnName=dsnName, iBuildFile=buildFile))
@@ -201,7 +198,7 @@ def runTests():
         'test_getSrcExtensions5'
     ]
 
-    suite = unittest.TestSuite(map(Tests, tests))
+    suite = unittest.TestSuite(list(map(Tests, tests)))
     unittest.TextTestRunner(verbosity=3).run(suite)
 
 if __name__ == '__main__':

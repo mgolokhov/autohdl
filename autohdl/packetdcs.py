@@ -13,10 +13,10 @@ class PacketDcs(object):
     def _xor(self, arg):
     #  print arg
         it = iter(arg)
-        res = int(it.next(), 2)
+        res = int(next(it), 2)
         while True:
             try:
-                res = res ^ int(it.next(), 2)
+                res = res ^ int(next(it), 2)
             #      print res
             except StopIteration:
                 return str(res)
@@ -36,15 +36,15 @@ class PacketDcs(object):
 
     def parse(self):
         """get data and check crc"""
-        print 'packet:\n', '\n'.join([hex(int(''.join(i), 2)) for i in self.packet])
+        print('packet:\n', '\n'.join([hex(int(''.join(i), 2)) for i in self.packet]))
         for i in self.packet[:-1]:
             self.crc = self.crc0x31(i[::-1], self.crc[::-1])
-        print 'calc crc:', ''.join(self.crc[2:]), hex(int(''.join(self.crc[2:]), 2))
-        print 'got  crc:', self.packet[-1][2:], hex(int(self.packet[-1][2:], 2))
+        print('calc crc:', ''.join(self.crc[2:]), hex(int(''.join(self.crc[2:]), 2)))
+        print('got  crc:', self.packet[-1][2:], hex(int(self.packet[-1][2:], 2)))
         for i in range(2, 8):
             if self.packet[-1][i] != self.crc[i]:
                 self.d[i - 2] += 1
-        print self.d
+        print(self.d)
 
     def clean(self):
         self.byteCnt = 0
@@ -66,7 +66,7 @@ class PacketDcs(object):
                 self.packet.append(data)
                 self.byteCnt += 1
             else:
-                print 'Mask err body'
+                print('Mask err body')
                 self.clean()
                 self.state = 'head'
             if self.byteCnt == self.BYTES - 1:
@@ -76,7 +76,7 @@ class PacketDcs(object):
                 self.packet.append(data)
                 self.parse()
             else:
-                print 'Mask err tail'
+                print('Mask err tail')
             self.clean()
             self.state = 'head'
 

@@ -1,4 +1,3 @@
-import os
 import unittest
 
 from autohdl.synplify import *

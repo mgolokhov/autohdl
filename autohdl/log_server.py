@@ -1,7 +1,7 @@
-import cPickle
+import pickle
 import logging
 from logging.handlers import DEFAULT_TCP_LOGGING_PORT
-import SocketServer
+import socketserver
 import struct
 import select
 import socket
@@ -14,23 +14,25 @@ def shutdownLogServer():
     # 0 - connect ok
     # 10061 no socket
     # 10056 already binded
-    print 'shutting down log server...'
+    print ('shutting down log server', end='')
     rootLogger = logging.getLogger('')
     rootLogger.setLevel(logging.DEBUG)
     socketHandler = logging.handlers.SocketHandler('localhost', DEFAULT_TCP_LOGGING_PORT)
     rootLogger.addHandler(socketHandler)
     logging.warning('shutdown_log_server')
-    for i in range(20):
+    for i in range(30):
+        logging.warning('shutdown_log_server')
+        print(".", end='')
         s = socket.socket()
         if not s.connect_ex(('localhost', DEFAULT_TCP_LOGGING_PORT)):
-            time.sleep(5)
+            time.sleep(1)
         else:
-            print 'log server were shut down'
+            print('\nlog server is down')
             return
-    print 'FAILED to shutdown log server'
+    print('FAILED to shutdown log server')
 
 
-class LogRecordStreamHandler(SocketServer.StreamRequestHandler):
+class LogRecordStreamHandler(socketserver.StreamRequestHandler):
     """Handler for a streaming logging request.
 
     This basically logs the record using whatever logging policy is
@@ -59,7 +61,7 @@ class LogRecordStreamHandler(SocketServer.StreamRequestHandler):
             self.handleLogRecord(record)
 
     def unPickle(self, data):
-        return cPickle.loads(data)
+        return pickle.loads(data)
 
     def handleLogRecord(self, record):
         # if a name is specified, we use the named logger rather than the one
@@ -76,7 +78,7 @@ class LogRecordStreamHandler(SocketServer.StreamRequestHandler):
         logger.handle(record)
 
 
-class LogRecordSocketReceiver(SocketServer.ThreadingTCPServer):
+class LogRecordSocketReceiver(socketserver.ThreadingTCPServer):
     """simple TCP socket-based logging receiver suitable for testing.
     """
 
@@ -84,7 +86,7 @@ class LogRecordSocketReceiver(SocketServer.ThreadingTCPServer):
     def __init__(self, host='localhost',
                  port=logging.handlers.DEFAULT_TCP_LOGGING_PORT,
                  handler=LogRecordStreamHandler):
-        SocketServer.ThreadingTCPServer.__init__(self, (host, port), handler)
+        socketserver.ThreadingTCPServer.__init__(self, (host, port), handler)
         self.abort = 0
         self.timeout = 1
         self.logname = None

@@ -3,11 +3,10 @@ import re
 from collections import OrderedDict
 
 from pyparsing import quotedString, cppStyleComment
-
 from autohdl import build
-from autohdl.hdlLogger import log_call, logging
+from autohdl.hdlLogger import logging
+from autohdl.hdlLogger import logging
 
-from autohdl.hdlLogger import log_call, logging
 
 log = logging.getLogger(__name__)
 
@@ -131,7 +130,7 @@ class Preprocessor(object):
         blocks[branch] = []
         nested = 0
         while True:
-            line = iContentIter.next()
+            line = next(iContentIter)
             if '`ifdef' in line or '`ifndef' in line:
                 nested += 1
             elif nested and '`endif' in line:
@@ -149,7 +148,7 @@ class Preprocessor(object):
             else:
                 blocks[branch].append(line)
 
-        for k, v in blocks.iteritems():
+        for k, v in blocks.items():
             words = k.split()
             if len(words) >= 2:
                 if '`ifndef' in k:
@@ -226,5 +225,4 @@ class Preprocessor(object):
 
 
 if __name__ == '__main__':
-    print\
-    Preprocessor(r'D:\repo\github\autohdl\test\fake_repo_gold\dsn2\src/dspuva16.v').result
+    print(Preprocessor(r'D:\repo\github\autohdl\test\fake_repo_gold\dsn2\src/dspuva16.v').result)

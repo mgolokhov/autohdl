@@ -1,5 +1,5 @@
-from Tkinter import *
-from ttk import *
+from tkinter import *
+from tkinter.ttk import *
 
 class Dialog(Toplevel):
     def __init__(self, parent, title=None):
