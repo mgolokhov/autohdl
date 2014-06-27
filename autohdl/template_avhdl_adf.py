@@ -95,8 +95,8 @@ def files(iPrj):
 
 
 def files_data(iPrj):
-    import pprint
-    pprint.pprint(iPrj['aldec']['TestBenchSrc'])
+    #import pprint
+    #pprint.pprint(iPrj['aldec']['TestBenchSrc'])
     srcTb = ['.\\' + os.path.relpath(i) + '=Verilog Test Bench'
              for i in iPrj['aldec']['TestBenchSrc']
              if os.path.splitext(i)[1] in ['.v']]
@@ -106,7 +106,7 @@ def files_data(iPrj):
 
 def defineMacro(iPrj):
     macros = iPrj.get('hdlManager').get('AldecMacros')
-    print(macros)
+    #print(macros)
     if macros:
         return '[DefineMacro]\nGlobal=' + ' '.join(macros) + '\n'
     else:

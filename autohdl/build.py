@@ -11,6 +11,7 @@ from autohdl.hdlLogger import logging
 log = logging.getLogger(__name__)
 
 
+#runs by import
 def update_global():
     buildDefault = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data', 'build.yaml')
     contentDefault = load(file=buildDefault, cacheEnable=False)
@@ -22,6 +23,8 @@ def update_global():
     if contentDefault.get('cfg_version') > contentGlobal.get('cfg_version', 0):
         #rewrites default
         shutil.copy(buildDefault, buildGlobal)
+
+#update_global()
 
 
 def compare_global(config):

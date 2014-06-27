@@ -17,8 +17,8 @@ def loadAuth(iPath):
     try:
         with open(iPath) as f:
             content = yaml.load(f)
-            username = base64.decodestring(content[base64.encodestring('username')])
-            password = base64.decodestring(content[base64.encodestring('password')])
+            username = base64.decodebytes(content[base64.encodebytes('username')])
+            password = base64.decodebytes(content[base64.encodebytes('password')])
     except Exception as e:
         # logging e
         logging.debug(e)
@@ -27,7 +27,11 @@ def loadAuth(iPath):
 
 def checkAuth(host, iUsername, iPassword):
     client = tinydav.HTTPClient(host)
-    client.setbasicauth(iUsername, iPassword)
+    print("OH "*100)
+    print(iUsername, iPassword)
+    print(type(iUsername), type(iPassword))
+    input('next')
+    client.setbasicauth(iUsername.encode('utf-8'), iPassword.encode('utf-8'))
     try:
         print(client.head('/test'))
     except HTTPUserError as e:
@@ -39,8 +43,8 @@ def checkAuth(host, iUsername, iPassword):
 
 
 def dumpAuth(iPath, iUsername, iPassword):
-    contentYaml = {base64.encodestring('username'): base64.encodestring(iUsername),
-                   base64.encodestring('password'): base64.encodestring(iPassword)}
+    contentYaml = {base64.decodebytes('username'): base64.encodebytes(iUsername),
+                   base64.decodebytes('password'): base64.encodebytes(iPassword)}
     try:
         with open(iPath, 'wb') as f:
             yaml.dump(contentYaml, f, default_flow_style=False)

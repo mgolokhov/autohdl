@@ -15,7 +15,6 @@ import autohdl.progressBar as progressBar
 
 
 class Tool(object):
-    #@log_call
     def __init__(self):
         self.data = {'avhdl': {'gui': 'avhdl.exe',
                                'batch': None,
@@ -35,25 +34,26 @@ class Tool(object):
                              'sh': 'sh.exe',
                              'path': ['/Git/']}
                      }
-        self.pathCfg = sys.prefix + '/Lib/site-packages/autohdl_cfg/toolchain.yaml'
-        if not os.path.exists(self.pathCfg):
-            adir = os.path.dirname(self.pathCfg)
+        self.path_config = sys.prefix + '/Lib/site-packages/autohdl_cfg/toolchain.yaml'
+        self.result = None
+        self.tag = None
+        self.metadata = None
+
+    def create_config(self):
+        if not os.path.exists(self.path_config):
+            adir = os.path.dirname(self.path_config)
             if not os.path.exists(adir):
                 os.mkdir(adir)
-            open(self.pathCfg, 'w').close()
-        self.result = None
+            open(self.path_config, 'w').close()
 
-
-    def checkTag(self, tag):
+    def check_metadata(self, tag):
         self.tag = tag
         try:
             self.tool, self.mode = tag.split('_')
-            self.paths = self.data[self.tool]['path']
-            self.util = self.data[self.tool][self.mode]
+            self.metadata = self.data[self.tool]['path']
         except Exception as e:
             alog.debug(e)
             raise KeyError('Wrong tag ' + tag)
-
 
     def get(self, tag):
         """
@@ -63,45 +63,39 @@ class Tool(object):
         # try toolchain.yaml
         # else search
         # dump to toolchain.yaml
-        self.checkTag(tag)
-        path = self.getFromCfg()
+        self.check_metadata(tag)
+        path = self.getFromCfg(tag)
         if path:
             return path
         self.searchLight()
         return self.result
 
-
     def refresh(self, tag=''):
         if tag:
-            self.checkTag(tag)
-            self.getFromCfg()
+            self.check_metadata(tag)
+            self.getFromCfg(tag)
             self.searchLight()
             return self.result
         else:
             try:
-                os.remove(self.pathCfg)
+                os.remove(self.path_config)
             except IOError as e:
                 alog.debug(e)
 
-
-    #@log_call
-    def getFromCfg(self):
+    def getFromCfg(self, tag):
         self.cfg = {}
         try:
-            with open(self.pathCfg, 'r') as f:
+            self.create_config()
+            with open(self.path_config, 'r') as f:
                 self.cfg = yaml.load(f)
-                path = self.cfg[self.tag]
+                path = self.cfg[tag]
         except Exception as e:
             alog.debug(e)
             return False
-
         if os.path.exists(path):
             return path
-
         return False
 
-
-    #@log_call
     def getWin32Drivers(self):
         drivers = []
         LOCALDISK = 3
@@ -113,7 +107,6 @@ class Tool(object):
                     drivers.append(driver)
         return drivers
 
-
     def find_files(self, directory, pattern):
         for root, dirs, files in os.walk(directory):
             for basename in files:
@@ -121,12 +114,11 @@ class Tool(object):
                     filename = os.path.join(root, basename)
                     yield filename
 
-    #@log_call
     def searchLight(self):
         alog.info('Searching {}...'.format(self.tag))
         progressBar.run()
         logicDrives = self.getWin32Drivers()
-        paths = self.paths
+        paths = self.metadata
         rootDirs = []
         for logicDrive in logicDrives:
             for path in paths:
@@ -135,7 +127,7 @@ class Tool(object):
         self.fullPaths = []
         for i in rootDirs:
             for nested in ['', '/*/', '/*/' * 2, '/*/' * 3, '/*/' * 4, '/*/' * 5, '/*/' * 6]:
-                self.fullPaths += glob.glob('{0}{1}{2}'.format(i, nested, self.util))
+                self.fullPaths += glob.glob('{0}{1}{2}'.format(i, nested, self.data[self.tool][self.mode]))
         progressBar.stop()
         if self.fullPaths:
             self.fullPaths = [i.replace('\\', '/') for i in self.fullPaths]
@@ -151,7 +143,7 @@ class Tool(object):
         try:
             if not self.cfg:
                 self.cfg = dict()
-            with open(self.pathCfg, 'w') as f:
+            with open(self.path_config, 'w') as f:
                 self.cfg.update({self.tag: '{}'.format(self.result)})
                 yaml.dump(self.cfg, f, default_flow_style=False)
         except (IOError, YAMLError) as exp:
