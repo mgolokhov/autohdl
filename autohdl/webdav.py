@@ -1,212 +1,138 @@
-import base64
-import os
-import socket
-import sys
 import getpass
+import locale
+import os
+from netrc import netrc
+import requests
+from urllib.parse import urlparse
+import logging
+import sys
 
-import tinydav
-from tinydav.exception import HTTPUserError
-import yaml
-from autohdl.hdlLogger import logging
-
-
-log = logging.getLogger(__name__)
-
-def loadAuth(iPath):
-    username, password = '', ''
-    try:
-        with open(iPath) as f:
-            content = yaml.load(f)
-            username = base64.decodebytes(content[base64.encodebytes('username')])
-            password = base64.decodebytes(content[base64.encodebytes('password')])
-    except Exception as e:
-        # logging e
-        logging.debug(e)
-    return username, password
+try:
+    import autohdl.hdlLogger
+except ImportError:
+    import hdlLogger
+alog = logging.getLogger(__name__)
 
 
-def checkAuth(host, iUsername, iPassword):
-    client = tinydav.HTTPClient(host)
-    print("OH "*100)
-    print(iUsername, iPassword)
-    print(type(iUsername), type(iPassword))
-    input('next')
-    client.setbasicauth(iUsername.encode('utf-8'), iPassword.encode('utf-8'))
-    try:
-        print(client.head('/test'))
-    except HTTPUserError as e:
-        #logging
-        print(e)
-        logging.debug(e)
-        return False
-    return True
+#src type could be string or path to file
+def upload(src, dst, src_type='file'):
+    c = Client()
+    c.upload(src, dst, src_type)
 
 
-def dumpAuth(iPath, iUsername, iPassword):
-    contentYaml = {base64.decodebytes('username'): base64.encodebytes(iUsername),
-                   base64.decodebytes('password'): base64.encodebytes(iPassword)}
-    try:
-        with open(iPath, 'wb') as f:
-            yaml.dump(contentYaml, f, default_flow_style=False)
-    except IOError as e:
-        print(e)
+class Client(object):
+    def __init__(self):
+        self.session = requests.session()
+        #self.session.headers = {'Content-Type': 'application/octet-stream'}
+        self.auth = None
+        self.host = None
+        self.baseurl = None
+        self.path = None
+        self.content = None
+        self.dirs = None
+        self.path_to_check_auth = None
+        self.username = None
+        self.password = None
 
+    def read_src(self, path):
+        with open(path, 'rb') as f:
+            self.content = f.read()
 
-def askAuth():
-    quit = input('To cancel hit Q, Enter to continue: ')
-    if quit.lower() == 'q':
-        print('Exit...')
-        sys.exit(0)
-    username = input('user: ')
-    password = getpass.getpass('password: ')
-    return username, password
+    def parse_dst(self, url):
+        url = url.strip('/')
+        res = urlparse(url)
+        if res.scheme and res.netloc and res.path:
+            self.host = res.netloc
+            self.baseurl = res.scheme+'://'+res.netloc
+            self.path = res.path
+            self.dirs = [i for i in res.path.split('/') if i]
+            self.path_to_check_auth = self.baseurl+'/'+self.dirs[0]
+        else:
+            raise TypeError("Wrong url: " + str(res))
 
+    def check_auth(self, default=True):
+        #auto check ~/_netrc
+        if default:
+            auth = ()
+        else:
+            auth = (self.username, self.password)
+        if self.session.request(method='head',
+                                url=self.path_to_check_auth,
+                                auth=auth).status_code == 200:
+            alog.info('Authentication Ok')
+            return True
 
-def dump_netrc(host, username, password):
-    path = os.environ['USERPROFILE'] + '/_netrc'
-    addNew = False
-    try:
-        with open(path, 'r') as f:
-            context = f.read()
-            for i in [host, username, password]:
-                if i not in context:
-                    addNew = True
-    except IOError as e:
-        log.debug(e)
-        addNew = True
-    if addNew:
-        data = 'machine {0}\nlogin {1}\npassword {2}\n'.format(host, username, password)
-        with open(path, 'w') as f:
-            f.write(data)
+    def authenticate(self):
+        alog.info('Authentication...')
+        if self.check_auth():
+            return
+        state = 'ask'
+        while True:
+            if state == 'check':
+                if self.check_auth(default=False):
+                    state = 'dump'
+                else:
+                    state = 'ask'
+            elif state == 'ask':
+                self.ask_auth()
+                state = 'check'
+            elif state == 'dump':
+                self.dump_auth()
+                return
 
+    def ask_auth(self):
+        quitung = input('Need Authentication. To cancel hit Q or Enter to continue: ')
+        if quitung.lower() == 'q':
+            alog.info('Exit...')
+            sys.exit(0)
+        self.username = input('user: ')
+        self.password = getpass.getpass('password: ')
 
-def authenticate(host='cs.scircus.ru'):
-    print('Authentication', end=' ')
-    path = sys.prefix + '/Lib/site-packages/autohdl_cfg/open_sesame'
-    username, password = loadAuth(path)
-    state = 'check'
-    while True:
-        if state == 'check':
-            if checkAuth(host, username, password):
-                state = 'dump'
-            else:
-                state = 'ask'
-        elif state == 'ask':
-            username, password = askAuth()
-            state = 'check'
-        elif state == 'dump':
-            dumpAuth(path, username, password)
-            dump_netrc(host, username, password)
-            return username, password
-
-
-def exists(path, client):
-    try:
-        client.get(path)
-    except HTTPUserError:
-        sys.exit()
-
-
-def upload_fw(config):
-    # dsn_name/implement/file
-    client = connect(config['hdlManager']['host'])
-    dsn_name = config['hdlManager']['dsn_name']
-    for i in config['publisher']['webdave_files']:
+    def dump_auth(self):
+        path = os.path.expanduser("~\\_netrc")
         try:
-            with open(i, 'rb') as f:
-                content = f.read()
-        except IOError:
-            print('Cant open file ' + os.path.abspath(i))
-            continue
-
-        root, ext = os.path.splitext(os.path.basename(i))
-        name = os.path.basename(root)
-        folder = config['hdlManager']['webdavBuildPath'] + '/' + dsn_name
-        print('Uploading folder: ', folder, end=' ')
-        print(client.mkcol(folder))
-        path = '{folder}/{name}'.format(folder=folder,
-            name=name,
-        )
-
-        dst = path + '_info'
-        info = "charset=utf-8\n"
-        info += config['publisher']['message'].decode(sys.stdin.encoding or 'utf-8').encode('utf-8')
-        print('Uploading info: ', dst, end=' ')
-        print(client.put(dst, info))
-
-        dst = path + ext
-        print('Uploading file: ', dst, end=' ')
-        print(client.put(dst, content))
-
-
-def getContent(iFile):
-    try:
-        with open(iFile, "rb") as f:
-            data = f.read()
-    except IOError as e:
-        print(e)
-        sys.exit()
-    return data
-
-
-def connect(host='cs.scircus.ru'):
-    try:
-        username, password = authenticate(host)
-        client = tinydav.WebDAVClient(host)
-        client.setbasicauth(username, password)
-        return client
-    except socket.gaierror as e:
-        print(e)
-        print('Cant connect to server')
-        sys.exit()
-
-
-#@log_call
-def upload(src, dst, host='cs.scircus.ru'):
-    #TODO: atomic uploading
-    client = connect(host)
-    try:
-        d = dst if dst[-1] != '/' else dst[:-1]
-        client.get(os.path.dirname(d))
-    except HTTPUserError as e:
-        print('Wrong destination:', dst, e)
-        sys.exit()
-
-    try:
-        if 'HTTP/1.1 200 OK' in client.propfind(dst + '//').content:
-            print('Already exists: ', dst)
-            sys.exit()
-    except HTTPUserError:
-        pass
-
-    if os.path.isfile(src):
-        content = getContent(src)
-        print('Uploading file: ', dst, end=' ')
-        print(client.put(dst, content))
-    else:
-        path_was = os.getcwd()
-        print(dst, client.mkcol(dst))
+            n = netrc(path)
+            n.hosts.update({self.host:
+                          (self.username, None, self.password)})
+            new_content = str(n).replace("'", '')
+        except Exception as e:
+            alog.warning(e)
+            new_content = 'machine {host}\n' \
+                          'login {user}\n' \
+                          'password {password}'.format(host=self.host,
+                                                       user=self.username,
+                                                       password=self.password)
         try:
-            os.chdir(src)
-            for root, dirs, files in os.walk('.'):
-                for d in dirs:
-                    ad = os.path.join(root, d).replace('\\', '/')
-                    web_dst = '{0}{1}'.format(dst, ad.replace('./', '/'))
-                    print(web_dst, end=' ')
-                    print(client.mkcol(web_dst))
-                for f in files:
-                    af = os.path.join(root, f).replace('\\', '/')
-                    web_dst = '{0}{1}'.format(dst, af.replace('./', '/'))
-                    print(web_dst, end=' ')
-                    content = open(af).read()
+            with open(path, 'w') as f:
+                f.write(new_content)
+        except IOError as e:
+            alog.warning(e)
+            alog.warning('Cannot save auth to file: '+path)
 
-                    headers = None if content else {'Content-Length': 0}
-                    print(client.put(web_dst,
-                        content,
-                        headers=headers))
-        finally:
-            os.chdir(path_was)
+    def upload(self, src, dst, src_type='file'):
+        alog.info('Uploading\nsrc = {}\ndst = {}'.format(src, dst))
+        self.parse_dst(dst)
+        if src_type == 'file':
+            self.read_src(src)
+        else:
+            self.content = src.encode('utf-8')
+        self.authenticate()
+        start = self.baseurl
+        for i in self.dirs[:-1]:
+            start = start + '/' + i
+            if self.session.request(method='HEAD', url=start).status_code != 200:
+                self.session.request(method='MKCOL', url=start)
+        self.session.request(method='PUT', url=dst, data=self.content)
+        r = self.session.request(method='get', url=dst)
+        alog.info('Status: {}({})'.format(r.reason, r.status_code))
 
 
 if __name__ == '__main__':
-    print(authenticate())
+    alog.info('ping')
+    i = "русишь нихт nicht"
+
+    print("default enc: {}\npreferred enc: {}\nstdin enc: {}".format(sys.getdefaultencoding(),
+                                                                    locale.getpreferredencoding(),
+                                                                    sys.stdin.encoding))
+    upload(i, 'http://cs.scircus.ru/test/distout/rtl/info.txt', src_type='string')
+    upload('drafts/aaadraft.py', 'http://cs.scircus.ru/test/distout/rtl/pypy.txt')

@@ -1,0 +1,58 @@
+import unittest
+import os
+import sys
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+import webdav
+import unittest.mock as mock
+
+# check paths
+# check auth load
+# check auth ask
+# ckeck upload
+class Test(unittest.TestCase):
+    def setUp(self):
+        self.client = webdav.Client()
+
+    def tearDown(self):
+        pass
+
+    def test_read_src(self):
+        pass
+        # src = 'some_valid_path_to_firmware'
+        # content = self.client.read_src(src)
+        # self.assertEqual('file ok', content)
+
+    def _check_empty_fields(self):
+        self.assertFalse(self.client.baseurl)
+        self.assertFalse(self.client.path)
+
+    def test_check_dst_valid(self):
+        self._check_empty_fields()
+        self.client.check_dst('http://cs.scircus.ru/test/distout')
+        self.assertEqual(self.client.baseurl, 'http://cs.scircus.ru', msg='Wrong baseurl')
+        self.assertEqual(self.client.path, '/test/distout', msg='Wrong path')
+
+    def test_check_dst_invalid_url(self):
+        self._check_empty_fields()
+        self.assertRaises(TypeError, self.client.check_dst, 'smth/wrong/totally')
+
+    def test_check_dst_invalid_emply_path(self):
+        self._check_empty_fields()
+        self.assertRaises(TypeError, self.client.check_dst, 'http://cs.scircus.ru')
+
+    def test_check_dst_invalid_empty_path(self):
+        self._check_empty_fields()
+        self.assertRaises(TypeError, self.client.check_dst, 'http://cs.scircus.ru/')
+
+    @mock.patch('webdav.netrc')
+    def test_load_auth(self, mock_netrc):
+        mock_netrc.return_value.authenticators.return_value = ('user1', None, 'passwd1')
+        self.client.host = 'host'
+        self.assertEqual(self.client.load_auth(), ('user1', 'passwd1'))
+        mock_netrc.return_value.authenticators.assert_called_with('host')
+
+
+
+if __name__ == '__main__':
+    unittest.main()

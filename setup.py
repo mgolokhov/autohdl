@@ -51,7 +51,7 @@ if 'upload' in sys.argv:
 setup(name='AutoHDL',
       version=pkg_info.version(),
       cmdclass={'install': install},
-      description='TEST',#'Automatization Utilities for HDL projects',
+      description='Automatization Utilities for HDL projects',
       author='Maxim Golokhov',
       author_email='hexwer@gmail.com',
       platforms=['win32'],
@@ -61,7 +61,7 @@ setup(name='AutoHDL',
       scripts=['autohdl/hdl.py',
                'autohdl/hdl.bat'],
       include_package_data=True,
-      install_requires=['tinydav', 'pyyaml', 'decorator', 'pyparsing == 2.0.1', 'requests'],
+      install_requires=['pyyaml', 'decorator', 'pyparsing == 2.0.1', 'requests'],
       )
 
 

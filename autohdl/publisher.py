@@ -1,6 +1,8 @@
 import os
 import re
+import sys
 import logging
+from io import StringIO
 
 from autohdl import webdav
 
@@ -50,11 +52,30 @@ def publish(config):
         for i in os.listdir(root):
             for k in ['bit', 'mcs']:
                 for name in names:
-                    print(name)
                     res = re.search("{name}_build_(\d)+_(\d)+\.{ext}".format(name=name, ext=k), i)
                     if res:
                         config['publisher']['webdave_files'].append(os.path.join(root, i))
     if config['publisher']['webdave_files']:
-        webdav.upload_fw(config)
+        for i in config['publisher']['webdave_files']:
+            src = i
+            dst = '/'.join(['http:/',
+                            config['hdlManager']['host'],
+                            config['hdlManager']['webdavBuildPath'],
+                            config['hdlManager']['dsn_name'],
+                            os.path.basename(i)])
+            webdav.upload(src, dst)
+        # create info file
+        src = StringIO()
+        src.write('charset=utf-8\n')
+        src.write(config['publisher']['message'])
+        src.seek(0)
+        i = config['publisher']['webdave_files'][0]
+        name, _ = os.path.splitext(os.path.basename(i))
+        dst = '/'.join(['http:/',
+                        config['hdlManager']['host'],
+                        config['hdlManager']['webdavBuildPath'],
+                        config['hdlManager']['dsn_name'],
+                        name+'_info'])
+        webdav.upload(src.read(), dst, src_type='string')
     else:
         alog.error('No file to publish')
