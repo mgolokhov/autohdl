@@ -6,9 +6,10 @@ import sys
 
 from autohdl import toolchain, xilinx_env
 from autohdl.hdlGlobals import synthesisPath
+from autohdl import structure
 
 
-log = logging.getLogger(__name__)
+alog = logging.getLogger(__name__)
 
 
 #@log_call
@@ -40,14 +41,18 @@ def setParams(config):
     f.close()
 
 
-#@log_call
 def setSrc(config):
     srcMain = config['structure']['mainSrc']
     srcDep = config['structure'].get('depSrc') or []
-    ucf = config['hdlManager'].get('ucf')
-    ucf = [ucf] if ucf else []
+    sdc = config['hdlManager'].get('sdc')
+    ucf = [config['hdlManager'].get('ucf')] or []
+    if not sdc:
+        alog.warning('Set sdc constraint file before synthesis')
+        sdc = []
+    else:
+        sdc = [sdc]
     #TODO: got duplicates, guess some bugs in structure
-    srcFiles = set([i.replace('\\', '/') for i in srcMain + srcDep + ucf])
+    srcFiles = set([i.replace('\\', '/') for i in srcMain + srcDep + sdc + ucf])
     config['synplify']['srcFiles'] = '\n'.join(['add_file "{0}"'.format(i) for i in srcFiles])
 
 
@@ -69,7 +74,7 @@ def extend(config):
             try:
                 os.makedirs(config['synplify']['pathSynthesis'])
             except OSError as e:
-                log.warning(e)
+                alog.warning(e)
 
     synthesis_template = os.path.join(os.path.dirname(__file__), 'data', 'template_synplify_prj')
 
@@ -85,17 +90,21 @@ def extend(config):
 
 #@log_call
 def parseLog(config):
-    logFile = os.path.abspath(config['synplify']['pathLog'])
-    if os.path.exists(logFile):
-        f = open(logFile, 'r')
+    log_file = os.path.abspath(config['synplify']['pathLog'])
+    errors = True  # no log file
+    if os.path.exists(log_file):
+        f = open(log_file, 'r')
         res = f.read()
-        log.info('See logfile: ' + logFile)
-        log.info('Errors: {e}; Warnings: {w}'.format(
-            e=res.count('@E:'),
+        alog.info('See logfile: ' + log_file)
+        errors = res.count('@E:')
+        alog.info('Errors: {e}; Warnings: {w}'.format(
+            e=errors,
             w=res.count('@W')
         ))
-
-    return logFile
+    alog.info(log_file)
+    if errors:
+        sys.exit(1)
+    return log_file
 
 
 import threading
@@ -111,10 +120,10 @@ def logging_synthesis(config):
             loge = open(config['synplify']['pathLog'], 'r')
             break
         except IOError as e:
-            log.debug(e)
+            alog.debug(e)
 
     if not loge:
-        log.error('Cant start synthesis see ' + synthesisPath + '/stdout.log')
+        alog.error('Cant start synthesis see ' + synthesisPath + '/stdout.log')
         sys.exit(1)
 
     while True:
@@ -166,8 +175,8 @@ def run_synplify_batch(config):
         # 24 - product-configuration error
         # 25 - multiple top levels
         subprocess.check_call(run, env=xilinx_env.get())
-    except subprocess.CalledProcessError:
-        print('Synthesis error')
+    except subprocess.CalledProcessError as e:
+        alog.error('Synthesis error '+str(e))
         logging_synthesis_done = True
         sys.exit(1)
 
@@ -194,7 +203,7 @@ def runTool(config):
     if config['hdlManager']['cl']['synplify'] == 'batch':
         run_synplify_batch(config=config)
         sys.stdout.flush()
-        print(parseLog(config=config))
+        parseLog(config=config)
     elif config['hdlManager']['cl']['synplify'] == 'gui':
         run_synplify_gui(config=config)
 
@@ -207,6 +216,6 @@ def run(config):
     logging.info('Synthesis stage...')
     # changing current location to synthesis directory
     runTool(extend(config))
-    log.info('Synthesis done!')
+    alog.info('Synthesis done!')
 
 

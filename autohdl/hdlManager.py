@@ -29,19 +29,20 @@ def validateTop(iTop, config):
 
 
 #@log_call
-def getFullPathToUcf(iUcf):
+def getFullPathToConstraint(apath, constraint='ucf'):
     # could be
     # empty
     # valid full path
     # wrong name\path
     # just name without extension
     # name with extension
-    if not iUcf:
+    if not apath:
         return False
-    if os.path.exists(iUcf):
-        return os.path.abspath(iUcf).replace('\\', '/')
+    if os.path.exists(apath):
+        return os.path.abspath(apath).replace('\\', '/')
     # <filename>.ucf or just <filename>
-    path = os.path.abspath('../src/{}.ucf'.format(os.path.splitext(iUcf)[0])).replace('\\', '/')
+    res = '../src/{}.{}'.format(os.path.splitext(apath)[0], constraint)
+    path = os.path.abspath(res).replace('\\', '/')
     if os.path.exists(path):
         return path
 
@@ -73,39 +74,40 @@ def setValidTop(arguments, config):
 
 
 #@log_call
-def setValidUcf(config):
+def setValid(config, constraint='ucf'):
     top = config['hdlManager'].get('top')
     if top:
-        ucfNameAsTop = getFullPathToUcf(top)
+        ucfNameAsTop = getFullPathToConstraint(top, constraint)
         if ucfNameAsTop:
-            config['hdlManager']['ucf'] = ucfNameAsTop
-            alog.info('Using ucf name same as top module')
+            config['hdlManager'][constraint] = ucfNameAsTop
+            alog.info('Using {} name same as top module'.format(constraint))
             return
 
-    ucfFromScript = getFullPathToUcf(config['hdlManager']['ucf'])
+    ucfFromScript = getFullPathToConstraint(config['hdlManager'][constraint], constraint)
     if ucfFromScript:
-        config['hdlManager']['ucf'] = ucfFromScript
-        alog.info('Using ucf file from script')
+        config['hdlManager'][constraint] = ucfFromScript
+        alog.info('Using {} file from script'.format(constraint))
         return
 
-    ucfFromBuild = getFullPathToUcf(build.load().get('ucf'))
+    ucfFromBuild = getFullPathToConstraint(build.load().get(constraint), constraint)
     if ucfFromBuild:
-        config['hdlManager']['ucf'] = ucfFromBuild
-        alog.info('Using ucf file from build.yaml')
+        config['hdlManager'][constraint] = ucfFromBuild
+        alog.info('Using {} file from build.yaml'.format(constraint))
         return
 
     # if only one ucf file
-    res = glob.glob('../src/*.ucf')
-    if len(res) == 1:
-        config['hdlManager']['ucf'] = getFullPathToUcf(res[0])
-        alog.info('Found only one ucf file, using it')
-        return
-    elif len(res) == 0:
-        alog.info('Cant find ucf file')
-    else:
-        alog.info('Found many ucf files, cant define which one to use')
 
-    alog.warning('Ucf file undefined')
+    # res = glob.glob('../src/*.{}'.format(constraint))
+    # if len(res) == 1:
+    #     config['hdlManager'][constraint] = getFullPathToConstraint(res[0], constraint)
+    #     alog.info('Found only one {} file, using it'.format(constraint))
+    #     return
+    # elif len(res) == 0:
+    #     alog.info('Cant find {} file'.format(constraint))
+    # else:
+    #     alog.info('Found many {} files, cant define which one to use'.format(constraint))
+
+    alog.warning('{} file undefined'.format(constraint))
 
 
 #@log_call
@@ -150,6 +152,7 @@ def printInfo(config):
                'package    : {package}\n'
                'top module : {top}\n'
                'ucf        : {ucf}\n'
+               'sdc        : {sdc}\n'
                'PROM size  : {size} kilobytes\n'
                + '#' * 40 +
                '').format(technology=config['hdlManager'].get('technology'),
@@ -157,6 +160,7 @@ def printInfo(config):
                           package=config['hdlManager'].get('package'),
                           top=config['hdlManager'].get('top'),
                           ucf=config['hdlManager'].get('ucf'),
+                          sdc=config['hdlManager'].get('sdc'),
                           size=config['hdlManager'].get('size'),
                           upload=config['hdlManager'].get('upload')))
 
@@ -205,7 +209,8 @@ def kungfu(**configScript):
     arguments = parser.parse_args()
 
     setValidTop(arguments, config)
-    setValidUcf(config)
+    setValid(config, constraint='ucf')
+    setValid(config, constraint='sdc')
     config['hdlManager']['dsn_root'] = os.path.dirname(os.getcwd())
     config['hdlManager']['dsn_name'] = os.path.basename(config['hdlManager']['dsn_root'])
 

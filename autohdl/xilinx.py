@@ -88,6 +88,8 @@ project set top "{top}"
 
 {process_run}
 
+
+
 project close
 """
 
@@ -120,6 +122,20 @@ def mk_new(config):
         log.error(message)
         sys.exit(message)
 
+process_with_handler = '''
+process run "Generate Programming File"
+
+set my_status [ process get "Generate Programming File" status ]
+puts $my_status
+if {( $my_status == "up_to_date" ) ||
+    ( $my_status == "warnings" ) } {
+     puts "Process Ok"
+} else {
+    puts "Process failed"
+    exit 1
+}
+'''
+
 
 def mk_project_script(config):
     xfiles = ['xfile add "{}"'.format(afile.replace('\\', '/')) for afile in form_project_src(config)]
@@ -138,7 +154,7 @@ def mk_project_script(config):
         speed=config['hdlManager']['speed_grade'],
         xfiles='\n'.join(xfiles),
         top=config['hdlManager']['top'],
-        process_run='process run "Generate Programming File"' if gen_prog_file else ""
+        process_run=process_with_handler if gen_prog_file else ""
     )
 
     with open(config['xilinx']['script_path'], 'w') as f:
@@ -153,18 +169,20 @@ def run_shit(config):
     execution_fifo.append(first_run)
     is_gui_mode = (config['hdlManager']['cl']['xilinx'] == 'gui-clean' or
                    config['hdlManager']['cl']['xilinx'] == 'gui')
-    if is_gui_mode:
-        config['xilinx']['project_file'] = os.path.join(config['xilinx']['project_directory'],
-                                                        config['hdlManager']['top'] + '.xise')
-        second_run = '{program} {arguments}'.format(program=toolchain.Tool().get('ise_gui'),
-                                                    arguments=config['xilinx']['project_file'])
-        execution_fifo.append(second_run)
+    # if is_gui_mode:
+    #     config['xilinx']['project_file'] = os.path.join(config['xilinx']['project_directory'],
+    #                                                     config['hdlManager']['top'] + '.xise')
+    #     second_run = '{program} {arguments}'.format(program=toolchain.Tool().get('ise_gui'),
+    #                                                 arguments=config['xilinx']['project_file'])
+    #     execution_fifo.append(second_run)
     if not config.get('TDD'):
         for i in execution_fifo:
-            if subprocess.call(i):
+            log.info('calling '+str(i))
+            res = subprocess.call(i)
+            if res:
                 message = 'Error to run: '+first_run
                 log.error(message)
-                sys.exit(message)
+                sys.exit(1)
     else:
         config['tdd']['execution_fifo'] = execution_fifo
 
@@ -212,22 +230,25 @@ def form_project_src(config):
             log.error('Cannot find netlist. Try synthesis first.')
             sys.exit(1)
 
-        synthesis_result_constraint = os.path.abspath(os.path.join('..',
-                                                                   'autohdl',
-                                                                   'synthesis',
-                                                                   config['hdlManager']['top'],
-                                                                   'synplicity.ucf', ))
+        for constraint in ['synplicity.ucf', config['hdlManager']['top']+'.ncf']:
+            synthesis_result_constraint = os.path.abspath(os.path.join('..',
+                                                                       'autohdl',
+                                                                       'synthesis',
+                                                                       config['hdlManager']['top'],
+                                                                       constraint, ))
+            if not os.path.exists(synthesis_result_constraint):
+                message = 'Cannot find constraint file: {}'.format(synthesis_result_constraint)
+                log.error(message)
+                raise LookupError(message)
+            impl_src.add(synthesis_result_constraint)
+
+
         impl_src.add(synthesis_result_netlist)
-        if not os.path.exists(synthesis_result_constraint):
-            print('cant find', synthesis_result_constraint)
-            synthesis_result_constraint = config['hdlManager']['ucf']
-        if not os.path.exists(synthesis_result_constraint):
-            log.warning('No constraint file')
     else:
         synthesis_result_constraint = config['hdlManager']['ucf']
         for i in config['structure']['mainSrc']+config['structure']['depSrc']:
             impl_src.add(i)
-    impl_src.add(synthesis_result_constraint)
+        impl_src.add(synthesis_result_constraint)
     netlists = config['structure'].get('netlists') or []  # should type list
     for i in netlists:
         impl_src.add(i)

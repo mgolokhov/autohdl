@@ -29,7 +29,7 @@ def scan_for_firmwares(config, patterns):
     path = os.path.join(config['hdlManager']['dsn_root'], 'resource')
     for afile in os.listdir(path):
         for pattern in patterns:
-            res = re.search(afile, pattern)
+            res = re.search(pattern, afile)
             print("search", pattern, afile)
             print(res)
             input('next')
