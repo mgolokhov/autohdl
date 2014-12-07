@@ -55,6 +55,10 @@ def _toRelative(content, file):
     if depSrc:
         content['dep'] = [os.path.relpath(i, path) for i in depSrc]
 
+    src_order = content.get("src_order")
+    if src_order:
+        content['src_order'] = [os.path.relpath(i, path) for i in src_order]
+
     includePath = content.get('include_path')
     if includePath:
         if type(includePath) is not list:
@@ -62,7 +66,7 @@ def _toRelative(content, file):
         content['include_path'] = [os.path.relpath(i, path) for i in includePath]
 
 
-#@log_call
+#TODO: fix code duplication
 def _toAbsolute(content, file):
     """
     Convert all paths in content to absolute;
@@ -78,6 +82,18 @@ def _toAbsolute(content, file):
                 content['ucf'] = os.path.normpath(rootPath + '/' + pathUCF)
         else:
             log.warning('Wrong path: ' + pathUCF)
+
+    src_order = content.get("src_order")
+    if src_order:
+        order = []
+        for i in src_order:
+            if not os.path.isabs(i):
+                i = os.path.normpath(rootPath + '/' + i)
+            if os.path.exists(i):
+                order.append(i)
+            else:
+                log.warning("Wrong path: " + i)
+        content['src_order'] = order
 
     depSrc = content.get('dep')
     if depSrc:

@@ -52,7 +52,8 @@ def setSrc(config):
     else:
         sdc = [sdc]
     #TODO: got duplicates, guess some bugs in structure
-    srcFiles = set([i.replace('\\', '/') for i in srcMain + srcDep + sdc + ucf])
+    # srcFiles = set([i.replace('\\', '/') for i in srcMain + srcDep + sdc + ucf])
+    srcFiles = [i.replace('\\', '/') for i in srcMain + srcDep + sdc + ucf]
     config['synplify']['srcFiles'] = '\n'.join(['add_file "{0}"'.format(i) for i in srcFiles])
 
 

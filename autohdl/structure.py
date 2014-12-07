@@ -129,6 +129,10 @@ def setMainSrc(config):
                                             onlyExt=hdlGlobals.hdlFileExt,
                                             ignoreDir=hdlGlobals.ignoreRepoDir)
     config['structure']['mainSrcParsed'] = instance.get_instances(config['structure']['mainSrc'])
+    src_order = config['hdlManager'].get('src_order')
+    if src_order:
+        main_src_ordered = src_order + [i for i in config['structure']['mainSrc'] if i not in src_order]
+        config['structure']['mainSrc'] = main_src_ordered
 
 
 def setNetlists(config):

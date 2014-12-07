@@ -1,6 +1,6 @@
 ignoreRepoDir = ['.git', '.svn']
 predefDirs = ['src', 'TestBench', 'resource', 'script']
-verilogFileExt = '.v .vei .veo .vl .vlb .vlg .vm .vmd .vo .vq .vqm .vt'.split()
+verilogFileExt = '.v .vei .veo .vl .vlb .vlg .vm .vmd .vo .vq .vqm .vt .sv'.split()
 vhdlFileExt = '.vhd .vhdl .vhi .vhm .vhn .vho .vhq .vhs .tvhd .vht'.split()
 
 hdlFileExt = verilogFileExt + vhdlFileExt

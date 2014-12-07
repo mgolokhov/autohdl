@@ -133,6 +133,7 @@ def generate(iPrj):
                 'FLOW_TYPE=HDL\n'
                 'LANGUAGE=VERILOG\n'
                 'REFRESH_FLOW=1\n'
+
                 + 'SYNTH_TOOL={SYNTH_TOOL}\n'.format(SYNTH_TOOL=synth_tool(iPrj)) +
                 'RUN_MODE_SYNTH=1\n'
                 + 'IMPL_TOOL={IMPL_TOOL}\n'.format(IMPL_TOOL=impl_tool(iPrj)) +

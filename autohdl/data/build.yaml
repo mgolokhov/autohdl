@@ -1,11 +1,13 @@
 # All comments will be deleted after first run
-cfg_version: 3
+cfg_version: 4
 # DCS2
 technology: Spartan3e
 part: xc3s250e
 package: tq144
 speed_grade: -5
 size: 256
+
+src_order: ""
 
 AldecMacros: ""
 
@@ -26,7 +28,7 @@ AldecMacros: ""
 # Path to constraint file, could be absolute path,
 # after first run will be converted to relative.
 ucf: ""
-sdc:
+sdc: ""
 # Top module name
 top: ""
 
