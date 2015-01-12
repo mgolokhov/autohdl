@@ -2,6 +2,7 @@ import hashlib
 import os
 import shutil
 import sys
+import copy
 
 import yaml
 from autohdl.hdlGlobals import buildFilePath
@@ -165,9 +166,10 @@ def isModified(content, file):
 def dump(content, file=buildFilePath):
     #todo: compare old & new shas in parsed/build_sha
     path = os.path.abspath(file)
-    _toRelative(content, path)
-    if isModified(content, path):
-        yaml.dump(content, open(path, 'w'), default_flow_style=False)
+    content_copy = copy.deepcopy(content)
+    _toRelative(content_copy, path)
+    if isModified(content_copy, path):
+        yaml.dump(content_copy, open(path, 'w'), default_flow_style=False)
 
 
 #@log_call

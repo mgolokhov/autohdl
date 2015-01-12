@@ -135,11 +135,9 @@ def logging_synthesis(config):
         elif logging_synthesis_done:
             break
         else:
-            for dots in range(40):
-                print('.' * dots, end=' ')
-                time.sleep(0.1)
-                print('\r', ' ' * dots, '\r', end=' ')
-                sys.stdout.flush()
+            print('.', end=' ')
+            time.sleep(1)
+            sys.stdout.flush()
             loge.seek(where)
     loge.close()
 

@@ -11,7 +11,7 @@ alog = logging.getLogger(__name__)
 
 import yaml as yaml
 from yaml.error import YAMLError
-import autohdl.progressBar as progressBar
+import autohdl.progress_bar as progress_bar
 
 
 class Tool(object):
@@ -116,7 +116,7 @@ class Tool(object):
 
     def searchLight(self):
         alog.info('Searching {}...'.format(self.tag))
-        progressBar.run()
+        progress_bar.run()
         logicDrives = self.getWin32Drivers()
         paths = self.metadata
         rootDirs = []
@@ -128,7 +128,7 @@ class Tool(object):
         for i in rootDirs:
             for nested in ['', '/*/', '/*/' * 2, '/*/' * 3, '/*/' * 4, '/*/' * 5, '/*/' * 6]:
                 self.fullPaths += glob.glob('{0}{1}{2}'.format(i, nested, self.data[self.tool][self.mode]))
-        progressBar.stop()
+        progress_bar.stop()
         if self.fullPaths:
             self.fullPaths = [i.replace('\\', '/') for i in self.fullPaths]
             self.fullPaths.sort(key=lambda f: os.path.getmtime(f), reverse=True)

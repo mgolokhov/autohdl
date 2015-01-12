@@ -183,6 +183,7 @@ def kungfu(**configScript):
 
     validateLocation()
     configBuild = build.load(cacheEnable=False)
+
     build.compare_global(configScript)
     build.compare_global(configBuild)
     build.dump(configBuild)

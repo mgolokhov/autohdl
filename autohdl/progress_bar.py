@@ -11,8 +11,13 @@ def progressBar(l=['|', '/', '-', '\\', 0]):
         time.sleep(0.4)
 
 
+def progress_bar2():
+    while not done:
+        sys.stdout.write(".")
+        time.sleep(1)
+
 def run():
-    t = threading.Thread(target=progressBar)
+    t = threading.Thread(target=progress_bar2)
     t.setDaemon(1)
     t.start()
 

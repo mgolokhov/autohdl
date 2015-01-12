@@ -5,7 +5,7 @@ from collections import namedtuple
 
 from autohdl import instance
 from autohdl import hdlGlobals
-from autohdl import progressBar
+from autohdl import progress_bar
 from autohdl.hdlLogger import logging
 
 
@@ -146,11 +146,11 @@ def setNetlists(config):
 def setSrc(config):
     config.setdefault('structure', dict())
     alog.info('Analyzing dependences...')
-    progressBar.run()
+    progress_bar.run()
     setMainSrc(config)
     setDepSrc(config)
     setNetlists(config)
-    progressBar.stop()
+    progress_bar.stop()
 
 
 #@log_call
