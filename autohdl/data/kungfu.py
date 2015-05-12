@@ -1,19 +1,25 @@
-from autohdl import hdlManager
-# There are 3 scopes while setting design configuration.
-# Priority: 1 - argument list, 2 - this script, 3 - build.yaml
+from autohdl import manager
+# installation config (co)
+# user config
+# local project config (command line + this script)
 
-hdlManager.kungfu(
-    # Set top module name.
-    # top = '',
+cfg = {
+    'technology': 'Spartan3e',
+    'part': 'xc3s250e',
+    'package': 'tq144',
+    'speed_grade': '-5',
+    'eeprom_bytes': '256',
+    'src': [],
+    'ignore_undefined_instances': [],
+    'ucf': "",
+    'sdc': "",
+    'top_module': "",
+    'include_path': "",
+    # common stuff
+    'webdav_src_path': 'git/hdl',
+    'webdav_build_path': 'test/distout/rtl',
+    'host': 'cs.scircus.ru',
+    'webdav_files': [],
+}
 
-    # Set constraint file.
-    # Could be a valid relative path (keep in mind repo)
-    # or just a name, if it locates in the current design folder.
-    # ucf = '',
-
-    # Set flash size (e.g. 256, 512)
-    # size = '',
-
-    # Uncomment to upload firmware on WebDAV server.
-    # upload = True
-)
+manager.kungfu(cfg=cfg)

@@ -2,7 +2,7 @@ import unittest
 import os
 import sys
 
-from autohdl.hdlManager import kungfu
+from autohdl.manager import kungfu
 
 
 class Test(unittest.TestCase):

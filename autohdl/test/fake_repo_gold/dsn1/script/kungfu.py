@@ -1,8 +1,8 @@
-from autohdl import hdlManager
+from autohdl import manager
 # There are 3 scopes while setting design configuration.
 # Priority: 1 - argument list, 2 - this script, 3 - build.yaml
 
-hdlManager.kungfu(
+manager.kungfu(
     # Set top module name.
     # iTop = '',
 

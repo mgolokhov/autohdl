@@ -5,7 +5,7 @@ import subprocess
 import autohdl.build as build
 import autohdl.structure as structure
 import autohdl.git as git
-import autohdl.hdlManager as hdlManager
+import autohdl.manager as hdlManager
 import autohdl.pkg_info as pkg_info
 import autohdl.documentation as documentation
 from autohdl.hdlLogger import logging

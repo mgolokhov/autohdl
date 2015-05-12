@@ -5,7 +5,7 @@ import sys
 import copy
 
 import yaml
-from autohdl.hdlGlobals import buildFilePath
+from autohdl.globals import buildFilePath
 from autohdl.hdlLogger import logging
 
 

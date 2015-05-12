@@ -16,7 +16,6 @@ def get():
         d = {}
         #create key=value environment variables
         for i in res.split(os.linesep):
-            log.warning(i)
             res = i.split('=')
             if len(res) == 2:
                 d.update({res[0]: res[1]})

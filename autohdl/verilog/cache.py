@@ -4,9 +4,9 @@ import hashlib
 import yaml
 from autohdl.hdlLogger import logging
 from autohdl.pkg_info import version
-from autohdl.hdlGlobals import parsedCachePath, buildFilePath
+from autohdl.globals import parsedCachePath, buildFilePath
 
-
+FILE_CACHE = os.path.join(os.path.expanduser("~"), ".sublimesystemverilog", "parsed_cache.json")
 CACHE_PATH = os.path.abspath(parsedCachePath)
 CACHE_LOAD = True
 CACHE_DUMP = True

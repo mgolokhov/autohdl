@@ -17,9 +17,11 @@ def get_instances(file):
     if cached:
         return cached['parsed']
     preprDict = vpreprocessor.Preprocessor(file).result
-    res = vparser.Parser(preprDict).result
-    cache.dump(res)
-    return res['parsed']
+    # res = vparser.Parser(preprDict).result
+    res = vparser.Parser(preprDict['preprocessed']).parse()
+    preprDict.update({'parsed': res})
+    cache.dump(preprDict)
+    return res
 
 
 if __name__ == '__main__':

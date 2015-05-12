@@ -5,7 +5,7 @@ import logging
 import sys
 
 from autohdl import toolchain, xilinx_env
-from autohdl.hdlGlobals import synthesisPath
+from autohdl.globals import synthesisPath
 from autohdl import structure
 
 

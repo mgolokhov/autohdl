@@ -4,7 +4,7 @@ import shutil
 from collections import namedtuple
 
 from autohdl import instance
-from autohdl import hdlGlobals
+from autohdl import globals
 from autohdl import progress_bar
 from autohdl.hdlLogger import logging
 
@@ -23,7 +23,7 @@ def generate(path=''):
     if not os.path.exists(root):
         os.makedirs(root)
     alog.info('Design root: ' + root)
-    for i in hdlGlobals.predefDirs:
+    for i in globals.predefined_dirs:
         path = os.path.join(root, i)
         if not os.path.exists(path):
             os.mkdir(path)
@@ -33,7 +33,6 @@ def generate(path=''):
     Copy = namedtuple('Copy', ['src', 'dst'])
     listToCopy = (
         Copy(os.path.join(autohdl_cfg, 'build.yaml'), os.path.join(root, 'resource', 'build.yaml')),
-        Copy(os.path.join(pathData, 'run_avhdl.bat'), os.path.join(root, 'script', 'run_avhdl.bat')),
         Copy(os.path.join(pathData, 'kungfu.py'), os.path.join(root, 'script', 'kungfu.py'))
     )
     for i in listToCopy:
@@ -126,8 +125,8 @@ def search(directory='.',
 def setMainSrc(config):
     config.setdefault('structure', dict())
     config['structure']['mainSrc'] = search('../src',
-                                            onlyExt=hdlGlobals.hdlFileExt,
-                                            ignoreDir=hdlGlobals.ignoreRepoDir)
+                                            onlyExt=globals.hdlFileExt,
+                                            ignoreDir=globals.ignore_repo_dirs)
     config['structure']['mainSrcParsed'] = instance.get_instances(config['structure']['mainSrc'])
     src_order = config['hdlManager'].get('src_order')
     if src_order:

@@ -10,7 +10,7 @@ from autohdl import toolchain
 import autohdl.webdav as webdav
 from autohdl.hdlLogger import logging
 import autohdl.doc as doc
-from autohdl.hdlGlobals import autohdlRoot
+from autohdl.globals import autohdl_root
 
 
 def initialize(path='.'):
@@ -24,7 +24,7 @@ def initialize(path='.'):
         gitignore = path + '/.gitignore'
         if not os.path.exists(gitignore):
             with open(gitignore, 'w') as f:
-                f.write('{}/*\n'.format(autohdlRoot))
+                f.write('{}/*\n'.format(autohdl_root))
         pathWas = os.getcwd()
         os.chdir(path)
         subprocess.call('{} add {}'.format(gitPath, path))
@@ -107,8 +107,8 @@ def updateGitignore():
         with open('../.gitignore', 'r') as f:
             c = f.read()
         with open('../.gitignore', 'a') as f:
-            if autohdlRoot not in c:
-                f.write('{}/*\n'.format(autohdlRoot))
+            if autohdl_root not in c:
+                f.write('{}/*\n'.format(autohdl_root))
 
 
 def synchWithBuild(config):
