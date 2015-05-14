@@ -38,13 +38,11 @@ def cli_handler():
     alog.debug('command line args: ' + str(sys.argv))
     parser = argparse.ArgumentParser(description='HDL Manager')
     parser.add_argument('-top', dest='top_module', help='set top module name')
-    parser.add_argument('-synplify', nargs='?', const='batch',
-                        choices=['batch', 'gui'],
+    parser.add_argument('-synplify', nargs='?', const='batch', choices=['batch', 'gui'],
                         help='synthesis step [default=batch]')
-    parser.add_argument('-xilinx', nargs='?', const='batch',
-                        choices=['batch', 'gui'],
+    parser.add_argument('-xilinx', nargs='?', const='batch', choices=['batch', 'gui'],
                         help='implementation step [default=batch]')
-    parser.add_argument('-mcs', help='generate .mcs from .bit file')
+    parser.add_argument('-mcs', nargs='?', help='generate .mcs from .bit file')
     parser.add_argument('-upload', action='store_true', help='upload firmware to WebDav server')
     parser.add_argument('-message', help='information about firmware')
 

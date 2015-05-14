@@ -31,14 +31,12 @@ def dump_relative_paths(cfg):
         main_script = sys.modules['__main__'].__file__
         with open(main_script) as f:
             contents = f.read()
-            contents = re.sub(pattern=r"'src'\s*:\s*\[.*?\]",
-                              repl="'src': "+pprint.pformat(cfg['src']),
-                              string=contents,
-                              flags=re.MULTILINE | re.S)
-            contents = re.sub(pattern=r"'include_paths'\s*:\s*\[.*?\]'",
-                              repl="'include_paths'"+pprint.pformat(cfg['include_paths']),
-                              string=contents,
-                              flags=re.MULTILINE | re.S)
+            for p, r in zip(cfg_old['src'], cfg['src']):
+                if p != r:
+                    contents = re.sub(pattern=p, repl=r, string=contents, flags=re.MULTILINE | re.S)
+            for p, r in zip(cfg_old['include_paths'], cfg['include_paths']):
+                if p != r:
+                    contents = re.sub(pattern=p, repl=r, string=contents, flags=re.MULTILINE | re.S)
         # TODO: thorough test before dump
         with open(main_script, 'w') as f:
             f.write(contents)
