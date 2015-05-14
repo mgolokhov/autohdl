@@ -1,114 +1,29 @@
 import os
-import hashlib
-
-import yaml
-from autohdl.hdlLogger import logging
-from autohdl.pkg_info import version
-from autohdl.globals import parsedCachePath, buildFilePath
-
-FILE_CACHE = os.path.join(os.path.expanduser("~"), ".sublimesystemverilog", "parsed_cache.json")
-CACHE_PATH = os.path.abspath(parsedCachePath)
-CACHE_LOAD = True
-CACHE_DUMP = True
-
-def cache_path(file):
-    file = os.path.relpath(file)
-    name = os.path.basename(file) + 'cache'
-    #  return CACHE_PATH + file.replace('//', '_').replace('\\', '_').replace('.','_')
-    return CACHE_PATH + '/' + name
+import json
+from autohdl.hdl_globals import FILE_CACHE
 
 
-def shaOK(data):
-    if data:
-        h = hashlib.sha1()
-        with open(data['file_path']) as f:
-            h.update(f.read().encode('utf-8'))
-        for i in data['includes']['paths']:
-            with open(i) as f:
-                h.update(f.read().encode('utf-8'))
-        sha = h.hexdigest()
-        if sha == data['sha']:
-            return True
+def load(fname, fdate):
+    if os.path.exists(FILE_CACHE):
+        with open(FILE_CACHE) as f:
+            contents = json.load(f)
+            parsed = contents.get(fname)
+            if parsed and parsed['fdate'] == fdate:
+                print('hit file cache')
+                return parsed
 
 
-def versionOK(data):
-    if data.get('version') == version():
-        return True
-
-
-def clean():
-    if os.path.exists(CACHE_PATH):
-        for i in os.listdir(CACHE_PATH):
-            try:
-                if os.path.splitext(i)[1] == '.vcache':
-                    os.remove(CACHE_PATH + '/' + i)
-            except Exception as e:
-                print(e)
-
-
-def refreshCache(_once=[]):
-    if _once:
-        return
-    _once.append(True)
-    try:
-        with open(buildFilePath) as f:
-            h = hashlib.sha1()
-            h.update(f.read().encode('utf-8'))
-            shaNew = h.hexdigest()
-        sha_build = CACHE_PATH + '/sha_build'
-        try:
-            with open(sha_build) as f:
-                shaOld = f.read()
-                if shaOld != shaNew:
-                    with open(sha_build, 'w') as f:
-                        f.write(shaNew)
-                        return True
-        except IOError:
-            if not os.path.exists(CACHE_PATH):
-                os.makedirs(CACHE_PATH)
-            with open(sha_build, 'w') as f:
-                f.write(shaNew)
-                return True
-    except IOError as e:
-        logging.error(e)
-        return True
-
-
-def load(file):
-    if not CACHE_LOAD:
-        return
-    file = cache_path(file)
-    y = None
-    try:
-        y = yaml.load(open(file))
-    except IOError as e:
-        logging.debug(e)
-    except Exception as e:
-        logging.warning(e)
-    try:
-        if shaOK(y) and versionOK(y):
-            return y
-    except IOError as e:
-        logging.debug(e)
-
-
-def dump(data):
-    if not CACHE_DUMP:
-        return
-    if not os.path.exists(CACHE_PATH):
-        os.mkdir(CACHE_PATH)
-    if data['cachable']:
-        h = hashlib.sha1()
-        with open(data['file_path']) as f:
-            h.update(f.read().encode('utf-8'))
-        for i in data['includes']['paths']:
-            with open(i) as f:
-                h.update(f.read().encode('utf-8'))
-        data['sha'] = h.hexdigest()
-        data['version'] = version()
-        # curdir = <dsn>/script
-        del data['preprocessed']
-        del data['cachable']
-        file = cache_path(data['file_path'])
-        yaml.dump(data, open(file, 'w'))
+def dump(fname, fdate, parsed):
+    cache = {}
+    parsed['fdate'] = fdate
+    d = {fname: parsed}
+    if os.path.exists(FILE_CACHE):
+        with open(FILE_CACHE) as f:
+            cache = json.load(f)
+    else:
+        os.makedirs(os.path.dirname(FILE_CACHE))
+    cache.update(d)
+    with open(FILE_CACHE, 'w') as f:
+        json.dump(cache, f, indent=2)
+    print("miss file cache")
 

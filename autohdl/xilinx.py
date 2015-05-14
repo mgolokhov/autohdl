@@ -4,72 +4,18 @@ import subprocess
 import sys
 import time
 from time import strftime
+import locale
+import copy
 
 from autohdl import toolchain
-from autohdl.hdlLogger import logging
+from autohdl.hdl_logger import logging
+from autohdl.hdl_globals import IMPLEMENT_PATH, SYNTHESIS_PATH, NETLIST_EXT
 
 
 log = logging.getLogger(__name__)
 
 
-#@log_call
-def bit2mcs(config):
-    try:
-        if config['hdlManager']['size']:
-            proc = '{tool} -u 0 {top} -s {size} -w'.format(tool=toolchain.Tool().get('ise_promgen'),
-                                                           top=os.path.join(config['hdlManager']['dsn_root'],
-                                                                            'autohdl',
-                                                                            'implement',
-                                                                            config['hdlManager']['top'],
-                                                                            config['hdlManager']['top'] + '.bit'),
-                                                           size=config['hdlManager']['size'])
-            subprocess.check_call(proc)
-        else:
-            log.warning('PROM size was not set')
-    except subprocess.CalledProcessError as e:
-        log.error(e)
-        sys.exit(1)
-
-
-def copy_firmware(config):
-    firmware_ext = ['.bit', '.mcs']
-    build_timestamp = strftime('%y%m%d_%H%M%S', time.localtime())
-    dest_dirs = [os.path.join(config['hdlManager']['dsn_root'], 'resource'),
-                 os.path.join(config['hdlManager']['dsn_root'], 'autohdl', 'firmware')]
-    for dest_dir in dest_dirs:
-        if not os.path.exists(dest_dir):
-            os.makedirs(dest_dir)
-        dest = '{dsn}_{top}_build_'.format(
-            dsn=os.path.basename(os.path.abspath('..')),
-            top=config['hdlManager'].get('top'))
-        for i in os.listdir(dest_dir):
-            if os.path.splitext(i)[1] in firmware_ext and dest in i:
-                log.info('removing ' + os.path.join(dest_dir, i))
-                try:
-                    os.remove(os.path.join(dest_dir, i))
-                except Exception as e:
-                    log.warning(e)
-
-        for i in firmware_ext:
-            src_abs_path = os.path.join(config['hdlManager']['dsn_root'],
-                                        'autohdl/implement',
-                                        config['hdlManager'].get('top'),
-                                        config['hdlManager'].get('top') + i)
-            if os.path.exists(src_abs_path):
-                dest = '{dsn}_{top}_build_{ver}{ext}'.format(
-                    dsn=os.path.basename(os.path.abspath('..')),
-                    top=config['hdlManager'].get('top'),
-                    ver=build_timestamp,
-                    ext=i
-                )
-                dest_abs_path = os.path.join(dest_dir, dest)
-                log.info('copying ' + dest_abs_path)
-                shutil.copy(src_abs_path, dest_abs_path)
-
-
-
-
-xtcl_script = """
+XTCL_SCRIPT = """\
 project new {project_name}.xise
 
 project set family "{family}"
@@ -88,41 +34,10 @@ project set top "{top}"
 
 {process_run}
 
-
-
 project close
 """
 
-
-def clean(config):
-    for i in range(3):
-        if os.path.exists(config['xilinx']['project_directory']):
-            try:
-                shutil.rmtree(config['xilinx']['project_directory'])
-                break
-            except Exception as e:
-                log.warning(e)
-    if os.path.exists(config['xilinx']['project_directory']):
-        message = 'Cant clean xilinx project '+config['xilinx']['project_directory']
-        log.error(message)
-        sys.exit(message)
-
-
-def mk_new(config):
-    for i in range(3):
-        if not os.path.exists(config['xilinx']['project_directory']):
-            try:
-                os.makedirs(config['xilinx']['project_directory'])
-                break
-            except Exception as e:
-                log.warning(e)
-                time.sleep(1)
-    if not os.path.exists(config['xilinx']['project_directory']):
-        message = 'Cant make xilinx project '+config['xilinx']['project_directory']
-        log.error(message)
-        sys.exit(message)
-
-process_with_handler = '''
+PROCESS_WITH_HANDLER = '''\
 process run "Generate Programming File"
 
 set my_status [ process get "Generate Programming File" status ]
@@ -137,125 +52,164 @@ if {( $my_status == "up_to_date" ) ||
 '''
 
 
-def mk_project_script(config):
-    xfiles = ['xfile add "{}"'.format(afile.replace('\\', '/')) for afile in form_project_src(config)]
-    project_name = os.path.abspath(os.path.join('..',
-                                                'autohdl',
-                                                'implement',
-                                                config['hdlManager']['top'],
-                                                config['hdlManager']['top']))
-    project_name = project_name.replace('\\', '/')
-    gen_prog_file = (config['hdlManager']['cl']['xilinx'] == 'batch')
-    res = xtcl_script.format(
-        project_name=project_name,
-        family=config['hdlManager']['technology'],
-        device=config['hdlManager']['part'],
-        package=config['hdlManager']['package'],
-        speed=config['hdlManager']['speed_grade'],
-        xfiles='\n'.join(xfiles),
-        top=config['hdlManager']['top'],
-        process_run=process_with_handler if gen_prog_file else ""
-    )
+def bit_to_mcs(cfg):
+    extend_cfg(cfg)
+    try:
+        if ['eeprom_kilobytes']:
+            proc = '{tool} -u 0 {top} -s {size} -w'.format(tool=toolchain.Tool().get('ise_promgen'),
+                                                           top=cfg['bit_file'],
+                                                           size=cfg['eeprom_kilobytes'])
+            subprocess.check_call(proc)
+        else:
+            log.warning('EEPROM size was not set')
+    except subprocess.CalledProcessError as e:
+        log.error(e)
+        sys.exit(1)
 
-    with open(config['xilinx']['script_path'], 'w') as f:
+
+def copy_firmware(cfg):
+    firmware_ext = ['.bit', '.mcs']
+    build_timestamp = strftime('%y%m%d_%H%M%S', time.localtime())
+    dest_dirs = [os.path.join('..', 'resource'),
+                 os.path.join('..', 'autohdl', 'firmware')]
+    for dest_dir in dest_dirs:
+        if not os.path.exists(dest_dir):
+            os.makedirs(dest_dir)
+        dest = '{dsn}_{top}_'.format(dsn=os.path.basename(os.path.abspath('..')),
+                                           top=cfg.get('top_module'))
+        for i in os.listdir(dest_dir):
+            if os.path.splitext(i)[1] in firmware_ext and dest in i:
+                log.info('removing ' + os.path.join(dest_dir, i))
+                try:
+                    os.remove(os.path.join(dest_dir, i))
+                except Exception as e:
+                    log.warning(e)
+
+        for i in firmware_ext:
+            src_abs_path = os.path.join('..',
+                                        'autohdl/implement',
+                                        cfg.get('top_module'),
+                                        cfg.get('top_module') + i)
+            if os.path.exists(src_abs_path):
+                dest = '{dsn}_{top}_{ver}{ext}'.format(
+                    dsn=os.path.basename(os.path.abspath('..')),
+                    top=cfg.get('top_module'),
+                    ver=build_timestamp,
+                    ext=i
+                )
+                dest_abs_path = os.path.join(dest_dir, dest)
+                log.info('copying ' + dest_abs_path)
+                shutil.copy(src_abs_path, dest_abs_path)
+
+
+def clean(cfg):
+    for i in range(3):
+        if os.path.exists(cfg['prj_dir']):
+            try:
+                shutil.rmtree(cfg['prj_dir'])
+                break
+            except Exception as e:
+                log.warning(e)
+                time.sleep(1)
+    if os.path.exists(cfg['prj_dir']):
+        message = "Can't clean xilinx project {}".format(cfg['prj_dir'])
+        log.error(message)
+        sys.exit(message)
+
+
+def mk_dir(cfg):
+    for i in range(3):
+        if not os.path.exists(cfg['prj_dir']):
+            try:
+                os.makedirs(cfg['prj_dir'])
+                break
+            except Exception as e:
+                log.warning(e)
+                time.sleep(1)
+    if not os.path.exists(cfg['prj_dir']):
+        message = "Can't make xilinx project {}".format(cfg['prj_dir'])
+        log.error(message)
+        sys.exit(message)
+
+
+def mk_script(cfg):
+    src = [i.replace('\\', '/') for i in cfg['src'] if os.path.splitext(i)[1] in NETLIST_EXT]
+    # should be copied after synplify
+    src.append(cfg['syn_constraint'])
+    src.append(cfg['syn_netlist'])
+    xfiles = ['xfile add "{}"'.format(afile.replace('\\', '/')) for afile in src]
+    if cfg['xilinx'] == 'batch':
+        proc_run = PROCESS_WITH_HANDLER
+    else:  # gui mode, just generate .xise file at first
+        proc_run = ""
+    res = XTCL_SCRIPT.format(project_name=cfg['prj_name'],
+                             family=cfg['technology'],
+                             device=cfg['part'],
+                             package=cfg['package'],
+                             speed=cfg['speed_grade'],
+                             xfiles='\n'.join(xfiles),
+                             top=cfg['top_module'],
+                             process_run=proc_run
+                             )
+
+    with open(cfg['prj_script'], 'w') as f:
         f.write(res)
 
 
-def run_shit(config):
-    execution_fifo = []
-    first_run = '{program} {arguments}'.format(program=toolchain.Tool().get('ise_batch'),
-                                               arguments=config['xilinx']['script_path'])
-
-    execution_fifo.append(first_run)
-    is_gui_mode = (config['hdlManager']['cl']['xilinx'] == 'gui-clean' or
-                   config['hdlManager']['cl']['xilinx'] == 'gui')
-    # if is_gui_mode:
-    #     config['xilinx']['project_file'] = os.path.join(config['xilinx']['project_directory'],
-    #                                                     config['hdlManager']['top'] + '.xise')
-    #     second_run = '{program} {arguments}'.format(program=toolchain.Tool().get('ise_gui'),
-    #                                                 arguments=config['xilinx']['project_file'])
-    #     execution_fifo.append(second_run)
-    if not config.get('TDD'):
-        for i in execution_fifo:
-            log.info('calling '+str(i))
-            res = subprocess.call(i)
-            if res:
-                message = 'Error to run: '+first_run
-                log.error(message)
-                sys.exit(1)
-    else:
-        config['tdd']['execution_fifo'] = execution_fifo
+def run_tool(cfg):
+    # if gui mode just generate gui project file
+    command = '{program} {arguments}'.format(program=toolchain.Tool().get('ise_batch'),
+                                             arguments=cfg['prj_script'])
+    subprocess.check_call(command)
+    if cfg['xilinx'] == 'gui':
+        command = '{program} {arguments}'.format(program=toolchain.Tool().get('ise_gui'),
+                                                 arguments=cfg['prj_gui_file'])
+        subprocess.check_call(command)
 
 
-def run_project(config):
-    config['xilinx'] = dict()
-    config['xilinx']['project_directory'] = os.path.abspath(os.path.join('..',
-                                                                         'autohdl',
-                                                                         'implement',
-                                                                         config['hdlManager']['top']))
+def load_env_settings():
+    try:
+        wrapper = toolchain.Tool().get('ise_wrapper')
+        print(wrapper)
+        encoding = locale.getdefaultlocale()[1]
+        res = subprocess.check_output('cmd /c "call {0} & set"'.format(wrapper.replace('/', '\\')))
+        res = res.decode(encoding)
+        d = {}
+        #create key=value environment variables
+        for i in res.split(os.linesep):
+            res = i.split('=')
+            if len(res) == 2:
+                d.update({res[0]: res[1]})
+        return d
+    except Exception as exp:
+        log.error(exp)
+
+
+def extend_cfg(cfg):
+    cfg['prj_dir'] = os.path.abspath(os.path.join(IMPLEMENT_PATH, cfg['top_module'])).replace('\\', '/')
+    cfg['prj_name'] = os.path.join(cfg['prj_dir'], cfg['top_module']).replace('\\', '/')
+    cfg['prj_script'] = os.path.abspath(os.path.join(cfg['prj_dir'], cfg['top_module']+'.tcl')).replace('\\', '/')
+    cfg['syn_netlist'] = os.path.abspath(os.path.join(SYNTHESIS_PATH, cfg['top_module'], cfg['top_module']+'.edf')).replace('\\', '/')
+    cfg['syn_constraint'] = os.path.abspath(os.path.join(SYNTHESIS_PATH, cfg['top_module'], 'synplicity.ucf')).replace('\\', '/')
+    # for gui mode
+    cfg['prj_gui_file'] = os.path.abspath(os.path.join(cfg['prj_dir'], cfg['top_module'] + '.xise')).replace('\\', '/')
+    cfg['bit_file'] = os.path.abspath(os.path.join(cfg['prj_dir'], cfg['top_module']+'.bit')).replace('\\', '/')
+
+
+def run(cfg):
     # TODO: check project.tcl src files if they are not modified, don't clean
-    clean(config)
-    mk_new(config)
-
-    config['xilinx']['script_path'] = os.path.abspath(os.path.join('..',
-                                                                   'autohdl',
-                                                                   'implement',
-                                                                   config['hdlManager']['top'],
-                                                                   config['hdlManager']['top'] + '.tcl'))
-    if not os.path.exists(config['xilinx']['script_path']):
-        mk_project_script(config)
-
-    run_shit(config)
-    # copy_firmware(config)
+    cfg = copy.deepcopy(cfg)
+    extend_cfg(cfg)
+    clean(cfg)
+    mk_dir(cfg)
+    mk_script(cfg)
+    run_tool(cfg)
 
 
-def form_project_src(config):
-    """
-     return a list of source files as absolute paths
-    """
-    impl_src = set()
-    if True: #config.get('synthesis') == 'synplify':
-        synthesis_result_netlist = os.path.abspath(os.path.join('..',
-                                                                'autohdl',
-                                                                'synthesis',
-                                                                config['hdlManager']['top'],
-                                                                config['hdlManager']['top'] + '.edf', ))
-        log.info('Searching a netlist after synplify')
-        for i in range(30):
-            print(".")
-            if os.path.exists(synthesis_result_netlist):
-                break
-            time.sleep(0.5)
-        if not os.path.exists(synthesis_result_netlist):
-            log.error('Cannot find netlist. Try synthesis first.')
-            sys.exit(1)
-
-        for constraint in ['synplicity.ucf', config['hdlManager']['top']+'.ncf']:
-            synthesis_result_constraint = os.path.abspath(os.path.join('..',
-                                                                       'autohdl',
-                                                                       'synthesis',
-                                                                       config['hdlManager']['top'],
-                                                                       constraint, ))
-            if not os.path.exists(synthesis_result_constraint):
-                message = 'Cannot find constraint file: {}'.format(synthesis_result_constraint)
-                log.error(message)
-                raise LookupError(message)
-            impl_src.add(synthesis_result_constraint)
 
 
-        impl_src.add(synthesis_result_netlist)
-    else:
-        synthesis_result_constraint = config['hdlManager']['ucf']
-        for i in config['structure']['mainSrc']+config['structure']['depSrc']:
-            impl_src.add(i)
-        impl_src.add(synthesis_result_constraint)
-    netlists = config['structure'].get('netlists') or []  # should type list
-    for i in netlists:
-        impl_src.add(i)
 
 
-    config['xilinx']['src'] = impl_src
-    return impl_src
 
 
 

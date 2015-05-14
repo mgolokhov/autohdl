@@ -2,7 +2,7 @@ import shutil
 import unittest
 
 from autohdl.instance import *
-from autohdl.hdlLogger import logging
+from autohdl.hdl_logger import logging
 
 
 log = logging.getLogger(__name__)

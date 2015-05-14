@@ -5,16 +5,16 @@ from setuptools import setup, find_packages
 from setuptools.command.install import install as _install
 
 
-
-class install(_install):
-    def _post_install(self, dir):
-        import build
-        build.update_global()
-    def run(self):
-        _install.run(self)
-        self.execute(self._post_install, (self.install_lib,),
-                     msg="Running post install task")
-        print('post install done')
+#
+# class install(_install):
+#     def _post_install(self, dir):
+#         import build
+#         build.update_global()
+#     def run(self):
+#         _install.run(self)
+#         self.execute(self._post_install, (self.install_lib,),
+#                      msg="Running post install task")
+#         print('post install done')
 
 
 def clean_tmp_files():
@@ -50,7 +50,7 @@ if 'upload' in sys.argv:
 
 setup(name='AutoHDL',
       version=pkg_info.version(),
-      cmdclass={'install': install},
+      # cmdclass={'install': install},
       description='Automatization Utilities for HDL projects',
       author='Maxim Golokhov',
       author_email='hexwer@gmail.com',
@@ -61,7 +61,7 @@ setup(name='AutoHDL',
       scripts=['autohdl/hdl.py',
                'autohdl/hdl.bat'],
       include_package_data=True,
-      install_requires=['pyyaml', 'decorator', 'pyparsing == 2.0.1', 'requests'],
+      install_requires=['pyyaml', 'decorator', 'requests'],
       )
 
 

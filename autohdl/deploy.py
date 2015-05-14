@@ -2,7 +2,7 @@ import subprocess
 import os
 import sys
 
-sys.path.insert(0, '.')
+sys.path.insert(1, '.')
 import pkg_info
 
 print(pkg_info.inc_version())

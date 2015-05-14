@@ -1,6 +1,6 @@
 import unittest
 
-from autohdl.hdlLogger import *
+from autohdl.hdl_logger import *
 
 logging.disable(logging.CRITICAL)
 

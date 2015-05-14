@@ -4,7 +4,7 @@ import os
 import sys
 import glob
 
-from autohdl.hdlLogger import logging
+from autohdl.hdl_logger import logging
 
 
 alog = logging.getLogger(__name__)
@@ -16,10 +16,7 @@ import autohdl.progress_bar as progress_bar
 
 class Tool(object):
     def __init__(self):
-        self.data = {'avhdl': {'gui': 'avhdl.exe',
-                               'batch': None,
-                               'path': ['/Aldec/']},
-                     'ise': {'gui': 'ise.exe',
+        self.data = {'ise': {'gui': 'ise.exe',
                              'impact': 'impact.exe',
                              'batch': 'xtclsh.exe',
                              'xflow': 'xflow.exe',
@@ -29,10 +26,6 @@ class Tool(object):
                      'synplify': {'gui': 'synplify_premier.exe',
                                   'batch': 'synplify_premier.exe',
                                   'path': ['/Synopsys/', '/Synplicity/']},
-                     # tested on version Git-1.7.4-preview20110204
-                     'git': {'batch': 'git.exe',
-                             'sh': 'sh.exe',
-                             'path': ['/Git/']}
                      }
         self.path_config = sys.prefix + '/Lib/site-packages/autohdl_cfg/toolchain.yaml'
         self.result = None
@@ -138,7 +131,6 @@ class Tool(object):
             alog.warning('Cant find tool: ' + self.tag)
 
 
-    #@log_call
     def saveSearchResult(self):
         try:
             if not self.cfg:
@@ -151,7 +143,6 @@ class Tool(object):
             return
 
 
-    #@log_call
     def askConfirm(self):
         d = dict([(index, path) for index, path in enumerate(self.fullPaths)])
         current = 0

@@ -1,12 +1,7 @@
 import os
 import re
 from collections import OrderedDict
-
-from pyparsing import quotedString, cppStyleComment
-from autohdl import build
-from autohdl.hdlLogger import logging
-from autohdl.hdlLogger import logging
-
+from autohdl.hdl_logger import logging
 
 log = logging.getLogger(__name__)
 
@@ -215,13 +210,18 @@ class Preprocessor(object):
             raise PreprocessorException('Cannot open file: ' + os.path.abspath(self.path))
 
     def removeComments(self, iContent):
-        iContent = iContent.replace('\t', '    ')
-        pattern = quotedString.suppress() | cppStyleComment #
-        for i in pattern.searchString(iContent):
-            if i:
-                comment = str(i.pop())
-                iContent = iContent.replace(comment, '', 1)
-        return  iContent
+        def replacer(match):
+            s = match.group(0)
+            if s.startswith('/'):
+                return " " # note: a space and not an empty string
+            else:
+                return s
+        pattern = re.compile(
+            r'//.*?$|/\*.*?\*/|"(?:\\.|[^\\"])*"',
+            re.DOTALL | re.MULTILINE
+        )
+        # do we need trim whitespaces?
+        return re.sub(pattern, replacer, iContent)
 
 
 if __name__ == '__main__':

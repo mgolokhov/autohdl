@@ -1,47 +1,38 @@
-import re
 import os
 import shutil
 from collections import namedtuple
 
-from autohdl import instance
-from autohdl import globals
-from autohdl import progress_bar
-from autohdl.hdlLogger import logging
-
+from autohdl import hdl_globals
+from autohdl import verilog
+from autohdl.hdl_logger import logging
 
 alog = logging.getLogger(__name__)
 
 
 def generate(path=''):
-    """
-    Could be
-    empty
-    simple name
-    path
-    """
+    # create dir structure
+    # copy config file
+    # return printable tree structure
     root = os.path.abspath(path)
     if not os.path.exists(root):
         os.makedirs(root)
     alog.info('Design root: ' + root)
-    for i in globals.predefined_dirs:
+    for i in hdl_globals.predefined_dirs:
         path = os.path.join(root, i)
         if not os.path.exists(path):
             os.mkdir(path)
-
-    pathData = os.path.join(os.path.dirname(__file__), 'data')
-    autohdl_cfg = os.path.join(os.path.expanduser('~'), 'autohdl')
+    autohdl_cfg = hdl_globals.FILE_USER_CFG
     Copy = namedtuple('Copy', ['src', 'dst'])
-    listToCopy = (
-        Copy(os.path.join(autohdl_cfg, 'build.yaml'), os.path.join(root, 'resource', 'build.yaml')),
-        Copy(os.path.join(pathData, 'kungfu.py'), os.path.join(root, 'script', 'kungfu.py'))
+    list_to_copy = (
+        Copy(autohdl_cfg, os.path.join(root, 'script', 'kungfu.py')),
     )
-    for i in listToCopy:
+    for i in list_to_copy:
         if not os.path.exists(i.dst):
             shutil.copy(i.src, i.dst)
     return get(root)
 
 
-def get(path='', ignore=('.git', '.svn')):
+def get(path='', ignore=hdl_globals.ignore_repo_dirs):
     root = os.path.abspath(path)
     return tree(directory=root, ignore=ignore)
 
@@ -67,111 +58,23 @@ def tree(directory, padding=' ', _res=[], ignore=[]):
     return '\n'.join(_res)
 
 
-def pathOk(path, ignore, only):
-    if ignore:
-        for ignoreItem in ignore:
-            if re.search(ignoreItem, path):
-                return False
-    if only:
-        for onlyItem in only:
-            if re.search(onlyItem, path):
-                return True
-    else:
-        return True
-
-
-def _convertToSet(arg):
-    arg = arg or set()
-    if type(arg) is str:
-        arg = [arg]
-    return set(arg)
-
-
-#@log_call
-def search(directory='.',
-           ignoreDir=None, ignoreExt=None, onlyExt=None):
-    """
-      Recursively search files by pattern.
-      Input: directory - start point to search,
-             ignore and only - filter patterns for directory and files (should be lists)
-      Returns list of files.
-    """
-    ignoreDir = _convertToSet(ignoreDir)
-    ignoreExt = _convertToSet(ignoreExt)
-    onlyExt = _convertToSet(onlyExt)
-
-    resFiles = []
-    for root, dirs, files in os.walk(os.path.abspath(directory)):
-        for i in set(dirs) & ignoreDir:
-            alog.debug('ignore directory: ' + i)
-            dirs.remove(i)
-        for f in files[:]:
-            alog.debug('file: ' + f)
-            ext = os.path.splitext(f)[1]
-            if ext in ignoreExt:
-                files.remove(f)
-                alog.debug('ignore file (ignore list) ' + f)
-            elif onlyExt and (ext not in onlyExt):
-                files.remove(f)
-                alog.debug('ignore file (only list) ' + f)
-            else:
-                alog.debug('add file ' + f)
-                resFiles.append(os.path.join(root, f))
-    return resFiles
-
-
-########################################################################
-#@log_call
-def setMainSrc(config):
-    config.setdefault('structure', dict())
-    config['structure']['mainSrc'] = search('../src',
-                                            onlyExt=globals.hdlFileExt,
-                                            ignoreDir=globals.ignore_repo_dirs)
-    config['structure']['mainSrcParsed'] = instance.get_instances(config['structure']['mainSrc'])
-    src_order = config['hdlManager'].get('src_order')
-    if src_order:
-        main_src_ordered = src_order + [i for i in config['structure']['mainSrc'] if i not in src_order]
-        config['structure']['mainSrc'] = main_src_ordered
-
-
-def setNetlists(config):
-    config['structure']['netlists'] = set()
-    for i in config['structure']['mainSrc'] + config['structure']['depSrc']:
-        as_netlist = os.path.splitext(i)[0] + '.ngc'
-        if os.path.exists(as_netlist):
-            config['structure']['netlists'].add(as_netlist)
-
-
-def setSrc(config):
-    config.setdefault('structure', dict())
-    alog.info('Analyzing dependences...')
-    progress_bar.run()
-    setMainSrc(config)
-    setDepSrc(config)
-    setNetlists(config)
-    progress_bar.stop()
-
-
-#@log_call
-def setDepSrc(config):
-    config.setdefault('structure', dict())
-    parsed = config['structure']['mainSrcParsed']
-    del config['structure']['mainSrcParsed']
-    while True:
-        new = instance.analyze(parsed, config)
-        if new:
-            parsed.update(new)
-        else:
-            break
-
-    config['structure']['parsed'] = parsed
-    allSrcFiles = {os.path.abspath(val['path']) for val in list(parsed.values())}
-    config['structure']['depSrc'] = list(allSrcFiles - set(config['structure']['mainSrc']))
+def parse(src_files):
+    # input: list of source files
+    # output: dict
+    # {abs_file_path:
+    #   tuple(module_name0: set(inst1, inst2, ...),
+    #         module_name1: set(inst1, inst2, ...),
+    #        ...
+    #        )
+    #  abs_file_path2:
+    #   ...
+    # }
+    d = {}
+    for afile in src_files:
+        with open(afile) as f:
+            d.update(verilog.parse(f.read()))
+    return d
 
 
 if __name__ == '__main__':
-    res = []
-    res += [search(directory=i) for i in ['verilog', 'programmator']]
-    #  print '\n'.join(res)
-
-    print(res)
+    pass

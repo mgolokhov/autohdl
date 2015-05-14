@@ -8,7 +8,7 @@ import logging
 import sys
 
 try:
-    import autohdl.hdlLogger
+    import autohdl.hdl_logger
 except ImportError:
     import hdlLogger
 alog = logging.getLogger(__name__)
