@@ -1,5 +1,7 @@
 import os
-from autohdl.verilog import cache, vpreprocessor, vparser
+
+from autohdl.verilog import vpreprocessor, vparser
+from autohdl import cache
 
 
 def parse(fname):

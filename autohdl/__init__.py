@@ -27,7 +27,7 @@ LOGGING_DICT = {
     'disable_existing_loggers': False,
     'formatters': {
         'verbose': {
-            'format': '%(asctime)s:%(filename)s:%(lineno)d:%(levelname)s:%(message)s'
+            'format': '%(asctime)s:%(filename)s:%(lineno)d:%(levelname)s:\n%(message)s'
         },
         'simple': {
             'format': '%(levelname)s: %(message)s'

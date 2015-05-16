@@ -2,7 +2,7 @@ import os
 import unittest
 import sys
 
-from autohdl.verilog import cache
+from autohdl import cache
 
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)) + '/../..')

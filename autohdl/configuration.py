@@ -78,6 +78,7 @@ def load_env(cfg):
 
 def load(script_cfg, command_line_cfg):
     result_cfg = {}
+    load_env(result_cfg)
     default_cfg = load_default_cfg()
     user_cfg = load_user_cfg()
     alog.debug('Script config:\n ' + pprint.pformat(script_cfg))
@@ -87,6 +88,8 @@ def load(script_cfg, command_line_cfg):
     result_cfg.update(script_cfg)
     # pprint.pprint(vars(command_line_cfg))
     {result_cfg.update({k: v}) for k, v in vars(command_line_cfg).items() if v}
+    if command_line_cfg.mcs:
+        result_cfg.update({'eeprom_kilobytes': command_line_cfg.mcs})
 
     dump_relative_paths(result_cfg)
     convert_to_abs(result_cfg)

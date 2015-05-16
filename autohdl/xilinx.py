@@ -7,11 +7,15 @@ from time import strftime
 import locale
 import copy
 import logging
+import autohdl.utils as utils
+import re
+
 from autohdl import toolchain
 from autohdl import IMPLEMENT_PATH, SYNTHESIS_PATH, NETLIST_EXT
 
 
 log = logging.getLogger(__name__)
+print(__name__)
 
 
 XTCL_SCRIPT = """\
@@ -67,38 +71,41 @@ def bit_to_mcs(cfg):
 
 
 def copy_firmware(cfg):
-    firmware_ext = ['.bit', '.mcs']
+    # get old firmwares by ext
+    # get new firmwares by ext
+    # compare and copy if new contents (sha), append current timestamp
+    firmware_ext = ('.bit', '.mcs',)
     build_timestamp = strftime('%y%m%d_%H%M%S', time.localtime())
-    dest_dirs = [os.path.join('..', 'resource'),
-                 os.path.join('..', 'autohdl', 'firmware')]
-    for dest_dir in dest_dirs:
-        if not os.path.exists(dest_dir):
-            os.makedirs(dest_dir)
-        dest = '{dsn}_{top}_'.format(dsn=os.path.basename(os.path.abspath('..')),
-                                     top=cfg.get('top_module'))
-        for i in os.listdir(dest_dir):
-            if os.path.splitext(i)[1] in firmware_ext and dest in i:
-                log.info('removing ' + os.path.join(dest_dir, i))
-                try:
-                    os.remove(os.path.join(dest_dir, i))
-                except Exception as e:
-                    log.warning(e)
+    dest_dir = os.path.join(cfg['dsn_root'], 'resource')
+    search_dir = os.path.join(cfg['dsn_root'], 'autohdl', 'implement', cfg['top_module'])
+    fw_old = [i for i in os.listdir(dest_dir) if os.path.splitext(i)[1] in firmware_ext and cfg['dsn_name']+'_'+cfg['top_module'] in i]
+    for ext in firmware_ext:
+        src_path = os.path.join(search_dir, cfg['top_module'] + ext)
+        if os.path.exists(src_path):
+            dst_path = "{path}/{dsn}_{top}_{time}{ext}".format(path=dest_dir,
+                                                               dsn=cfg['dsn_name'],
+                                                               top=cfg['top_module'],
+                                                               time=build_timestamp,
+                                                               ext=ext)
+            dst_path_old = None
+            for fname_old in fw_old:
+                pattern = "{dsn}_{top}_{date}{ext}".format(dsn=cfg['dsn_name'],
+                                                           top=cfg['top_module'],
+                                                           date='\d{6}_\d{6}',
+                                                           ext=ext)
+                if re.search(pattern=pattern, string=fname_old):
+                    dst_path_old = os.path.join(dest_dir, fname_old)
+                    if not utils.is_same_contents(src_path, dst_path_old):
+                        log.info("Remove old firmware: "+dst_path_old)
+                        os.remove(dst_path_old)
+                        log.info('Copy new firmware: '+dst_path)
+                        shutil.copy(src_path, dst_path)
+                    else:
+                        log.info("No need to replace, same contents: "+dst_path_old)
+            if not dst_path_old:
+                log.info('Copy new firmware '+dst_path)
+                shutil.copy(src_path, dst_path)
 
-        for i in firmware_ext:
-            src_abs_path = os.path.join('..',
-                                        'autohdl/implement',
-                                        cfg.get('top_module'),
-                                        cfg.get('top_module') + i)
-            if os.path.exists(src_abs_path):
-                dest = '{dsn}_{top}_{ver}{ext}'.format(
-                    dsn=os.path.basename(os.path.abspath('..')),
-                    top=cfg.get('top_module'),
-                    ver=build_timestamp,
-                    ext=i
-                )
-                dest_abs_path = os.path.join(dest_dir, dest)
-                log.info('copying ' + dest_abs_path)
-                shutil.copy(src_abs_path, dest_abs_path)
 
 
 def clean(cfg):

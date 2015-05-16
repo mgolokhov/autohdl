@@ -20,3 +20,13 @@ def copy_only_new(src, dest):
             log.warning(e)
     else:
         log.info("Didn't copy because same content")
+
+
+def is_same_contents(file1, file2):
+    h1 = hashlib.sha1()
+    h2 = hashlib.sha1()
+    with open(file1) as f:
+        h1.update(f.read().encode('utf-8'))
+    with open(file2) as f:
+        h2.update(f.read().encode('utf-8'))
+    return h1.hexdigest() == h2.hexdigest()
