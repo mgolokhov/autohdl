@@ -74,7 +74,6 @@ def kungfu(script_cfg):
     subprocess.call('hdl -v', shell=True)
     alog.info('Processing...')
     command_line_cfg = cli_handler()
-    pprint.pprint(command_line_cfg)
     set_debug(vars(command_line_cfg))
     alog.debug('Command line args: ' + str(sys.argv))
     alog.debug(pprint.pformat(command_line_cfg))

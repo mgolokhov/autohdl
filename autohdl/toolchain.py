@@ -1,16 +1,16 @@
 import ctypes
 import fnmatch
 import os
-import sys
+import json
 import glob
 import logging
 
+from autohdl import FILE_TOOLCHAIN_CFG
+from autohdl import progress_bar
 
 alog = logging.getLogger(__name__)
 
-import yaml as yaml
-from yaml.error import YAMLError
-import autohdl.progress_bar as progress_bar
+
 
 
 class Tool(object):
@@ -26,7 +26,7 @@ class Tool(object):
                                   'batch': 'synplify_premier.exe',
                                   'path': ['/Synopsys/', '/Synplicity/']},
                      }
-        self.path_config = sys.prefix + '/Lib/site-packages/autohdl_cfg/toolchain.yaml'
+        self.path_config = FILE_TOOLCHAIN_CFG
         self.result = None
         self.tag = None
         self.metadata = None
@@ -56,17 +56,17 @@ class Tool(object):
         # else search
         # dump to toolchain.yaml
         self.check_metadata(tag)
-        path = self.getFromCfg(tag)
+        path = self.get_from_cfg(tag)
         if path:
             return path
-        self.searchLight()
+        self.search_light()
         return self.result
 
     def refresh(self, tag=''):
         if tag:
             self.check_metadata(tag)
-            self.getFromCfg(tag)
-            self.searchLight()
+            self.get_from_cfg(tag)
+            self.search_light()
             return self.result
         else:
             try:
@@ -74,12 +74,12 @@ class Tool(object):
             except IOError as e:
                 alog.debug(e)
 
-    def getFromCfg(self, tag):
+    def get_from_cfg(self, tag):
         self.cfg = {}
         try:
             self.create_config()
-            with open(self.path_config, 'r') as f:
-                self.cfg = yaml.load(f)
+            with open(self.path_config) as f:
+                self.cfg = json.load(f)
                 path = self.cfg[tag]
         except Exception as e:
             alog.debug(e)
@@ -106,9 +106,8 @@ class Tool(object):
                     filename = os.path.join(root, basename)
                     yield filename
 
-    def searchLight(self):
+    def search_light(self):
         alog.info('Searching {}...'.format(self.tag))
-        progress_bar.run()
         logicDrives = self.getWin32Drivers()
         paths = self.metadata
         rootDirs = []
@@ -124,25 +123,25 @@ class Tool(object):
         if self.fullPaths:
             self.fullPaths = [i.replace('\\', '/') for i in self.fullPaths]
             self.fullPaths.sort(key=lambda f: os.path.getmtime(f), reverse=True)
-            self.askConfirm()
-            self.saveSearchResult()
+            self.ask_confirm()
+            self.save_search_result()
         else:
             alog.warning('Cant find tool: ' + self.tag)
 
 
-    def saveSearchResult(self):
+    def save_search_result(self):
         try:
             if not self.cfg:
                 self.cfg = dict()
             with open(self.path_config, 'w') as f:
                 self.cfg.update({self.tag: '{}'.format(self.result)})
-                yaml.dump(self.cfg, f, default_flow_style=False)
-        except (IOError, YAMLError) as exp:
+                json.dump(self.cfg, f, indent=2)
+        except IOError as exp:
             alog.error(exp)
             return
 
 
-    def askConfirm(self):
+    def ask_confirm(self):
         d = dict([(index, path) for index, path in enumerate(self.fullPaths)])
         current = 0
         while True:
@@ -166,14 +165,12 @@ class Tool(object):
 
 if __name__ == '__main__':
     #Tool().refresh('ise_xflow')
-#  print Tool().get('ise_impact')
-#  print Tool().get('ise_xflow')
-#  print Tool('avhdl_gui').result
-#  print Tool('synplify_batch').result
-    print(Tool().get('git_batch'))
+    print(Tool().get('ise_impact'))
+    print(Tool().get('ise_xflow'))
+    print(Tool().get('synplify_batch'))
     print(Tool().get('synplify_gui'))
-#  print Tool('synplify_gui').result
-#  print Tool('ise_gui').result
-#  print Tool('ise_batch').result
-#  print Tool('ise_xflow').result
+    print(Tool().get('synplify_gui'))
+    print(Tool().get('ise_gui'))
+    print(Tool().get('ise_batch'))
+    print(Tool().get('ise_xflow'))
 

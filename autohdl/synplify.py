@@ -129,7 +129,7 @@ def logging_synthesis(cfg):
         time.sleep(1)
 
     if not loge:
-        with open(os.path.join(SYNTHESIS_PATH, 'stdout.log')) as f:
+        with open(os.path.join(SYNTHESIS_PATH, cfg['top_module'], 'stdout.log')) as f:
             print(f.read())
         sys.exit(1)
 
@@ -210,7 +210,7 @@ def run(cfg):
     extend_cfg(cfg)
     mk_dir(cfg)
     mk_script(cfg)
-    pprint.pprint(cfg)
+    alog.debug(pprint.pformat(cfg))
     run_tool(cfg)
     return cfg
 

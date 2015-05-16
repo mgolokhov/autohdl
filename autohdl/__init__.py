@@ -1,9 +1,11 @@
 import logging.config as lc
 import os
 
-FILE_CACHE = os.path.join(os.path.expanduser("~"), ".autohdl", "parsed_cache.json")
-FILE_DEFAULT_CFG = os.path.join(os.path.expanduser("~"), ".autohdl", "kungfu_default.py")
-FILE_USER_CFG = os.path.join(os.path.expanduser("~"), ".autohdl", "kungfu_user.py")
+_AUTOHDL_CONFIG_DIR_ = os.path.join(os.path.expanduser("~"), ".autohdl")
+FILE_CACHE = os.path.join(_AUTOHDL_CONFIG_DIR_, "parsed_cache.json")
+FILE_DEFAULT_CFG = os.path.join(_AUTOHDL_CONFIG_DIR_, "kungfu_default.py")
+FILE_USER_CFG = os.path.join(_AUTOHDL_CONFIG_DIR_, "kungfu_user.py")
+FILE_TOOLCHAIN_CFG = os.path.join(_AUTOHDL_CONFIG_DIR_, 'toolchain.json')
 
 
 IGNORE_REPO_DIRS = ('.git', '.svn', '.hg',)
