@@ -1,7 +1,7 @@
 import os
 import re
 from collections import OrderedDict
-from autohdl.hdl_logger import logging
+import logging
 
 log = logging.getLogger(__name__)
 

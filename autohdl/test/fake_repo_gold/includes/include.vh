@@ -1,1 +1,0 @@
-`define test1 first_test

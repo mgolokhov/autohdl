@@ -4,6 +4,8 @@ import logging
 import os
 import pprint
 import sys
+import subprocess
+
 # import cgitb
 # cgitb.enable(format='text')
 
@@ -35,7 +37,6 @@ def print_info(config):
 
 
 def cli_handler():
-    alog.debug('command line args: ' + str(sys.argv))
     parser = argparse.ArgumentParser(description='HDL Manager')
     parser.add_argument('-top', dest='top_module', help='set top module name')
     parser.add_argument('-synplify', nargs='?', const='batch', choices=['batch', 'gui'],
@@ -45,9 +46,9 @@ def cli_handler():
     parser.add_argument('-mcs', nargs='?', help='generate .mcs from .bit file')
     parser.add_argument('-upload', action='store_true', help='upload firmware to WebDav server')
     parser.add_argument('-message', help='information about firmware')
+    parser.add_argument('-debug', nargs='?', const='debug_all_modules')
 
     res = parser.parse_args()
-    alog.debug(pprint.pformat(res))
     return res
 
 
@@ -61,16 +62,34 @@ def validate(cfg):
                 alog.warning("{}".format(s))
 
 
+def set_debug(cfg):
+    if cfg.get('debug') in ('debug_all_modules', __name__,):
+        import logging.config as lc
+        from autohdl import LOGGING_DICT
+        LOGGING_DICT.update({"loggers": {"": {'handlers': ['cmd_debug', 'file_debug']}}})
+        lc.dictConfig(LOGGING_DICT)
+
 
 def kungfu(script_cfg):
+    subprocess.call('hdl -v', shell=True)
     alog.info('Processing...')
+    command_line_cfg = cli_handler()
+    pprint.pprint(command_line_cfg)
+    set_debug(vars(command_line_cfg))
+    alog.debug('Command line args: ' + str(sys.argv))
+    alog.debug(pprint.pformat(command_line_cfg))
+    alog.debug('Script cfg:')
+    alog.debug(pprint.pformat(script_cfg))
     configuration.copy()
-    cfg = configuration.load(script_cfg=script_cfg, command_line_cfg=cli_handler())
+    cfg = configuration.load(script_cfg=script_cfg, command_line_cfg=command_line_cfg)
+    alog.debug('Merged cfg:')
+    alog.debug(pprint.pformat(cfg))
     validate(cfg)
+
     # cfg['parsed'] = structure.parse(cfg['src'])
     print_info(cfg)
 
-    pprint.pprint(cfg)
+    # pprint.pprint(cfg)
 
     if len(sys.argv) == 1:
         cfg['synplify'] = 'batch'

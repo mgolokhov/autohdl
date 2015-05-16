@@ -2,9 +2,9 @@ import os
 import shutil
 from collections import namedtuple
 
-from autohdl import hdl_globals
+from autohdl import PREDEFINED_DIRS, FILE_USER_CFG, IGNORE_REPO_DIRS
 from autohdl import verilog
-from autohdl.hdl_logger import logging
+import logging
 
 alog = logging.getLogger(__name__)
 
@@ -17,11 +17,11 @@ def generate(path=''):
     if not os.path.exists(root):
         os.makedirs(root)
     alog.info('Design root: ' + root)
-    for i in hdl_globals.predefined_dirs:
+    for i in PREDEFINED_DIRS:
         path = os.path.join(root, i)
         if not os.path.exists(path):
             os.mkdir(path)
-    autohdl_cfg = hdl_globals.FILE_USER_CFG
+    autohdl_cfg = FILE_USER_CFG
     Copy = namedtuple('Copy', ['src', 'dst'])
     list_to_copy = (
         Copy(autohdl_cfg, os.path.join(root, 'script', 'kungfu.py')),
@@ -32,7 +32,7 @@ def generate(path=''):
     return get(root)
 
 
-def get(path='', ignore=hdl_globals.ignore_repo_dirs):
+def get(path='', ignore=IGNORE_REPO_DIRS):
     root = os.path.abspath(path)
     return tree(directory=root, ignore=ignore)
 

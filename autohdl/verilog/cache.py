@@ -1,6 +1,6 @@
 import os
 import json
-from autohdl.hdl_globals import FILE_CACHE
+from autohdl import FILE_CACHE
 
 
 def load(fname, fdate):

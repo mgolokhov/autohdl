@@ -1,9 +1,0 @@
-file_sha: 40a7d35c65903355645ec06f0da097e694b9dfc4
-includes:
-  paths: []
-  sha: da39a3ee5e6b4b0d3255bfef95601890afd80709
-parsed:
-  if_isa:
-    instances: !!set
-      strobing_l2h: null
-    path: ..\src\if_isa.v

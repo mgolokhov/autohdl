@@ -8,7 +8,7 @@ import copy
 import pprint
 
 from autohdl import toolchain, xilinx
-from autohdl.hdl_globals import SYNTHESIS_PATH
+from autohdl import SYNTHESIS_PATH
 
 alog = logging.getLogger(__name__)
 
@@ -200,12 +200,12 @@ def mk_dir(cfg):
             except OSError as e:
                 alog.warning(e)  
                 
-    
+
 def run(cfg):
     # create project dir
     # generate project script (src, params)
     # execute tool and parse log
-    logging.info('Synthesis stage...')
+    alog.info('Synthesis stage...')
     cfg = copy.deepcopy(cfg)
     extend_cfg(cfg)
     mk_dir(cfg)

@@ -3,8 +3,7 @@ import fnmatch
 import os
 import sys
 import glob
-
-from autohdl.hdl_logger import logging
+import logging
 
 
 alog = logging.getLogger(__name__)

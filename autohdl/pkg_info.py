@@ -8,6 +8,7 @@ def load():
         data = json.load(f)
         return ver_fp, data
 
+
 def version():
     _, ver = load()
     return '{}.{}.{}'.format(ver['major'], ver['minor'], ver['build'])

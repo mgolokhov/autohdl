@@ -6,10 +6,9 @@ import time
 from time import strftime
 import locale
 import copy
-
+import logging
 from autohdl import toolchain
-from autohdl.hdl_logger import logging
-from autohdl.hdl_globals import IMPLEMENT_PATH, SYNTHESIS_PATH, NETLIST_EXT
+from autohdl import IMPLEMENT_PATH, SYNTHESIS_PATH, NETLIST_EXT
 
 
 log = logging.getLogger(__name__)
@@ -76,7 +75,7 @@ def copy_firmware(cfg):
         if not os.path.exists(dest_dir):
             os.makedirs(dest_dir)
         dest = '{dsn}_{top}_'.format(dsn=os.path.basename(os.path.abspath('..')),
-                                           top=cfg.get('top_module'))
+                                     top=cfg.get('top_module'))
         for i in os.listdir(dest_dir):
             if os.path.splitext(i)[1] in firmware_ext and dest in i:
                 log.info('removing ' + os.path.join(dest_dir, i))
@@ -170,7 +169,6 @@ def run_tool(cfg):
 def load_env_settings():
     try:
         wrapper = toolchain.Tool().get('ise_wrapper')
-        print(wrapper)
         encoding = locale.getdefaultlocale()[1]
         res = subprocess.check_output('cmd /c "call {0} & set"'.format(wrapper.replace('/', '\\')))
         res = res.decode(encoding)
@@ -180,6 +178,7 @@ def load_env_settings():
             res = i.split('=')
             if len(res) == 2:
                 d.update({res[0]: res[1]})
+        log.info("Load xilinx env from: "+wrapper)
         return d
     except Exception as exp:
         log.error(exp)

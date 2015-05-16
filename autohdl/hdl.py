@@ -1,11 +1,11 @@
 import argparse
 import sys
 import subprocess
+import logging
 
 import autohdl.structure as structure
 import autohdl.pkg_info as pkg_info
 import autohdl.documentation as documentation
-from autohdl.hdl_logger import logging
 import autohdl.configuration as configuration
 
 alog = logging.getLogger(__name__)

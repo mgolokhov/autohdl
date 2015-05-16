@@ -7,20 +7,20 @@ import re
 import shutil
 import importlib
 
-from autohdl import hdl_globals
+from autohdl import FILE_USER_CFG, FILE_DEFAULT_CFG
 
 alog = logging.getLogger(__name__)
 
 
 def load_default_cfg():
-    sys.path.append(os.path.dirname(hdl_globals.FILE_DEFAULT_CFG))
-    module_with_default_cfg = os.path.splitext(os.path.basename(hdl_globals.FILE_DEFAULT_CFG))[0]
+    sys.path.append(os.path.dirname(FILE_DEFAULT_CFG))
+    module_with_default_cfg = os.path.splitext(os.path.basename(FILE_DEFAULT_CFG))[0]
     return importlib.import_module(module_with_default_cfg).cfg
 
 
 def load_user_cfg():
-    sys.path.append(os.path.dirname(hdl_globals.FILE_USER_CFG))
-    module_with_user_cfg = os.path.splitext(os.path.basename(hdl_globals.FILE_USER_CFG))[0]
+    sys.path.append(os.path.dirname(FILE_USER_CFG))
+    module_with_user_cfg = os.path.splitext(os.path.basename(FILE_USER_CFG))[0]
     return importlib.import_module(module_with_user_cfg).cfg
 
 
@@ -85,7 +85,7 @@ def load(script_cfg, command_line_cfg):
     result_cfg.update(default_cfg)
     result_cfg.update(user_cfg)
     result_cfg.update(script_cfg)
-    pprint.pprint(vars(command_line_cfg))
+    # pprint.pprint(vars(command_line_cfg))
     {result_cfg.update({k: v}) for k, v in vars(command_line_cfg).items() if v}
 
     dump_relative_paths(result_cfg)
@@ -94,14 +94,14 @@ def load(script_cfg, command_line_cfg):
 
 
 def copy():
-    dst = hdl_globals.FILE_DEFAULT_CFG
+    dst = FILE_DEFAULT_CFG
     src = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'data', 'kungfu.py')
     folder = os.path.dirname(dst)
     if not os.path.exists(folder):
         os.makedirs(folder)
     shutil.copy(src, dst)
 
-    dst = hdl_globals.FILE_USER_CFG
+    dst = FILE_USER_CFG
     if not os.path.exists(dst):
         folder = os.path.dirname(dst)
         if not os.path.exists(folder):

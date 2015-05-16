@@ -1,8 +1,0 @@
-file_sha: a918dcd32a1d7fc1ee1c6b2294444214fd0f1f72
-includes:
-  paths: []
-  sha: da39a3ee5e6b4b0d3255bfef95601890afd80709
-parsed:
-  DSPuva16:
-    instances: !!set {}
-    path: ..\src\dspuva16.v

@@ -1,8 +1,0 @@
-file_sha: 99de28af602590b042f2f70cda7f16abc8f9260c
-includes:
-  paths: []
-  sha: da39a3ee5e6b4b0d3255bfef95601890afd80709
-parsed:
-  inst1:
-    instances: !!set {}
-    path: ..\..\core\inst1\src\inst1.v
