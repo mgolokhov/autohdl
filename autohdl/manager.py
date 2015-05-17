@@ -46,7 +46,7 @@ def cli_handler():
     parser.add_argument('-mcs', nargs='?', help='generate .mcs from .bit file')
     parser.add_argument('-upload', action='store_true', help='upload firmware to WebDav server')
     parser.add_argument('-message', help='information about firmware')
-    parser.add_argument('-debug', nargs='?', const='debug_all_modules')
+    parser.add_argument('-debug', nargs='?', const='')
 
     res = parser.parse_args()
     return res
@@ -63,10 +63,11 @@ def validate(cfg):
 
 
 def set_debug(cfg):
-    if cfg.get('debug') in ('debug_all_modules', __name__,):
+    debug_module = cfg.get('debug')
+    if debug_module is not None:
         import logging.config as lc
         from autohdl import LOGGING_DICT
-        LOGGING_DICT.update({"loggers": {"": {'handlers': ['cmd_debug', 'file_debug']}}})
+        LOGGING_DICT.update({"loggers": {debug_module: {'handlers': ['cmd_debug', 'file_debug']}}})
         lc.dictConfig(LOGGING_DICT)
 
 
@@ -77,8 +78,7 @@ def kungfu(script_cfg):
     set_debug(vars(command_line_cfg))
     alog.debug('Command line args: ' + str(sys.argv))
     alog.debug(pprint.pformat(command_line_cfg))
-    alog.debug('Script cfg:')
-    alog.debug(pprint.pformat(script_cfg))
+    alog.debug('Script cfg:\n'+pprint.pformat(script_cfg))
     configuration.copy()
     cfg = configuration.load(script_cfg=script_cfg, command_line_cfg=command_line_cfg)
     alog.debug('Merged cfg:')

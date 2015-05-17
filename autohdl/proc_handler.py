@@ -67,7 +67,7 @@ def kill(pid):
     return (0 != kernel32.TerminateProcess(handle, 0))
 
 if __name__ == '__main__':
-#  popen('python drafts/aaadraft2.py')
-#  popen('pythonw drafts/aaadraft2.py')
+#  popen('python drafts/a2.py')
+#  popen('pythonw drafts/a2.py')
 
     killAll()

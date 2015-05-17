@@ -135,4 +135,4 @@ if __name__ == '__main__':
                                                                     locale.getpreferredencoding(),
                                                                     sys.stdin.encoding))
     upload(i, 'http://cs.scircus.ru/test/distout/rtl/info.txt', src_type='string')
-    upload('drafts/aaadraft.py', 'http://cs.scircus.ru/test/distout/rtl/pypy.txt')
+    upload('drafts/a1.py', 'http://cs.scircus.ru/test/distout/rtl/pypy.txt')

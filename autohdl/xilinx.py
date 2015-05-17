@@ -14,8 +14,7 @@ from autohdl import toolchain
 from autohdl import IMPLEMENT_PATH, SYNTHESIS_PATH, NETLIST_EXT
 
 
-log = logging.getLogger(__name__)
-print(__name__)
+alog = logging.getLogger(__name__)
 
 
 XTCL_SCRIPT = """\
@@ -64,9 +63,9 @@ def bit_to_mcs(cfg):
                                                            size=cfg['eeprom_kilobytes'])
             subprocess.check_call(proc)
         else:
-            log.warning('EEPROM size was not set')
+            alog.warning('EEPROM size was not set')
     except subprocess.CalledProcessError as e:
-        log.error(e)
+        alog.error(e)
         sys.exit(1)
 
 
@@ -96,14 +95,14 @@ def copy_firmware(cfg):
                 if re.search(pattern=pattern, string=fname_old):
                     dst_path_old = os.path.join(dest_dir, fname_old)
                     if not utils.is_same_contents(src_path, dst_path_old):
-                        log.info("Remove old firmware: "+dst_path_old)
+                        alog.info("Remove old firmware: "+dst_path_old)
                         os.remove(dst_path_old)
-                        log.info('Copy new firmware: '+dst_path)
+                        alog.info('Copy new firmware: '+dst_path)
                         shutil.copy(src_path, dst_path)
                     else:
-                        log.info("No need to replace, same contents: "+dst_path_old)
+                        alog.info("No need to replace, same contents: "+dst_path_old)
             if not dst_path_old:
-                log.info('Copy new firmware '+dst_path)
+                alog.info('Copy new firmware '+dst_path)
                 shutil.copy(src_path, dst_path)
 
 
@@ -115,11 +114,11 @@ def clean(cfg):
                 shutil.rmtree(cfg['prj_dir'])
                 break
             except Exception as e:
-                log.warning(e)
+                alog.warning(e)
                 time.sleep(1)
     if os.path.exists(cfg['prj_dir']):
         message = "Can't clean xilinx project {}".format(cfg['prj_dir'])
-        log.error(message)
+        alog.error(message)
         sys.exit(message)
 
 
@@ -130,11 +129,11 @@ def mk_dir(cfg):
                 os.makedirs(cfg['prj_dir'])
                 break
             except Exception as e:
-                log.warning(e)
+                alog.warning(e)
                 time.sleep(1)
     if not os.path.exists(cfg['prj_dir']):
         message = "Can't make xilinx project {}".format(cfg['prj_dir'])
-        log.error(message)
+        alog.error(message)
         sys.exit(message)
 
 
@@ -185,10 +184,10 @@ def load_env_settings():
             res = i.split('=')
             if len(res) == 2:
                 d.update({res[0]: res[1]})
-        log.info("Load xilinx env from: "+wrapper)
+        alog.info("Load xilinx env from: "+wrapper)
         return d
     except Exception as exp:
-        log.error(exp)
+        alog.error(exp)
 
 
 def extend_cfg(cfg):
