@@ -25,8 +25,8 @@ def copy_only_new(src, dest):
 def is_same_contents(file1, file2):
     h1 = hashlib.sha1()
     h2 = hashlib.sha1()
-    with open(file1) as f:
-        h1.update(f.read().encode('utf-8'))
-    with open(file2) as f:
-        h2.update(f.read().encode('utf-8'))
+    with open(file1, 'rb') as f:
+        h1.update(f.read())
+    with open(file2, 'rb') as f:
+        h2.update(f.read())
     return h1.hexdigest() == h2.hexdigest()

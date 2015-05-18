@@ -10,6 +10,7 @@ FILE_TOOLCHAIN_CFG = os.path.join(_AUTOHDL_CONFIG_DIR_, 'toolchain.json')
 
 IGNORE_REPO_DIRS = ('.git', '.svn', '.hg',)
 PREDEFINED_DIRS = ('src', 'TestBench', 'resource', 'script',)
+CONSTRAINTS_EXT = ('.ucf', '.sdc', '.fdc',)
 VERILOG_FILE_EXT = ('.v', '.sv',)
 VHDL_FILE_EXT = ('.vhd', '.vhdl',)
 NETLIST_EXT = ('.ngc',)

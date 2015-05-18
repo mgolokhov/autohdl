@@ -7,7 +7,7 @@ import re
 import shutil
 import importlib
 
-from autohdl import FILE_USER_CFG, FILE_DEFAULT_CFG
+from autohdl import FILE_USER_CFG, FILE_DEFAULT_CFG, CONSTRAINTS_EXT
 
 alog = logging.getLogger(__name__)
 
@@ -76,6 +76,10 @@ def load_env(cfg):
     cfg['dsn_name'] = os.path.basename(cfg['dsn_root'])
 
 
+def get_constraints(cfg):
+    return [i for i in cfg['src'] if os.path.splitext(i)[1] in CONSTRAINTS_EXT]
+
+
 def load(script_cfg, command_line_cfg):
     result_cfg = {}
     load_env(result_cfg)
@@ -93,6 +97,7 @@ def load(script_cfg, command_line_cfg):
 
     dump_relative_paths(result_cfg)
     convert_to_abs(result_cfg)
+    result_cfg.update({'constraints': get_constraints(result_cfg)})
     return result_cfg
 
 

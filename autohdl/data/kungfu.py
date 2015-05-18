@@ -11,7 +11,6 @@ cfg = {
     'eeprom_kilobytes': '256',
     'src': [],
     'ignore_undefined_instances': [],
-    'constraints': [],
     'top_module': "",
     'include_paths': [],
     # common stuff

@@ -54,7 +54,7 @@ def cli_handler():
 
 def validate(cfg):
     # TODO: check constraints
-    for k, s in (('top_module', 'Top module undefined'),):
+    for k, s in (('top_module', 'Top module undefined'), ('constraints', 'There is no constraints files')):
         if not cfg.get(k):
             if 'batch' in (cfg.get('synplify'), cfg.get('xilinx'),):
                 sys.exit('[Error] {}, exit...'.format(s))
