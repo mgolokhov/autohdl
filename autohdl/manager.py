@@ -32,7 +32,7 @@ def print_info(config):
                           package=config.get('package'),
                           top=config.get('top_module'),
                           ucf=config.get('constraints'),
-                          size=config.get('eeprom_bytes'),
+                          size=config.get('eeprom_kilobytes'),
                           upload=config.get('upload')))
 
 
