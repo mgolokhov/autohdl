@@ -27,11 +27,13 @@ def load_user_cfg():
 def dump_relative_paths(cfg):
     cfg_old = deepcopy(cfg)
     convert_to_relative(cfg)
+    alog.debug("Cfg with relative "+pprint.pformat(cfg))
     if cfg != cfg_old:
         main_script = sys.modules['__main__'].__file__
         with open(main_script) as f:
             contents = f.read()
             for p, r in zip(cfg_old['src'], cfg['src']):
+                alog.debug("{} {}".format(p, r))
                 if p != r:
                     contents = re.sub(pattern=p, repl=r, string=contents, flags=re.MULTILINE | re.S)
             for p, r in zip(cfg_old['include_paths'], cfg['include_paths']):

@@ -1,8 +1,0 @@
-file_path: in\func\cmi_recv_packet.v
-includes:
-  paths: []
-parsed:
-  cmi_recv_packet:
-    instances: !!set {crc_6: null}
-    path: in\func\cmi_recv_packet.v
-sha: c2f7cd2c1b0cf596f18d30072d03c4542965d13b

@@ -12,6 +12,7 @@ import subprocess
 from autohdl import synplify
 from autohdl import xilinx
 from autohdl import configuration
+from autohdl import aldec
 
 alog = logging.getLogger(__name__)
 
@@ -39,6 +40,9 @@ def print_info(config):
 def cli_handler():
     parser = argparse.ArgumentParser(description='HDL Manager')
     parser.add_argument('-top', dest='top_module', help='set top module name')
+    parser.add_argument('-tb', nargs='?', const='aldec',
+                        choices=['aldec', 'verilator_not_yet'],
+                        help='export project to active-hdl [default=aldec]')
     parser.add_argument('-synplify', nargs='?', const='batch', choices=['batch', 'gui'],
                         help='synthesis step [default=batch]')
     parser.add_argument('-xilinx', nargs='?', const='batch', choices=['batch', 'gui'],
@@ -98,6 +102,8 @@ def kungfu(script_cfg):
         if cfg.get('eeprom_kilobytes'):
             xilinx.bit_to_mcs(cfg)
         xilinx.copy_firmware(cfg)
+    elif cfg.get('tb'):
+        aldec.export(cfg)
     elif cfg.get('synplify'):
         synplify.run(cfg)
     elif cfg.get('xilinx'):

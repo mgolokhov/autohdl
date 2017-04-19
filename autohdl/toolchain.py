@@ -15,7 +15,11 @@ alog = logging.getLogger(__name__)
 
 class Tool(object):
     def __init__(self):
-        self.data = {'ise': {'gui': 'ise.exe',
+        self.data = {
+            'avhdl': {'gui': 'avhdl.exe',
+                               'batch': None,
+                               'path': ['/Aldec/']},
+            'ise': {'gui': 'ise.exe',
                              'impact': 'impact.exe',
                              'batch': 'xtclsh.exe',
                              'xflow': 'xflow.exe',

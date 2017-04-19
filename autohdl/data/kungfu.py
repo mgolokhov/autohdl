@@ -13,11 +13,6 @@ cfg = {
     'ignore_undefined_instances': [],
     'top_module': "",
     'include_paths': [],
-    # common stuff
-    'webdav_src_path': 'git/hdl',
-    'webdav_build_path': 'test/distout/rtl',
-    'host': 'cs.scircus.ru',
-    'webdav_files': [],
 }
 
 if __name__ == '__main__':

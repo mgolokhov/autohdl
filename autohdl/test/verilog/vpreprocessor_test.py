@@ -1,13 +1,9 @@
 import unittest
-
-from autohdl.hdl_logger import *
-
-logging.disable(logging.CRITICAL)
-
 import sys
+import os
 
-sys.path.insert(0, '../..')
-from autohdl.verilog.vpreprocessor import *
+sys.path.insert(1, '../../verilog')
+from vpreprocessor import Preprocessor
 
 class PreprocessorTest(unittest.TestCase):
     @classmethod
@@ -20,89 +16,70 @@ class PreprocessorTest(unittest.TestCase):
     def tearDownClass(self):
         os.chdir(self.cwd_was)
 
-    def compare(self, expected, actual):
-        actual = [i.strip() for i in actual.splitlines() if i]
-        expected = [i.strip() for i in expected.splitlines() if i]
-        self.assertSequenceEqual(expected, actual)
+    def show_repr(self, actual, expected):
+        return "\n\n" \
+               "RESULT:\n{raw_actual}\n" \
+               "EXPECTED:\n{raw_expected}\n\n" \
+               "RESULT REPR:\n{repr_actual}\n" \
+               "EXPECTED REPR:\n{repr_expected}" \
+               "\n".format(raw_actual=actual,
+                           raw_expected=expected,
+                           repr_actual=repr(actual),
+                           repr_expected=repr(expected))
 
+    def run_test(self, fname_in, fname_exp, cfg=None):
+        if cfg:
+            p = Preprocessor(includes=cfg.includes, defines=cfg.defines)
+        else:
+            p = Preprocessor()
+        with open(fname_in) as f:
+            txt = f.read()
+        with open(fname_exp) as f:
+            expected = f.read()
+        actual = p.prepr_txt(txt)
+        self.assertEqual(actual, expected, msg=self.show_repr(actual, expected))
 
     def test_nested_ifdef(self):
-        actual = Preprocessor('in/nested_ifdef.v').preprocessed
-        with open('gold/nested_ifdef.v') as f:
-            expected = f.read()
-        self.compare(expected, actual)
+        self.run_test('in/nested_ifdef.v', 'gold/nested_ifdef.v')
 
     def test_nested_ifdef2(self):
-        actual = Preprocessor('in/nested_ifdef2.v').preprocessed
-        with open('gold/nested_ifdef2.v') as f:
-            expected = f.read()
-        self.compare(expected, actual)
+        self.run_test('in/nested_ifdef2.v', 'gold/nested_ifdef2.v')
 
     def test_nested_ifdef3(self):
-        actual = Preprocessor('in/nested_ifdef3.v').preprocessed
-        with open('gold/nested_ifdef3.v') as f:
-            expected = f.read()
-        self.compare(expected, actual)
+        self.run_test('in/nested_ifdef3.v', 'gold/nested_ifdef3.v')
 
     def test_nested_ifdef4(self):
-        actual = Preprocessor('in/nested_ifdef4.v').preprocessed
-        with open('gold/nested_ifdef4.v') as f:
-            expected = f.read()
-        self.compare(expected, actual)
+        self.run_test('in/nested_ifdef4.v', 'gold/nested_ifdef4.v')
 
     def test_nested_ifdef5(self):
-        actual = Preprocessor('in/nested_ifdef5.v').preprocessed
-        with open('gold/nested_ifdef5.v') as f:
-            expected = f.read()
-        self.compare(expected, actual)
+        self.run_test('in/nested_ifdef5.v', 'gold/nested_ifdef5.v')
 
     def test_nested_ifdef6(self):
-        actual = Preprocessor('in/nested_ifdef6.v').preprocessed
-        with open('gold/nested_ifdef6.v') as f:
-            expected = f.read()
-        self.compare(expected, actual)
+        self.run_test('in/nested_ifdef6.v', 'gold/nested_ifdef6.v')
 
     def test_nested_ifdef7(self):
-        actual = Preprocessor('in/nested_ifdef7.v').preprocessed
-        with open('gold/nested_ifdef7.v') as f:
-            expected = f.read()
-        self.compare(expected, actual)
+        self.run_test('in/nested_ifdef7.v', 'gold/nested_ifdef7.v')
 
     def test_ifdef(self):
-        actual = Preprocessor('in/ifdef.v').preprocessed
-        with open('gold/ifdef.v') as f:
-            expected = f.read()
-        self.compare(expected, actual)
+        self.run_test('in/nested_ifdef.v', 'gold/nested_ifdef.v')
 
     def test_macro_resolve(self):
-        actual = Preprocessor('in/macro_resolve.v').preprocessed
-        with open('gold/macro_resolve.v') as f:
-            expected = f.read()
-        self.compare(expected, actual)
+        self.run_test('in/macro_resolve.v', 'gold/macro_resolve.v')
 
     def test_include(self):
-        actual = Preprocessor('in/incl_top.v').preprocessed
-        with open('gold/incl.v') as f:
-            expected = f.read()
-        self.compare(expected, actual)
+        cfg = Preprocessor(includes=['in'])
+        self.run_test('in/incl_top.v', 'gold/incl.v', cfg)
 
     def test_include1(self):
-        actual = Preprocessor('in/incl0').preprocessed
-        with open('gold/incl0') as f:
-            expected = f.read()
-        self.compare(expected, actual)
+        cfg = Preprocessor(includes=['in'])
+        self.run_test('in/incl0', 'gold/incl0', cfg)
 
     def test_removeComments(self):
-        actual = Preprocessor('in/comments.v').preprocessed
-        with open('gold/comments.v') as f:
-            expected = f.read()
-        self.compare(expected, actual)
+        self.run_test('in/comments.v', 'gold/comments.v')
 
     def test_preprocessor(self):
-        actual = Preprocessor('in/preprocessor/dspuva16.v').preprocessed
-        with open('gold/preprocessor/dspuva16.v') as f:
-            expected = f.read()
-        self.compare(expected, actual)
+        self.run_test('in/preprocessor/dspuva16.v', 'gold/preprocessor/dspuva16.v')
+
 
 
 if __name__ == '__main__':

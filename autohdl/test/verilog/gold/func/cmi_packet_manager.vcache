@@ -1,9 +1,0 @@
-file_path: in\func\cmi_packet_manager.v
-includes:
-  paths: []
-parsed:
-  cmi_packet_manager:
-    instances: !!set {cmi_recv_packet: null, cmi_send_packet: null, cmi_timeslot_generator: null,
-      rs232_rx: null, rs232_tx: null}
-    path: in\func\cmi_packet_manager.v
-sha: 40ca25b4f8e2166408e931ebff275d67ad59cb43

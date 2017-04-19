@@ -22,6 +22,7 @@ AUTOHDL_ROOT = 'autohdl'
 
 SYNTHESIS_PATH = '../{}/synthesis'.format(AUTOHDL_ROOT)
 IMPLEMENT_PATH = '../{}/implement'.format(AUTOHDL_ROOT)
+ALDEC_PATH = '../{}/aldec'.format(AUTOHDL_ROOT)
 
 FILE_LOGGING = os.path.join(os.path.expanduser("~"), ".autohdl", "logging.txt")
 
