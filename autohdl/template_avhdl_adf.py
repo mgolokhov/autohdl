@@ -47,9 +47,9 @@ def include_path(iPrj):
 
 def files(iPrj):
     dep = []
-    if iPrj.get('structure') and iPrj.get('structure').get('depSrc'):
-        iPrj['structure']['depSrc'].sort(key=str.lower)
-        dep = ['dep/' + i + '=-1' for i in iPrj['structure']['depSrc']]
+    if iPrj['aldec'].get('deps'):
+        iPrj['aldec'].get('deps').sort(key=str.lower)
+        dep = ['dep/' + i + '=-1' for i in iPrj['aldec'].get('deps')]
 
     repo = []
     if iPrj['aldec']['repoPath']:

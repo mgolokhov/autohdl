@@ -34,8 +34,11 @@ def extend(config):
     config['aldec']['netlistSrc'] = structure.search(directory=ALDEC_PATH + '/src',
                                                      onlyExt='.sedif .edn .edf .edif .ngc'.split())
 
+    # config['aldec']['allSrc'] += config.get('src')
+    config['aldec']['deps'] = [i for i in config.get('src') if '/cores/' in i]
+
     config['aldec']['filesToCompile'] = (config['aldec']['allSrc']
-                                         #+ config['structure']['depSrc']
+                                         + config['aldec']['deps']
                                          + config['aldec']['TestBenchSrc'])
 
     #add cores designs (ignore repo files) to project navigator
@@ -123,10 +126,6 @@ def preparation():
 
 
 def export(config):
-
-    import pprint
-    pprint.pprint(config)
-
     preparation()
     extend(config)
     gen_aws(config)
@@ -134,19 +133,13 @@ def export(config):
     gen_compile_cfg(config)
     aldec = toolchain.Tool().get('avhdl_gui')
     config.setdefault('execution_fifo', list())
-    config['execution_fifo'].append('python{mode} {abs_path_to}/aldec_run.py {current_dir} "{aldec_exe}"'.format(
-        abs_path_to=os.path.dirname(__file__),
-        current_dir=os.getcwd(),
-        aldec_exe=aldec,
-        mode='w' #if config['hdlManager'].get('debug') else 'w'
-    ))
     doit = 'python{mode} {abs_path_to}/aldec_run.py {current_dir} "{aldec_exe}"'.format(
         abs_path_to=os.path.dirname(__file__),
         current_dir=os.getcwd(),
         aldec_exe=aldec,
         mode='w' #if config['hdlManager'].get('debug') else 'w'
     )
+    import pprint
+    pprint.pprint(config)
     subprocess.Popen(doit)
-    # if config['hdlManager'].get('debug') != 'hardcore_test':
-    #     for i in config['execution_fifo']:
-    #         subprocess.Popen(i)
+
