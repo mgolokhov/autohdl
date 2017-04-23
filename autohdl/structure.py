@@ -66,35 +66,35 @@ def _convert_to_set(arg):
 
 
 def search(directory='.',
-           ignoreDir=None, ignoreExt=None, onlyExt=None):
+           ignore_dir=None, ignore_ext=None, only_ext=None):
     """
       Recursively search files by pattern.
       Input: directory - start point to search,
              ignore and only - filter patterns for directory and files (should be lists)
       Returns list of files.
     """
-    ignoreDir = _convert_to_set(ignoreDir)
-    ignoreExt = _convert_to_set(ignoreExt)
-    onlyExt = _convert_to_set(onlyExt)
+    ignore_dir = _convert_to_set(ignore_dir)
+    ignore_ext = _convert_to_set(ignore_ext)
+    only_ext = _convert_to_set(only_ext)
 
-    resFiles = []
+    res_files = []
     for root, dirs, files in os.walk(os.path.abspath(directory)):
-        for i in set(dirs) & ignoreDir:
+        for i in set(dirs) & ignore_dir:
             alog.debug('ignore directory: ' + i)
             dirs.remove(i)
         for f in files[:]:
             alog.debug('file: ' + f)
             ext = os.path.splitext(f)[1]
-            if ext in ignoreExt:
+            if ext in ignore_ext:
                 files.remove(f)
                 alog.debug('ignore file (ignore list) ' + f)
-            elif onlyExt and (ext not in onlyExt):
+            elif only_ext and (ext not in only_ext):
                 files.remove(f)
                 alog.debug('ignore file (only list) ' + f)
             else:
                 alog.debug('add file ' + f)
-                resFiles.append(os.path.join(root, f))
-    return resFiles
+                res_files.append(os.path.join(root, f))
+    return res_files  # [i.replace('\\', '/') for i in res_files]
 
 
 def parse(src_files):

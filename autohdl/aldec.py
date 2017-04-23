@@ -1,10 +1,9 @@
 import os
 import shutil
 import subprocess
+import pprint
 
 from autohdl import structure
-# from autohdl import build
-# from autohdl import hdlGlobals
 from autohdl import template_avhdl_adf
 from autohdl import toolchain
 from autohdl import ALDEC_PATH, PREDEFINED_DIRS, IGNORE_REPO_DIRS, VERILOG_VHDL_FILE_EXT
@@ -15,70 +14,35 @@ def extend(config):
     Precondition: cwd= <dsn_name>/script
     Output: dictionary { keys=main, dep, tb, other values=list of path files}
     """
+    # netlists should be copied in the real folders for synthesis and implementation
     config.setdefault('aldec', dict())
-    config['aldec']['rootPath'] = os.path.abspath('..').replace('\\', '/')
-    config['aldec']['dsnName'] = os.path.basename(config['aldec']['rootPath'])
-
-    config['aldec']['allSrc'] = structure.search(directory=config['aldec']['rootPath'],
-                                                 ignoreDir=IGNORE_REPO_DIRS + ('autohdl',))
-
-    config['aldec']['srcUncopied'] = structure.search(directory=ALDEC_PATH + '/src',
-                                                      onlyExt=VERILOG_VHDL_FILE_EXT,
-                                                      ignoreDir=IGNORE_REPO_DIRS)
-
-    config['aldec']['TestBenchSrc'] = structure.search(directory='../TestBench', ignoreDir=IGNORE_REPO_DIRS)
-    config['aldec']['TestBenchUtils'] = structure.search(directory='../../TestBenchUtils', ignoreDir=IGNORE_REPO_DIRS)
-    if config['aldec']['TestBenchUtils']:
-        config['aldec']['TestBenchSrc'] += config['aldec']['TestBenchUtils']
-
-    config['aldec']['netlistSrc'] = structure.search(directory=ALDEC_PATH + '/src',
-                                                     onlyExt='.sedif .edn .edf .edif .ngc'.split())
-
-    # config['aldec']['allSrc'] += config.get('src')
-    config['aldec']['deps'] = [i for i in config.get('src') if '/cores/' in i]
-
-    config['aldec']['filesToCompile'] = (config['aldec']['allSrc']
-                                         + config['aldec']['deps']
-                                         + config['aldec']['TestBenchSrc'])
-
-    #add cores designs (ignore repo files) to project navigator
-    if os.path.basename(os.path.abspath('../..')) == 'cores':
-        # repo/cores/dsn/script/
-        config['aldec']['repoPath'] = os.path.abspath('../../..').replace('\\', '/')
-    elif 'cores' in os.listdir('../..'):
-        # repo/dsn/script
-        config['aldec']['repoPath'] = os.path.abspath('../..').replace('\\', '/')
-    else:
-        config['aldec']['repoPath'] = None
-    config['aldec']['repoSrc'] = []
-    if config['aldec']['repoPath']:
-        for root, dirs, files in os.walk(config['aldec']['repoPath']):
-            if config['aldec']['dsnName'] in dirs:
-                dirs.remove(config['aldec']['dsnName'])
-            for i in ['aldec', 'synthesis', 'implement', '.svn', '.git', 'TestBench', 'script', 'resource']:
-                if i in dirs:
-                    dirs.remove(i)
-            for f in files:
-                if 'src' in root + '/' + f:
-                    config['aldec']['repoSrc'].append(os.path.abspath(root + '/' + f).replace('\\', '/'))
-    #config['build'] = build.load()
+    config['aldec']['dsn_root'] = os.path.normpath(config.get('dsn_root'))
+    config['aldec']['wsp_root'] = os.path.normpath(os.path.join(config.get('dsn_root'), '..'))
+    config['aldec']['src'] = [os.path.normpath(i) for i in config['src']]
+    config['aldec']['dsn_name'] = config.get('dsn_name')
+    config['aldec']['all_src'] = structure.search(directory=config['aldec']['wsp_root'],
+                                                  ignore_dir=IGNORE_REPO_DIRS + ('autohdl',))
+    config['aldec']['dsn_src'] = structure.search(directory=config['aldec']['dsn_root'],
+                                                  ignore_dir=IGNORE_REPO_DIRS + ('autohdl',)
+                                                  )
+    config['aldec']['deps'] = [i for i in config['aldec']['src'] if config['aldec']['dsn_root'] not in i]
 
 
-def gen_aws(iPrj):
-    content = '[Designs]\n{dsn}=./{dsn}.adf'.format(dsn=iPrj['aldec']['dsnName'])
+def gen_aws(config):
+    content = '[Designs]\n{dsn}=./{dsn}.adf'.format(dsn=config['aldec']['dsn_name'])
     with open(ALDEC_PATH + '/wsp.aws', 'w') as f:
         f.write(content)
 
 
-def gen_adf(iPrj):
-    adf = template_avhdl_adf.generate(iPrj=iPrj)
-    with open(ALDEC_PATH + '/{dsn}.adf'.format(dsn=iPrj['aldec']['dsnName']), 'w') as f:
+def gen_adf(config):
+    adf = template_avhdl_adf.generate(iPrj=config)
+    with open(ALDEC_PATH + '/{dsn}.adf'.format(dsn=config['aldec']['dsn_name']), 'w') as f:
         f.write(adf)
 
 
 def gen_compile_cfg(config):
     src = []
-    for i in config['aldec']['filesToCompile']:
+    for i in config['aldec']['dsn_src'] + config['aldec']['deps']:
         if os.path.splitext(i)[1] not in VERILOG_VHDL_FILE_EXT:
             continue
         path = os.path.abspath(i)
@@ -92,21 +56,24 @@ def gen_compile_cfg(config):
         f.write('\n'.join(src))
 
 
-def cleanAldec():
+def clean_aldec():
     if not {'resource', 'script', 'src', 'TestBench'}.issubset(os.listdir(os.getcwd() + '/..')):
         return
-    cl = structure.search(directory=ALDEC_PATH, ignoreDir=['implement', 'synthesis', 'src'])
+    cl = structure.search(directory=ALDEC_PATH, ignore_dir=['implement', 'synthesis', 'src'])
     for i in cl:
-        if os.path.isdir(i):
-            shutil.rmtree(i)
-        else:
-            os.remove(i)
+        try:
+            if os.path.isdir(i):
+                shutil.rmtree(i)
+            else:
+                os.remove(i)
+        except Exception as e:
+            pass
 
 
-def copyNetlists():
+def copy_netlists():
     netLists = structure.search(directory='../src',
-                                onlyExt='.sedif .edn .edf .edif .ngc'.split(),
-                                ignoreDir=['.git', '.svn', 'aldec'])
+                                only_ext='.sedif .edn .edf .edif .ngc'.split(),
+                                ignore_dir=['.git', '.svn', 'aldec'])
     for i in netLists:
         shutil.copyfile(i, ALDEC_PATH + '/src/' + os.path.split(i)[1])
 
@@ -120,7 +87,7 @@ def genPredefined():
 
 
 def preparation():
-    # cleanAldec()
+    #clean_aldec()
     genPredefined()
     # copyNetlists()
 
@@ -137,9 +104,8 @@ def export(config):
         abs_path_to=os.path.dirname(__file__),
         current_dir=os.getcwd(),
         aldec_exe=aldec,
-        mode='w' #if config['hdlManager'].get('debug') else 'w'
+        mode='w'
     )
-    import pprint
-    pprint.pprint(config)
+    # pprint.pprint(config)
     subprocess.Popen(doit)
 

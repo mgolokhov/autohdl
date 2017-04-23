@@ -1,4 +1,5 @@
 import os
+import pprint
 
 
 
@@ -45,49 +46,46 @@ def include_path(iPrj):
     return '{0}\n{1}'.format(counter, '\n'.join(inclDir))
 
 
-def files(iPrj):
-    dep = []
-    if iPrj['aldec'].get('deps'):
-        iPrj['aldec'].get('deps').sort(key=str.lower)
-        dep = ['dep/' + i + '=-1' for i in iPrj['aldec'].get('deps')]
+def files(config):
+    virt_dirs = {'deps=1'}
+    virt_paths = []
 
-    repo = []
-    if iPrj['aldec']['repoPath']:
-        rootPath = iPrj['aldec']['repoPath'] + '/'
-        # relative path to
-        # repo_root/prj/autohdl/aldec/src + virtual_folders
-        for i in iPrj['aldec']['repoSrc']:
-            virtFolder = os.path.dirname(i).replace('\\', '/').split(rootPath)[1]
-            virtFolder = virtFolder.replace('/', '\\').rstrip('/src')
-            ass = len(virtFolder.split('\\')) # counts virtual folders
-            repo.append('repo\\' + virtFolder + '/..' * ass + '/../../../script/' + os.path.relpath(i) + '=-1')
+    for i in config['aldec']['dsn_src']:
+        virt_dir = os.path.dirname(i).replace('/', '\\').replace(config['aldec']['wsp_root']+'\\', '')
+        if virt_dir != config['aldec']['wsp_root']:
+            virt_dirs.add(virt_dir+'=1')
+        virt_paths.append(virt_dir + '/' + i + '=-1')
+    # pprint.pprint(virt_dirs)
+    # pprint.pprint(virt_paths)
+    # import sys; sys.exit(0);
 
-    netlist = []
-    #  if iPrj.get('netlistSrc'):
-    #    iPrj['netlistSrc'].sort()
-    #    netlist = ['/'+ i + '=-1' for i in iPrj['netlistSrc']]
+    if config['aldec'].get('deps'):
+        virt_paths += ['deps/' + i + '=-1' for i in config['aldec'].get('deps')]
 
-    uncopied = []
-    if iPrj['aldec'].get('srcUncopied'):
-        iPrj['aldec']['srcUncopied'].sort()
-        uncopied = ['/' + i + '=-1' for i in iPrj['aldec']['srcUncopied']]
+    # pprint.pprint(virt_dirs)
+    # pprint.pprint(virt_paths)
+    # import sys; sys.exit(0);
 
-    # TODO: what a mess?
-    allOtherSrc = list(set(iPrj['aldec']['allSrc']))# - set(iPrj['structure']['depSrc']))
-    if allOtherSrc:
-        allOtherSrc.sort(key=str.lower)
-    rootPath = iPrj['aldec']['rootPath'] + '/'
-    l = []
-    for i in allOtherSrc:
-        virt = os.path.dirname(i).replace('\\', '/').split(rootPath)
-        if len(virt) == 2:
-            virtFolder = virt[1].replace('/', '\\')
+    for i in config['aldec']['all_src']:
+        virt_dir = 'all\\' + os.path.dirname(i).replace(config['aldec']['wsp_root']+'\\', '')
+        if virt_dir != 'all\\' + config['aldec']['wsp_root']:
+            virt_dirs.add(virt_dir + '=1')
         else:
-            virtFolder = ''
-        l.append(virtFolder + '/' + i + '=-1')
-    allOtherSrc = l
-    files = '\n'.join(dep + netlist + allOtherSrc + uncopied + repo)
-    return files
+            virt_dir = "all/"
+
+        p = os.path.join(config['dsn_root'], 'autohdl')
+        r = os.path.relpath(i, p)
+        f = '\\..\\' * (len((virt_dir.split('\\')))) + r
+
+        virt_paths.append(virt_dir + '/' + i + '=-1')
+        # if 'doit.sublime-project' in i:
+        #     print(config['aldec']['wsp_root'])
+        #     pprint.pprint(virt_dirs)
+        #     pprint.pprint(virt_paths)
+        #     import sys; sys.exit(0);
+
+    config['aldec']['virt_dirs'] = virt_dirs
+    config['aldec']['virt_paths'] = virt_paths
 
 
 def files_data(iPrj):
@@ -110,6 +108,7 @@ def defineMacro(iPrj):
 
 
 def generate(iPrj):
+    files(iPrj)
     template = ('\n'
                 '[Project]\n'
                 'Current Flow=Multivendor\n'
@@ -290,8 +289,8 @@ def generate(iPrj):
                 # 'ovi_unisim=\n'
 
                 '[LocalVerilogSets]\n'
-                # SystemVerilog 1800-2005
-                'VerilogLanguage=7\n'
+                # SystemVerilog 1800-2012
+                'VerilogLanguage=8\n'
 
                 '[LocalVerilogDirs]\n'
                 + '{LocalVerilogDirs}\n'.format(LocalVerilogDirs=include_path(iPrj)) +
@@ -300,18 +299,13 @@ def generate(iPrj):
 
 
                 '[Groups]\n'
-                'src=1\n'
-                'dep=1\n'
-                'script=1\n'
-                'resource=1\n'
-                'TestBench=1\n'
-                'repo\n'
+                + '{groups}\n'.format(groups='\n'.join(iPrj['aldec']['virt_dirs'])) +
 
                 '[Files]\n'
-                + '{Files}\n'.format(Files=files(iPrj)) +
+                + '{Files}\n'.format(Files='\n'.join(iPrj['aldec']['virt_paths'])) +
 
                 '[Files.Data]\n'
-                '{Files_Data}\n'.format(Files_Data=files_data(iPrj))
+                #'{Files_Data}\n'.format(Files_Data=files_data(iPrj))
         )
 
     return template
