@@ -21,10 +21,15 @@ def extend(config):
     config['aldec']['src'] = [os.path.normpath(i) for i in config['src']]
     config['aldec']['dsn_name'] = config.get('dsn_name')
     config['aldec']['all_src'] = structure.search(directory=config['aldec']['wsp_root'],
-                                                  ignore_dir=IGNORE_REPO_DIRS + ('autohdl',))
-    config['aldec']['dsn_src'] = structure.search(directory=config['aldec']['dsn_root'],
-                                                  ignore_dir=IGNORE_REPO_DIRS + ('autohdl',)
+                                                  ignore_dir=IGNORE_REPO_DIRS + ('autohdl',),
+                                                  ignore_ext=('.DS_Store',)
                                                   )
+    config['aldec']['dsn_src'] = structure.search(directory=config['aldec']['dsn_root'],
+                                                  ignore_dir=IGNORE_REPO_DIRS + ('autohdl',),
+                                                  ignore_ext=('.DS_Store',)
+                                                  )
+    #pprint.pprint(config['aldec']['dsn_src'])
+    #import sys; sys.exit(0);
     config['aldec']['deps'] = [i for i in config['aldec']['src'] if config['aldec']['dsn_root'] not in i]
 
 

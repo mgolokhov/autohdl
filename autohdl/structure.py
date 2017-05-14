@@ -84,6 +84,7 @@ def search(directory='.',
             dirs.remove(i)
         for f in files[:]:
             alog.debug('file: ' + f)
+            # splitext(".file") will return an empty ext
             ext = os.path.splitext(f)[1]
             if ext in ignore_ext:
                 files.remove(f)

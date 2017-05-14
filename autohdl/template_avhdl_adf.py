@@ -38,9 +38,10 @@ def ucf(iPrj):
 def include_path(iPrj):
     incl_path = iPrj.get('include_path')
     if not incl_path:
-        return ''
+        incl_path = []
     elif type(incl_path) is str:
         incl_path = [incl_path]
+    incl_path += [os.path.join(iPrj.get("dsn_root"), "src")]
     counter = 'Count={0}'.format(len(incl_path))
     inclDir = ['IncludeDir{0}={1}'.format(i, path) for i, path in enumerate(incl_path)]
     return '{0}\n{1}'.format(counter, '\n'.join(inclDir))
@@ -85,7 +86,12 @@ def files(config):
         #     import sys; sys.exit(0);
 
     config['aldec']['virt_dirs'] = virt_dirs
-    config['aldec']['virt_paths'] = virt_paths
+    config['aldec']['virt_paths'] = []
+    # packages should be compiled first
+    for i in virt_paths:
+        if "_pkg" in i:
+            config['aldec']['virt_paths'].append(i)
+    config['aldec']['virt_paths'] += virt_paths
 
 
 def files_data(iPrj):
@@ -99,8 +105,10 @@ def files_data(iPrj):
 
 
 def defineMacro(iPrj):
-    macros = ""#iPrj.get('hdlManager').get('AldecMacros')
-    #print(macros)
+    macros = iPrj.get('AldecMacros')
+    if type(macros) is str:
+        macros = [macros]
+    # print('[DefineMacro]\nGlobal=' + ' '.join(macros) + '\n'); import sys; sys.exit(0);
     if macros:
         return '[DefineMacro]\nGlobal=' + ' '.join(macros) + '\n'
     else:
@@ -266,7 +274,7 @@ def generate(iPrj):
                 'SERVERFARM_INCLUDE_INPUT_FILES=*.*\n'
                 'SERVERFARM_EXCLUDE_INPUT_FILES=log\*.*:implement\*.*\n'
                 'JOB_SFM_RESOURCE=\n'
-                'LAST_RUN=1297366639\n'
+                'LAST_RUN=0\n'
 
                 '[PHYS_SYNTHESIS]\n'
                 + 'FAMILY={FAMILY}\n'.format(FAMILY=family(iPrj))

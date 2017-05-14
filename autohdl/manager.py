@@ -47,7 +47,7 @@ def cli_handler():
                         help='synthesis step [default=batch]')
     parser.add_argument('-xilinx', nargs='?', const='batch', choices=['batch', 'gui'],
                         help='implementation step [default=batch]')
-    parser.add_argument('-mcs', nargs='?', help='generate .mcs from .bit file')
+    parser.add_argument('-mcs', nargs='?', const="512", help='generate .mcs from .bit file')
     parser.add_argument('-upload', action='store_true', help='upload firmware to WebDav server')
     parser.add_argument('-message', help='information about firmware')
     parser.add_argument('-debug', nargs='?', const='')
@@ -79,7 +79,6 @@ def kungfu(script_cfg):
     subprocess.call('hdl.py -v', shell=True)
     alog.info('Processing...')
     command_line_cfg = cli_handler()
-    pprint.pprint(command_line_cfg)
     set_debug(vars(command_line_cfg))
     alog.debug('Command line args: ' + str(sys.argv))
     alog.debug(pprint.pformat(command_line_cfg))
@@ -111,7 +110,6 @@ def kungfu(script_cfg):
             xilinx.bit_to_mcs(cfg)
         xilinx.copy_firmware(cfg)
     elif cfg.get('mcs'):
-        print("mcs"*50)
         xilinx.bit_to_mcs(cfg)
         xilinx.copy_firmware(cfg)
 
