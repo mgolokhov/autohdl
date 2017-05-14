@@ -76,9 +76,10 @@ def set_debug(cfg):
 
 
 def kungfu(script_cfg):
-    subprocess.call('hdl -v', shell=True)
+    subprocess.call('hdl.py -v', shell=True)
     alog.info('Processing...')
     command_line_cfg = cli_handler()
+    pprint.pprint(command_line_cfg)
     set_debug(vars(command_line_cfg))
     alog.debug('Command line args: ' + str(sys.argv))
     alog.debug(pprint.pformat(command_line_cfg))
@@ -91,8 +92,6 @@ def kungfu(script_cfg):
 
     # cfg['parsed'] = structure.parse(cfg['src'])
     print_info(cfg)
-
-    # pprint.pprint(cfg)
 
     if len(sys.argv) == 1:
         cfg['synplify'] = 'batch'
@@ -112,6 +111,7 @@ def kungfu(script_cfg):
             xilinx.bit_to_mcs(cfg)
         xilinx.copy_firmware(cfg)
     elif cfg.get('mcs'):
+        print("mcs"*50)
         xilinx.bit_to_mcs(cfg)
         xilinx.copy_firmware(cfg)
 

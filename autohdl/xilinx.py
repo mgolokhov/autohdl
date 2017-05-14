@@ -56,11 +56,13 @@ if {( $my_status == "up_to_date" ) ||
 
 def bit_to_mcs(cfg):
     extend_cfg(cfg)
+    eeprom_kilobytes = cfg.get('eeprom_kilobytes') or cfg.get("mcs")
     try:
-        if ['eeprom_kilobytes']:
+        if eeprom_kilobytes:
             proc = '{tool} -u 0 {top} -s {size} -w'.format(tool=toolchain.Tool().get('ise_promgen'),
                                                            top=cfg['bit_file'],
-                                                           size=cfg['eeprom_kilobytes'])
+                                                           size=eeprom_kilobytes)
+            print(proc)
             subprocess.check_call(proc)
         else:
             alog.warning('EEPROM size was not set')
@@ -96,7 +98,10 @@ def copy_firmware(cfg):
                     dst_path_old = os.path.join(dest_dir, fname_old)
                     if not utils.is_same_contents(src_path, dst_path_old):
                         alog.info("Remove old firmware: "+dst_path_old)
-                        os.remove(dst_path_old)
+                        try:
+                            os.remove(dst_path_old)
+                        except IOError:
+                            pass  # intentional
                         alog.info('Copy new firmware: '+dst_path)
                         shutil.copy(src_path, dst_path)
                     else:

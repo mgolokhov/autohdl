@@ -33,7 +33,6 @@ def main():
         dsn = structure.generate(path=args.name)
         print(dsn)
 
-
 if __name__ == '__main__':
     configuration.copy()
     main()
